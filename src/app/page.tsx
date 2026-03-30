@@ -15,10 +15,10 @@ const legs = [
   { name: "Mahomes O275.5 pass yds (-120)", grade: "D+", ev: "-4.1% EV", color: "bg-red" },
 ];
 
-const betTypes = ["Parlays", "Straight bets", "Player props", "Same game parlays", "Teasers", "Futures"];
+const betTypes = ["Parlays", "Straight bets", "Player props", "Same-game parlays", "Teasers", "Futures"];
 const sports = ["NFL", "NBA", "MLB", "NHL", "NCAAF", "NCAAB", "EPL", "La Liga", "MLS"];
 
-const freeFeatures = ["2 scans per day", "Basic grade (A-F)", "Line comparison", "Community read-only"];
+const freeFeatures = ["2 scans per day", "Basic grade (A–F)", "Line comparison", "Community access (read-only)"];
 const proFeatures = ["Unlimited scans", "Full reports + EV breakdown", "AI swap suggestions", "Bet history + ROI tracking", "All courses + simulators", "Real-time alerts"];
 
 function Check() {
@@ -48,14 +48,9 @@ export default function Home() {
               SL
             </span>
           </div>
-          <div>
-            <span className="text-lg font-semibold text-text-primary block leading-tight">
-              SportsLogic
-            </span>
-            <span className="text-[12px] text-text-tertiary">
-              A logical, edge-based way to sports bet
-            </span>
-          </div>
+          <span className="text-lg font-semibold text-text-primary">
+            SportsLogic
+          </span>
         </div>
         <a
           href="#waitlist"
@@ -75,20 +70,23 @@ export default function Home() {
           }}
         />
 
-        <h1 className="relative text-4xl sm:text-5xl md:text-[56px] font-semibold tracking-[-1.5px] leading-[1.1] max-w-[680px] mx-auto mb-6">
+        <p className="relative text-xs font-semibold tracking-[2px] text-text-tertiary uppercase mb-6 hero-animate-1">
+          A logical, edge-based way to sports bet
+        </p>
+        <h1 className="relative text-4xl sm:text-5xl md:text-[56px] font-semibold tracking-[-1.5px] leading-[1.1] max-w-[680px] mx-auto mb-6 hero-animate-2">
           Know your{" "}
           <span className="text-accent">edge</span> before you bet.
         </h1>
-        <p className="relative text-base sm:text-[17px] text-text-secondary max-w-[520px] mx-auto leading-[1.7] mb-10">
+        <p className="relative text-base sm:text-[17px] text-text-secondary max-w-[520px] mx-auto leading-[1.7] mb-10 hero-animate-3">
           We don&apos;t predict winners. We calculate edges. Upload any bet
           slip and our AI breaks down the math — expected value, line
           comparison, correlation analysis. No gut feelings. No locks.
           Just the numbers.
         </p>
-        <div id="waitlist" className="relative">
+        <div id="waitlist" className="relative hero-animate-4">
           <EmailForm />
         </div>
-        <p className="relative text-xs text-text-tertiary mt-4">
+        <p className="relative text-xs text-text-tertiary mt-4 hero-animate-5">
           Free to start. No credit card required.
         </p>
       </section>
@@ -122,7 +120,7 @@ export default function Home() {
             </h3>
             <p className="text-sm text-text-secondary leading-relaxed">
               Our AI reads your slip, pulls live odds across books, and grades
-              every leg. You get an overall A+ to F rating with full EV
+              every leg. You get an overall A+ to F rating with a full EV
               breakdown.
             </p>
             <div className="hidden md:block absolute right-0 top-8 translate-x-1/2">
@@ -139,7 +137,7 @@ export default function Home() {
             </h3>
             <p className="text-sm text-text-secondary leading-relaxed">
               See exactly which legs are dragging your grade down. Get AI
-              suggestions for smarter swaps. Share your grade card on socials.
+              suggestions for smarter swaps. Share your grade card on social.
             </p>
           </div>
         </div>
@@ -148,10 +146,10 @@ export default function Home() {
       <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px" style={{ background: "rgba(255,255,255,0.04)" }} /></div>
 
       {/* ── SECTION 3: SAMPLE GRADE CARD ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16">
+      <section className="w-full max-w-[1080px] mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-16">
         <SectionLabel>SEE IT IN ACTION</SectionLabel>
 
-        <div className="max-w-[520px] mx-auto bg-surface border border-border rounded-xl p-6">
+        <div className="max-w-[520px] mx-auto bg-surface border border-border rounded-xl p-5 sm:p-6">
           <div className="flex items-start justify-between mb-1">
             <span className="text-sm font-medium text-text-secondary">
               4-leg parlay
@@ -192,7 +190,7 @@ export default function Home() {
           <div className="bg-bg/60 border border-border rounded-lg p-4 mb-4">
             <p className="text-xs text-text-secondary leading-relaxed">
               <span className="text-accent font-medium">AI suggestion:</span>{" "}
-              Swap Leg 4: Mahomes rushing yards O29.5 has +3.8% EV and
+              Swap leg 4 — Mahomes rushing yards O29.5 has +3.8% EV and
               correlates positively with Chiefs ML. This would raise your
               parlay to an A-.
             </p>
@@ -210,7 +208,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── SECTION 3.5: BUILT DIFFERENT ── */}
+      {/* ── SECTION 3.5: THE MATH ── */}
       <section className="w-full max-w-[1080px] mx-auto px-6 pt-12 sm:pt-16 pb-16">
         <SectionLabel>THE MATH BEHIND EVERY GRADE</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-[640px] mx-auto">
@@ -264,25 +262,8 @@ export default function Home() {
         <SectionLabel>PRICING</SectionLabel>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[640px] mx-auto">
-          <div className="bg-surface border border-border rounded-xl p-6 flex flex-col">
-            <div className="mb-5">
-              <span className="text-3xl font-semibold text-text-primary">$0</span>
-              <span className="text-sm text-text-secondary ml-1.5">forever</span>
-            </div>
-            <ul className="space-y-3 flex-1">
-              {freeFeatures.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-xs text-text-secondary">
-                  <Check />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <button className="w-full h-10 rounded-lg bg-transparent border border-text-tertiary text-text-secondary text-sm font-medium hover:border-text-secondary transition-all cursor-pointer mt-6">
-              Start free
-            </button>
-          </div>
-
-          <div className="bg-surface border border-accent rounded-xl p-6 flex flex-col">
+          {/* Pro — shown first on mobile */}
+          <div className="bg-surface border border-accent rounded-xl p-6 flex flex-col order-first sm:order-last">
             <div className="mb-5">
               <span className="text-3xl font-semibold text-text-primary">$15</span>
               <span className="text-sm text-text-secondary ml-1.5">/month</span>
@@ -299,6 +280,25 @@ export default function Home() {
               Join waitlist
             </button>
           </div>
+
+          {/* Free — shown second on mobile */}
+          <div className="bg-surface border border-border rounded-xl p-6 flex flex-col order-last sm:order-first">
+            <div className="mb-5">
+              <span className="text-3xl font-semibold text-text-primary">$0</span>
+              <span className="text-sm text-text-secondary ml-1.5">forever</span>
+            </div>
+            <ul className="space-y-3 flex-1">
+              {freeFeatures.map((f) => (
+                <li key={f} className="flex items-start gap-2.5 text-xs text-text-secondary">
+                  <Check />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <button className="w-full h-10 rounded-lg bg-transparent border border-text-tertiary text-text-secondary text-sm font-medium hover:border-text-secondary transition-all cursor-pointer mt-6">
+              Start free
+            </button>
+          </div>
         </div>
       </section>
 
@@ -311,9 +311,9 @@ export default function Home() {
               Is this legal?
             </h3>
             <p className="text-sm text-text-secondary leading-[1.7]">
-              Yes. SportsLogic provides analysis and information tools only —
-              we never place bets on your behalf. We&apos;re a research tool,
-              like a calculator for your bets.
+              Yes. SportsLogic provides analysis and information tools only — we
+              never place bets on your behalf. We&apos;re a research tool, like
+              a calculator for your bets.
             </p>
           </div>
           <div className="h-px mb-6" style={{ background: "rgba(255,255,255,0.04)" }} />
@@ -334,9 +334,8 @@ export default function Home() {
               What sportsbooks do you support?
             </h3>
             <p className="text-sm text-text-secondary leading-[1.7]">
-              We can read screenshots from DraftKings, FanDuel, BetMGM,
-              Caesars, ESPN Bet, and more. If you can screenshot it, we can
-              grade it.
+              We can read screenshots from DraftKings, FanDuel, BetMGM, Caesars,
+              ESPN Bet, and more. If you can screenshot it, we can grade it.
             </p>
           </div>
         </div>
