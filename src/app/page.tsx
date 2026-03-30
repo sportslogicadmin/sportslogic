@@ -46,85 +46,6 @@ function CheckGreen() {
   );
 }
 
-function PhoneMockup() {
-  return (
-    <div className="w-[200px] sm:w-[220px] mx-auto">
-      <div className="bg-[#1a1a1a] rounded-[24px] p-2 border border-[#333]"
-        style={{ boxShadow: "0 0 60px rgba(0, 232, 123, 0.06)" }}>
-        <div className="flex justify-center mb-1">
-          <div className="w-16 h-1.5 bg-[#333] rounded-full" />
-        </div>
-        <div className="bg-[#0f1116] rounded-[16px] p-3 text-[10px] space-y-2">
-          <p className="text-text-tertiary text-[8px] uppercase tracking-wider text-center">4-Leg Parlay</p>
-          <div className="space-y-1.5">
-            {["Chiefs ML", "Celtics -4.5", "Yankees O8.5", "Mahomes O275"].map((name, i) => (
-              <div key={i} className="flex justify-between bg-[#161923] rounded-md px-2 py-1.5">
-                <span className="text-text-primary text-[9px]">{name}</span>
-                <span className="text-text-secondary text-[9px]">{["-145", "-110", "-105", "-120"][i]}</span>
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between items-center pt-1 border-t border-border">
-            <span className="text-text-tertiary text-[8px]">Payout</span>
-            <span className="text-accent text-[10px] font-bold">+892</span>
-          </div>
-          <div className="bg-accent rounded-md py-1.5 text-center">
-            <span className="text-bg text-[9px] font-bold uppercase">Place bet</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MiniGradeCard() {
-  return (
-    <div className="w-[200px] sm:w-[220px] mx-auto bg-surface border border-border rounded-xl p-3 text-[10px]"
-      style={{ boxShadow: "0 0 60px rgba(0, 232, 123, 0.06)" }}>
-      <div className="flex justify-between items-start mb-2">
-        <span className="text-[8px] text-text-secondary uppercase tracking-wider">4-Leg Parlay</span>
-        <span className="text-3xl font-bold text-accent leading-none">B+</span>
-      </div>
-      <div className="h-px bg-border mb-2" />
-      <div className="space-y-1.5">
-        {[
-          { name: "Chiefs ML", grade: "A", dot: "bg-accent" },
-          { name: "Celtics -4.5", grade: "B+", dot: "bg-accent" },
-          { name: "Yankees O8.5", grade: "C", dot: "bg-amber" },
-          { name: "Mahomes O275", grade: "D+", dot: "bg-red" },
-        ].map((l, i) => (
-          <div key={i} className="flex items-center gap-1.5">
-            <div className={`w-1.5 h-1.5 rounded-full ${l.dot}`} />
-            <span className="text-text-primary flex-1 text-[9px]">{l.name}</span>
-            <span className="text-text-secondary text-[9px] font-semibold">{l.grade}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function MiniSuggestion() {
-  return (
-    <div className="w-[200px] sm:w-[220px] mx-auto bg-surface border border-border rounded-xl p-3"
-      style={{ boxShadow: "0 0 60px rgba(0, 232, 123, 0.06)" }}>
-      <div className="bg-bg/60 border border-accent/20 rounded-lg p-3 mb-2">
-        <p className="text-[9px] text-text-secondary leading-relaxed">
-          <span className="text-accent font-semibold">AI:</span>{" "}
-          Swap leg 4 — Mahomes rush yds O29.5 has +3.8% EV. Raises parlay to A-.
-        </p>
-      </div>
-      <div className="mt-2 bg-[#161923] rounded-md p-2">
-        <div className="flex justify-between text-[9px]">
-          <span className="text-text-primary">Mahomes rush O29.5</span>
-          <span className="text-accent font-bold">A-</span>
-        </div>
-        <div className="text-[8px] text-accent mt-0.5">+3.8% EV</div>
-      </div>
-    </div>
-  );
-}
-
 export default function Home() {
   return (
     <div className="w-full">
@@ -187,48 +108,27 @@ export default function Home() {
       {/* ── HOW IT WORKS ── */}
       <section className="w-full max-w-[1080px] mx-auto px-6 py-20 sm:py-24">
         <SectionLabel>HOW IT WORKS</SectionLabel>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-6 items-start">
-          <div className="text-center relative">
-            <PhoneMockup />
-            <p className="text-xs font-mono text-text-tertiary mt-6 mb-2">01</p>
-            <h3 className="text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">
-              SCREENSHOT YOUR BET
-            </h3>
-            <p className="text-sm text-text-secondary leading-relaxed max-w-[240px] mx-auto">
-              Upload a screenshot from any sportsbook app.
-            </p>
-            <div className="hidden md:block absolute right-0 top-[120px] translate-x-1/2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-text-tertiary">
-                <path d="M5 12h14m0 0l-4-4m4 4l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+        <div className="max-w-[600px] mx-auto space-y-12 sm:space-y-14">
+          <div className="flex items-start gap-5 sm:gap-8">
+            <span className="text-[48px] font-bold text-accent leading-none shrink-0 w-16 text-right">01</span>
+            <div className="pt-1">
+              <h3 className="text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">SCREENSHOT YOUR BET</h3>
+              <p className="text-sm text-text-secondary leading-relaxed">Open DraftKings, FanDuel, whatever you use. Screenshot your slip.</p>
             </div>
           </div>
-
-          <div className="text-center relative">
-            <MiniGradeCard />
-            <p className="text-xs font-mono text-text-tertiary mt-6 mb-2">02</p>
-            <h3 className="text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">
-              AI GRADES EVERY LEG
-            </h3>
-            <p className="text-sm text-text-secondary leading-relaxed max-w-[240px] mx-auto">
-              Get an overall grade plus EV breakdown per leg in seconds.
-            </p>
-            <div className="hidden md:block absolute right-0 top-[120px] translate-x-1/2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-text-tertiary">
-                <path d="M5 12h14m0 0l-4-4m4 4l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+          <div className="flex items-start gap-5 sm:gap-8">
+            <span className="text-[48px] font-bold text-accent leading-none shrink-0 w-16 text-right">02</span>
+            <div className="pt-1">
+              <h3 className="text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">GET YOUR GRADE</h3>
+              <p className="text-sm text-text-secondary leading-relaxed">Our AI reads every leg, pulls live odds, and grades it A+ through F.</p>
             </div>
           </div>
-
-          <div className="text-center">
-            <MiniSuggestion />
-            <p className="text-xs font-mono text-text-tertiary mt-6 mb-2">03</p>
-            <h3 className="text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">
-              GET SMARTER ALTERNATIVES
-            </h3>
-            <p className="text-sm text-text-secondary leading-relaxed max-w-[240px] mx-auto">
-              See which legs are hurting you and get AI swap suggestions.
-            </p>
+          <div className="flex items-start gap-5 sm:gap-8">
+            <span className="text-[48px] font-bold text-accent leading-none shrink-0 w-16 text-right">03</span>
+            <div className="pt-1">
+              <h3 className="text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">BET SMARTER</h3>
+              <p className="text-sm text-text-secondary leading-relaxed">See which legs are killing your parlay. Get AI-powered swaps that improve your edge.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -352,10 +252,12 @@ export default function Home() {
         <SectionLabel>OUR STORY</SectionLabel>
         <div className="max-w-[560px] mx-auto text-center">
           <p className="text-sm sm:text-base text-text-secondary leading-[1.8]">
-            We kept losing money on bets that felt right but weren&apos;t.
-            So we built models to calculate the real expected value behind
-            every bet. Now we&apos;re turning that system into a tool anyone
-            can use — no math degree required.
+            SportsLogic started with a simple question — why do we keep
+            losing money on bets that feel right? So we built models to
+            calculate the real expected value behind every bet. We stopped
+            guessing and started grading. Now we&apos;re building the tool
+            we wish we had from day one — one that shows you exactly what
+            the books don&apos;t want you to see. No math degree required.
           </p>
         </div>
       </section>
