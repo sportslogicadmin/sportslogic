@@ -20,6 +20,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "API key not configured" }, { status: 500 });
   }
 
+  // The Odds API returns all upcoming events with posted odds — includes today + tomorrow + beyond
   const res = await fetch(
     `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h&oddsFormat=american&bookmakers=fanduel`,
     { next: { revalidate: 300 } }
@@ -30,12 +31,15 @@ export async function GET(request: Request) {
   }
 
   const data = await res.json();
-  const games = data.map((g: { id: string; home_team: string; away_team: string; commence_time: string }) => ({
-    id: g.id,
-    home: g.home_team,
-    away: g.away_team,
-    time: g.commence_time,
-  }));
+
+  const games = data
+    .map((g: { id: string; home_team: string; away_team: string; commence_time: string }) => ({
+      id: g.id,
+      home: g.home_team,
+      away: g.away_team,
+      time: g.commence_time,
+    }))
+    .sort((a: { time: string }, b: { time: string }) => a.time.localeCompare(b.time));
 
   return NextResponse.json({ games });
 }

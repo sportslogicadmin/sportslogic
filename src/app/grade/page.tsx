@@ -113,13 +113,26 @@ export default function GradePage() {
       });
   }, [sport]);
 
-  // Build team list from games
-  const teams: string[] = [];
-  for (const g of games) {
-    if (!teams.includes(g.away)) teams.push(g.away);
-    if (!teams.includes(g.home)) teams.push(g.home);
+  // Build team options from games — show matchup + date/time
+  function formatGameTime(iso: string) {
+    const d = new Date(iso);
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const isToday = d.toDateString() === now.toDateString();
+    const isTomorrow = d.toDateString() === tomorrow.toDateString();
+    const day = isToday ? "Today" : isTomorrow ? "Tomorrow" : d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    return `${day} ${time}`;
   }
-  teams.sort();
+
+  type TeamOption = { team: string; label: string };
+  const teamOptions: TeamOption[] = [];
+  for (const g of games) {
+    const tag = formatGameTime(g.time);
+    teamOptions.push({ team: g.away, label: `${g.away} @ ${g.home} — ${tag}` });
+    teamOptions.push({ team: g.home, label: `${g.home} vs ${g.away} — ${tag}` });
+  }
 
   const isProp = betType === "prop";
 
@@ -219,10 +232,10 @@ export default function GradePage() {
               className="w-full h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm outline-none focus:border-accent/50 transition-colors appearance-none cursor-pointer"
             >
               <option value="">
-                {loadingGames ? "Loading games..." : games.length ? "Select a team" : "No games today"}
+                {loadingGames ? "Loading games..." : games.length ? "Select a team" : "No games available"}
               </option>
-              {teams.map((t) => (
-                <option key={t} value={t}>{t}</option>
+              {teamOptions.map((t, i) => (
+                <option key={`${t.team}-${i}`} value={t.team}>{t.label}</option>
               ))}
             </select>
           </div>
