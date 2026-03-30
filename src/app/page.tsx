@@ -239,9 +239,9 @@ export default function Home() {
         </div>
 
         <div className="text-center mt-8">
-          <button className="h-12 w-full sm:w-auto px-8 rounded-lg bg-accent text-bg text-xs font-semibold uppercase tracking-[0.5px] hover:brightness-110 transition-all cursor-pointer">
+          <a href="/grade" className="inline-flex items-center h-12 w-full sm:w-auto px-8 rounded-lg bg-accent text-bg text-xs font-semibold uppercase tracking-[0.5px] hover:brightness-110 transition-all justify-center">
             GRADE YOUR FIRST BET FREE
-          </button>
+          </a>
         </div>
       </section>
 
