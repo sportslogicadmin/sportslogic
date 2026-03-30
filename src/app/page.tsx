@@ -15,11 +15,11 @@ const legs = [
   { name: "Mahomes O275.5 pass yds (-120)", grade: "D+", ev: "-4.1% EV", color: "bg-red", glow: "dot-glow-red" },
 ];
 
-const betTypes = ["Parlays", "Straight bets", "Player props", "Same-game parlays", "Teasers", "Futures"];
+const betTypes = ["PARLAYS", "STRAIGHT BETS", "PLAYER PROPS", "SAME-GAME PARLAYS", "TEASERS", "FUTURES"];
 const sports = ["NFL", "NBA", "MLB", "NHL", "NCAAF", "NCAAB", "EPL", "La Liga", "MLS"];
 
-const freeFeatures = ["2 scans per day", "Basic grade (A–F)", "Line comparison", "Community access (read-only)"];
-const proFeatures = ["Unlimited scans", "Full reports + EV breakdown", "AI swap suggestions", "Bet history + ROI tracking", "All courses + simulators", "Real-time alerts"];
+const freeFeatures = ["2 SCANS PER DAY", "BASIC GRADE (A–F)", "LINE COMPARISON", "COMMUNITY ACCESS (READ-ONLY)"];
+const proFeatures = ["UNLIMITED SCANS", "FULL REPORTS + EV BREAKDOWN", "AI SWAP SUGGESTIONS", "BET HISTORY + ROI TRACKING", "ALL COURSES + SIMULATORS", "REAL-TIME ALERTS"];
 
 function Check() {
   return (
@@ -78,17 +78,17 @@ export default function Home() {
           KNOW YOUR{" "}
           <span className="text-accent">EDGE</span> BEFORE YOU BET.
         </h1>
-        <p className="relative text-sm sm:text-[17px] text-text-secondary max-w-[520px] mx-auto leading-[1.7] mb-10 hero-animate-3">
-          We don&apos;t predict winners. We calculate edges. Upload any bet
-          slip and our AI breaks down the math — expected value, line
-          comparison, correlation analysis. No gut feelings. No locks.
-          Just the numbers.
+        <p className="relative text-sm sm:text-[17px] text-text-secondary max-w-[520px] mx-auto leading-[1.7] mb-10 hero-animate-3 uppercase">
+          WE DON&apos;T PREDICT WINNERS. WE CALCULATE EDGES. UPLOAD ANY BET
+          SLIP AND OUR AI BREAKS DOWN THE MATH — EXPECTED VALUE, LINE
+          COMPARISON, CORRELATION ANALYSIS. NO GUT FEELINGS. NO LOCKS.
+          JUST THE NUMBERS.
         </p>
         <div id="waitlist" className="relative hero-animate-4">
           <EmailForm />
         </div>
-        <p className="relative text-xs text-text-tertiary mt-4 hero-animate-5">
-          Free to start. No credit card required.
+        <p className="relative text-xs text-text-tertiary mt-4 hero-animate-5 uppercase tracking-wide">
+          FREE TO START. NO CREDIT CARD REQUIRED.
         </p>
       </section>
 
@@ -103,9 +103,9 @@ export default function Home() {
             <h3 className="text-base font-bold uppercase text-text-primary mb-2 tracking-wide">
               SCREENSHOT YOUR BET
             </h3>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              Open any sportsbook app — DraftKings, FanDuel, BetMGM, whatever
-              you use. Screenshot your bet slip and upload it.
+            <p className="text-sm text-text-secondary leading-relaxed uppercase">
+              OPEN ANY SPORTSBOOK APP — DRAFTKINGS, FANDUEL, BETMGM, WHATEVER
+              YOU USE. SCREENSHOT YOUR BET SLIP AND UPLOAD IT.
             </p>
             <div className="hidden md:block absolute right-0 top-8 translate-x-1/2">
               <div className="w-8 h-px bg-text-tertiary relative">
@@ -119,10 +119,10 @@ export default function Home() {
             <h3 className="text-base font-bold uppercase text-text-primary mb-2 tracking-wide">
               GET YOUR GRADE
             </h3>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              Our AI reads your slip, pulls live odds across books, and grades
-              every leg. You get an overall A+ to F rating with a full EV
-              breakdown.
+            <p className="text-sm text-text-secondary leading-relaxed uppercase">
+              OUR AI READS YOUR SLIP, PULLS LIVE ODDS ACROSS BOOKS, AND GRADES
+              EVERY LEG. YOU GET AN OVERALL A+ TO F RATING WITH A FULL EV
+              BREAKDOWN.
             </p>
             <div className="hidden md:block absolute right-0 top-8 translate-x-1/2">
               <div className="w-8 h-px bg-text-tertiary relative">
@@ -136,9 +136,9 @@ export default function Home() {
             <h3 className="text-base font-bold uppercase text-text-primary mb-2 tracking-wide">
               IMPROVE OR SHARE
             </h3>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              See exactly which legs are dragging your grade down. Get AI
-              suggestions for smarter swaps. Share your grade card on social.
+            <p className="text-sm text-text-secondary leading-relaxed uppercase">
+              SEE EXACTLY WHICH LEGS ARE DRAGGING YOUR GRADE DOWN. GET AI
+              SUGGESTIONS FOR SMARTER SWAPS. SHARE YOUR GRADE CARD ON SOCIAL.
             </p>
           </div>
         </div>
@@ -165,7 +165,7 @@ export default function Home() {
                   4-LEG PARLAY
                 </span>
                 <p className="text-xs text-accent mt-1">
-                  Overall expected value: +3.2%
+                  OVERALL EXPECTED VALUE: +3.2%
                 </p>
               </div>
               <span className="text-[64px] font-bold text-accent leading-none -mt-2">
@@ -201,16 +201,16 @@ export default function Home() {
             <div className="h-px bg-border mb-5" />
 
             <div className="bg-bg/60 border border-border rounded-lg p-4 mb-4">
-              <p className="text-xs text-text-secondary leading-relaxed">
-                <span className="text-accent font-semibold">AI suggestion:</span>{" "}
-                Swap leg 4 — Mahomes rushing yards O29.5 has +3.8% EV and
-                correlates positively with Chiefs ML. This would raise your
-                parlay to an A-.
+              <p className="text-xs text-text-secondary leading-relaxed uppercase">
+                <span className="text-accent font-semibold">AI SUGGESTION:</span>{" "}
+                SWAP LEG 4 — MAHOMES RUSHING YARDS O29.5 HAS +3.8% EV AND
+                CORRELATES POSITIVELY WITH CHIEFS ML. THIS WOULD RAISE YOUR
+                PARLAY TO AN A-.
               </p>
             </div>
 
-            <p className="text-[11px] text-text-tertiary text-center">
-              Powered by SportsLogic
+            <p className="text-[11px] text-text-tertiary text-center uppercase tracking-wide">
+              POWERED BY SPORTSLOGIC
             </p>
           </div>
         </div>
@@ -228,15 +228,15 @@ export default function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-[640px] mx-auto">
           <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
             <p className="text-lg font-bold uppercase text-accent mb-1">6 WEIGHTED FACTORS</p>
-            <p className="text-xs text-text-secondary">Power every grade</p>
+            <p className="text-xs text-text-secondary uppercase tracking-wide">POWER EVERY GRADE</p>
           </div>
           <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
             <p className="text-lg font-bold uppercase text-accent mb-1">REAL-TIME ODDS</p>
-            <p className="text-xs text-text-secondary">From every major book</p>
+            <p className="text-xs text-text-secondary uppercase tracking-wide">FROM EVERY MAJOR BOOK</p>
           </div>
           <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
             <p className="text-lg font-bold uppercase text-accent mb-1">DECISION QUALITY</p>
-            <p className="text-xs text-text-secondary">Not outcome prediction</p>
+            <p className="text-xs text-text-secondary uppercase tracking-wide">NOT OUTCOME PREDICTION</p>
           </div>
         </div>
       </section>
@@ -281,7 +281,7 @@ export default function Home() {
             <p className="text-xs font-semibold uppercase tracking-[1px] text-accent mb-4">PRO</p>
             <div className="mb-5">
               <span className="text-3xl font-bold text-text-primary">$15</span>
-              <span className="text-sm text-text-secondary ml-1.5">/month</span>
+              <span className="text-sm text-text-secondary ml-1.5 uppercase">/MONTH</span>
             </div>
             <ul className="space-y-3 flex-1">
               {proFeatures.map((f) => (
@@ -301,7 +301,7 @@ export default function Home() {
             <p className="text-xs font-semibold uppercase tracking-[1px] text-text-tertiary mb-4">FREE</p>
             <div className="mb-5">
               <span className="text-3xl font-bold text-text-primary">$0</span>
-              <span className="text-sm text-text-secondary ml-1.5">forever</span>
+              <span className="text-sm text-text-secondary ml-1.5 uppercase">FOREVER</span>
             </div>
             <ul className="space-y-3 flex-1">
               {freeFeatures.map((f) => (
@@ -326,10 +326,10 @@ export default function Home() {
             <h3 className="text-base font-bold uppercase text-text-primary mb-2">
               IS THIS LEGAL?
             </h3>
-            <p className="text-sm text-text-secondary leading-[1.7]">
-              Yes. SportsLogic provides analysis and information tools only — we
-              never place bets on your behalf. We&apos;re a research tool, like
-              a calculator for your bets.
+            <p className="text-sm text-text-secondary leading-[1.7] uppercase">
+              YES. SPORTSLOGIC PROVIDES ANALYSIS AND INFORMATION TOOLS ONLY — WE
+              NEVER PLACE BETS ON YOUR BEHALF. WE&apos;RE A RESEARCH TOOL, LIKE
+              A CALCULATOR FOR YOUR BETS.
             </p>
           </div>
           <div className="h-px bg-border/30 mb-6" />
@@ -337,11 +337,11 @@ export default function Home() {
             <h3 className="text-base font-bold uppercase text-text-primary mb-2">
               HOW ACCURATE IS THE GRADING?
             </h3>
-            <p className="text-sm text-text-secondary leading-[1.7]">
-              Our grades measure decision quality, not outcome prediction. We
-              compare your bet against sharp market consensus and mathematical
-              expected value. An A+ bet can still lose — but over time,
-              higher-graded bets outperform lower-graded ones.
+            <p className="text-sm text-text-secondary leading-[1.7] uppercase">
+              OUR GRADES MEASURE DECISION QUALITY, NOT OUTCOME PREDICTION. WE
+              COMPARE YOUR BET AGAINST SHARP MARKET CONSENSUS AND MATHEMATICAL
+              EXPECTED VALUE. AN A+ BET CAN STILL LOSE — BUT OVER TIME,
+              HIGHER-GRADED BETS OUTPERFORM LOWER-GRADED ONES.
             </p>
           </div>
           <div className="h-px bg-border/30 mb-6" />
@@ -349,9 +349,9 @@ export default function Home() {
             <h3 className="text-base font-bold uppercase text-text-primary mb-2">
               WHAT SPORTSBOOKS DO YOU SUPPORT?
             </h3>
-            <p className="text-sm text-text-secondary leading-[1.7]">
-              We can read screenshots from DraftKings, FanDuel, BetMGM, Caesars,
-              ESPN Bet, and more. If you can screenshot it, we can grade it.
+            <p className="text-sm text-text-secondary leading-[1.7] uppercase">
+              WE CAN READ SCREENSHOTS FROM DRAFTKINGS, FANDUEL, BETMGM, CAESARS,
+              ESPN BET, AND MORE. IF YOU CAN SCREENSHOT IT, WE CAN GRADE IT.
             </p>
           </div>
         </div>
@@ -366,22 +366,22 @@ export default function Home() {
       </section>
 
       <footer className="w-full max-w-[1080px] mx-auto px-6 pt-8 pb-10 border-t border-border">
-        <p className="text-[12px] text-text-tertiary text-center sm:text-left mb-6 leading-relaxed max-w-[640px]">
-          SportsLogic is not a sportsbook. We provide analysis tools for
-          informational purposes only. 21+. Gambling problem? Call
+        <p className="text-[12px] text-text-tertiary text-center sm:text-left mb-6 leading-relaxed max-w-[640px] uppercase tracking-wide">
+          SPORTSLOGIC IS NOT A SPORTSBOOK. WE PROVIDE ANALYSIS TOOLS FOR
+          INFORMATIONAL PURPOSES ONLY. 21+. GAMBLING PROBLEM? CALL
           1-800-GAMBLER.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-text-tertiary">&copy; 2026 SportsLogic</p>
+          <p className="text-xs text-text-tertiary uppercase">&copy; 2026 SPORTSLOGIC</p>
           <div className="flex items-center gap-6">
-            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors">
-              Terms
+            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors uppercase">
+              TERMS
             </a>
-            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors">
-              Privacy
+            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors uppercase">
+              PRIVACY
             </a>
-            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors">
-              Contact
+            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors uppercase">
+              CONTACT
             </a>
           </div>
         </div>
