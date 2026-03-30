@@ -1,65 +1,383 @@
-import Image from "next/image";
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-xs font-semibold tracking-[2px] text-text-tertiary uppercase text-center mb-12">
+      {children}
+    </p>
+  );
+}
+
+function EmailRow() {
+  return (
+    <div className="flex flex-col sm:flex-row gap-3 w-full max-w-[420px] mx-auto">
+      <input
+        type="email"
+        placeholder="Enter your email"
+        className="flex-1 h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm placeholder:text-text-tertiary outline-none transition-all duration-200 focus:border-accent/50 focus:shadow-[0_0_0_2px_rgba(0,232,123,0.15)]"
+      />
+      <button className="h-12 px-6 rounded-lg bg-accent text-bg text-sm font-medium whitespace-nowrap hover:brightness-110 transition-all cursor-pointer">
+        Join waitlist
+      </button>
+    </div>
+  );
+}
+
+const legs = [
+  { name: "Chiefs ML (-145)", grade: "A", ev: "+6.1% EV", color: "bg-accent" },
+  { name: "Celtics -4.5 (-110)", grade: "B+", ev: "+2.8% EV", color: "bg-accent" },
+  { name: "Yankees Over 8.5 (-105)", grade: "C", ev: "-1.2% EV", color: "bg-amber" },
+  { name: "Mahomes O275.5 pass yds (-120)", grade: "D+", ev: "-4.1% EV", color: "bg-red" },
+];
+
+const betTypes = ["Parlays", "Straight bets", "Player props", "Same game parlays", "Teasers", "Futures"];
+const sports = ["NFL", "NBA", "MLB", "NHL", "NCAAF", "NCAAB", "EPL", "La Liga", "MLS"];
+
+const freeFeatures = ["2 scans per day", "Basic grade (A-F)", "Line comparison", "Community read-only"];
+const proFeatures = ["Unlimited scans", "Full reports + EV breakdown", "AI swap suggestions", "Bet history + ROI tracking", "All courses + simulators", "Real-time alerts"];
+
+function Check() {
+  return (
+    <svg className="w-4 h-4 text-text-tertiary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+function CheckGreen() {
+  return (
+    <svg className="w-4 h-4 text-accent shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="w-full">
+      {/* ── NAV ── */}
+      <nav className="w-full max-w-[1080px] mx-auto flex items-center justify-between px-6 py-5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+            <span className="text-bg text-[13px] font-semibold font-mono leading-none">
+              SL
+            </span>
+          </div>
+          <span className="text-lg font-semibold text-text-primary">
+            SportsLogic
+          </span>
+        </div>
+        <a
+          href="#waitlist"
+          className="h-9 px-4 rounded-lg bg-accent text-bg text-sm font-medium flex items-center hover:brightness-110 transition-all"
+        >
+          Get early access
+        </a>
+      </nav>
+
+      {/* ── SECTION 1: HERO ── */}
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-24 sm:pt-32 pb-24 text-center relative">
+        <div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] pointer-events-none"
+          style={{
+            background: "radial-gradient(ellipse at center, rgba(0, 232, 123, 0.08) 0%, transparent 70%)",
+            filter: "blur(80px)",
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+        <h1 className="relative text-4xl sm:text-5xl md:text-[56px] font-semibold tracking-[-1.5px] leading-[1.1] max-w-[680px] mx-auto mb-6">
+          Know your{" "}
+          <span className="text-accent">edge</span> before you bet.
+        </h1>
+        <p className="relative text-base sm:text-[17px] text-text-secondary max-w-[520px] mx-auto leading-[1.7] mb-10">
+          AI-powered analysis for any bet — parlays, straight bets, props,
+          futures. Screenshot your slip, get an instant grade with expected
+          value, leg-by-leg breakdown, and smarter alternatives.
+        </p>
+        <div id="waitlist" className="relative">
+          <EmailRow />
+        </div>
+        <p className="relative text-xs text-text-tertiary mt-4">
+          Free to start. No credit card required.
+        </p>
+      </section>
+
+      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px" style={{ background: "rgba(255,255,255,0.04)" }} /></div>
+
+      {/* ── SECTION 2: HOW IT WORKS ── */}
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 overflow-hidden">
+        <SectionLabel>HOW IT WORKS</SectionLabel>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+          <div className="text-center md:text-left relative">
+            <p className="text-xs font-mono text-text-tertiary mb-3">01</p>
+            <h3 className="text-[17px] font-semibold text-text-primary mb-2">
+              Screenshot your bet
+            </h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Open any sportsbook app — DraftKings, FanDuel, BetMGM, whatever
+              you use. Screenshot your bet slip and upload it.
+            </p>
+            <div className="hidden md:block absolute right-0 top-8 translate-x-1/2">
+              <div className="w-8 h-px bg-text-tertiary relative">
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] border-l-text-tertiary" />
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center md:text-left relative">
+            <p className="text-xs font-mono text-text-tertiary mb-3">02</p>
+            <h3 className="text-[17px] font-semibold text-text-primary mb-2">
+              Get your grade
+            </h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Our AI reads your slip, pulls live odds across books, and grades
+              every leg. You get an overall A+ to F rating with full EV
+              breakdown.
+            </p>
+            <div className="hidden md:block absolute right-0 top-8 translate-x-1/2">
+              <div className="w-8 h-px bg-text-tertiary relative">
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] border-l-text-tertiary" />
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center md:text-left">
+            <p className="text-xs font-mono text-text-tertiary mb-3">03</p>
+            <h3 className="text-[17px] font-semibold text-text-primary mb-2">
+              Improve or share
+            </h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              See exactly which legs are dragging your grade down. Get AI
+              suggestions for smarter swaps. Share your grade card on socials.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px" style={{ background: "rgba(255,255,255,0.04)" }} /></div>
+
+      {/* ── SECTION 3: SAMPLE GRADE CARD ── */}
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16">
+        <SectionLabel>SEE IT IN ACTION</SectionLabel>
+
+        <div className="max-w-[520px] mx-auto bg-surface border border-border rounded-xl p-6">
+          <div className="flex items-start justify-between mb-1">
+            <span className="text-sm font-medium text-text-secondary">
+              4-leg parlay
+            </span>
+            <span className="text-4xl font-semibold text-accent leading-none">
+              B+
+            </span>
+          </div>
+          <p className="text-xs text-accent mb-5">
+            Overall expected value: +3.2%
+          </p>
+
+          <div className="h-px bg-border mb-5" />
+
+          <div className="space-y-4 mb-5">
+            {legs.map((leg, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className={`w-2 h-2 rounded-full ${leg.color} shrink-0`} />
+                <span className="text-sm text-text-primary flex-1 min-w-0 truncate">
+                  {leg.name}
+                </span>
+                <span className="text-xs font-medium text-text-secondary whitespace-nowrap">
+                  {leg.grade}
+                </span>
+                <span
+                  className={`text-xs font-mono whitespace-nowrap ${
+                    leg.ev.startsWith("+") ? "text-accent" : "text-text-secondary"
+                  }`}
+                >
+                  {leg.ev}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="h-px bg-border mb-5" />
+
+          <div className="bg-bg/60 border border-border rounded-lg p-4 mb-4">
+            <p className="text-xs text-text-secondary leading-relaxed">
+              <span className="text-accent font-medium">AI suggestion:</span>{" "}
+              Swap Leg 4: Mahomes rushing yards O29.5 has +3.8% EV and
+              correlates positively with Chiefs ML. This would raise your
+              parlay to an A-.
+            </p>
+          </div>
+
+          <p className="text-[11px] text-text-tertiary text-center">
+            Powered by SportsLogic
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="text-center mt-8">
+          <button className="h-12 px-8 rounded-lg bg-accent text-bg text-sm font-semibold hover:brightness-110 transition-all cursor-pointer">
+            Grade your first bet free
+          </button>
         </div>
-      </main>
+      </section>
+
+      {/* ── SECTION 3.5: BUILT DIFFERENT ── */}
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-12 sm:pt-16 pb-16">
+        <SectionLabel>BUILT DIFFERENT</SectionLabel>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-[640px] mx-auto">
+          <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
+            <p className="text-lg font-semibold text-accent mb-1">6 factors</p>
+            <p className="text-xs text-text-secondary">analyzed per bet</p>
+          </div>
+          <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
+            <p className="text-lg font-semibold text-accent mb-1">Every major book</p>
+            <p className="text-xs text-text-secondary">odds compared in real-time</p>
+          </div>
+          <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
+            <p className="text-lg font-semibold text-accent mb-1">A+ to F</p>
+            <p className="text-xs text-text-secondary">transparent grading scale</p>
+          </div>
+        </div>
+      </section>
+
+      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px" style={{ background: "rgba(255,255,255,0.04)" }} /></div>
+
+      {/* ── SECTION 4: WHAT WE GRADE ── */}
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16">
+        <SectionLabel>WHAT WE GRADE</SectionLabel>
+
+        <div className="flex flex-wrap justify-center gap-2.5 mb-5 max-w-[640px] mx-auto">
+          {betTypes.map((t) => (
+            <span
+              key={t}
+              className="px-4 py-2 rounded-full bg-surface border border-[#2A2E3E] text-sm font-medium text-text-primary"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+        <div className="flex flex-wrap justify-center gap-2.5 max-w-[640px] mx-auto">
+          {sports.map((s) => (
+            <span
+              key={s}
+              className="px-4 py-2 rounded-full bg-surface border border-accent/20 text-xs font-medium text-text-primary"
+            >
+              {s}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px" style={{ background: "rgba(255,255,255,0.04)" }} /></div>
+
+      {/* ── SECTION 5: PRICING ── */}
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16">
+        <SectionLabel>PRICING</SectionLabel>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[640px] mx-auto">
+          <div className="bg-surface border border-border rounded-xl p-6 flex flex-col">
+            <div className="mb-5">
+              <span className="text-3xl font-semibold text-text-primary">$0</span>
+              <span className="text-sm text-text-secondary ml-1.5">forever</span>
+            </div>
+            <ul className="space-y-3 flex-1">
+              {freeFeatures.map((f) => (
+                <li key={f} className="flex items-start gap-2.5 text-xs text-text-secondary">
+                  <Check />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <button className="w-full h-10 rounded-lg bg-transparent border border-text-tertiary text-text-secondary text-sm font-medium hover:border-text-secondary transition-all cursor-pointer mt-6">
+              Start free
+            </button>
+          </div>
+
+          <div className="bg-surface border border-accent rounded-xl p-6 flex flex-col">
+            <div className="mb-5">
+              <span className="text-3xl font-semibold text-text-primary">$15</span>
+              <span className="text-sm text-text-secondary ml-1.5">/month</span>
+            </div>
+            <ul className="space-y-3 flex-1">
+              {proFeatures.map((f) => (
+                <li key={f} className="flex items-start gap-2.5 text-xs text-text-secondary">
+                  <CheckGreen />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <button className="w-full h-10 rounded-lg bg-accent text-bg text-sm font-medium hover:brightness-110 transition-all cursor-pointer mt-6">
+              Join waitlist
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 5.5: FAQ ── */}
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16">
+        <SectionLabel>FAQ</SectionLabel>
+        <div className="max-w-[640px] mx-auto text-center">
+          <div className="pb-6">
+            <h3 className="text-base font-semibold text-text-primary mb-2">
+              Is this legal?
+            </h3>
+            <p className="text-sm text-text-secondary leading-[1.7]">
+              Yes. SportsLogic provides analysis and information tools only —
+              we never place bets on your behalf. We&apos;re a research tool,
+              like a calculator for your bets.
+            </p>
+          </div>
+          <div className="h-px mb-6" style={{ background: "rgba(255,255,255,0.04)" }} />
+          <div className="pb-6">
+            <h3 className="text-base font-semibold text-text-primary mb-2">
+              How accurate is the grading?
+            </h3>
+            <p className="text-sm text-text-secondary leading-[1.7]">
+              Our grades measure decision quality, not outcome prediction. We
+              compare your bet against sharp market consensus and mathematical
+              expected value. An A+ bet can still lose — but over time,
+              higher-graded bets outperform lower-graded ones.
+            </p>
+          </div>
+          <div className="h-px mb-6" style={{ background: "rgba(255,255,255,0.04)" }} />
+          <div>
+            <h3 className="text-base font-semibold text-text-primary mb-2">
+              What sportsbooks do you support?
+            </h3>
+            <p className="text-sm text-text-secondary leading-[1.7]">
+              We can read screenshots from DraftKings, FanDuel, BetMGM,
+              Caesars, ESPN Bet, and more. If you can screenshot it, we can
+              grade it.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 6: FINAL CTA + FOOTER ── */}
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 text-center">
+        <h2 className="text-2xl sm:text-4xl font-semibold mb-8">
+          The edge is waiting.
+        </h2>
+        <EmailRow />
+      </section>
+
+      <footer className="w-full max-w-[1080px] mx-auto px-6 pt-8 pb-10 border-t border-border">
+        <p className="text-[12px] text-text-tertiary text-center sm:text-left mb-6 leading-relaxed max-w-[640px]">
+          SportsLogic is not a sportsbook. We provide analysis tools for
+          informational purposes only. 21+. Gambling problem? Call
+          1-800-GAMBLER.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-text-tertiary">&copy; 2026 SportsLogic</p>
+          <div className="flex items-center gap-6">
+            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors">
+              Terms
+            </a>
+            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors">
+              Privacy
+            </a>
+            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors">
+              Contact
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
