@@ -8,7 +8,7 @@ const exec = promisify(execFile);
 
 // Simple in-memory rate limiter (resets on server restart)
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
-const FREE_LIMIT = 2;
+const FREE_LIMIT = 50; // generous for dev/testing
 
 function checkRate(ip: string): { allowed: boolean; remaining: number } {
   const now = Date.now();
@@ -72,24 +72,18 @@ export async function POST(request: Request) {
   try {
     const { stdout, stderr } = await exec("python3", args, { timeout: 30000 });
 
-    // The engine prints status to stderr-ish via print(), JSON goes to stdout
-    // Find the JSON object in stdout
-    const lines = stdout.split("\n");
-    let jsonStr = "";
-    let inJson = false;
-    for (const l of lines) {
-      if (l.trim().startsWith("{")) inJson = true;
-      if (inJson) jsonStr += l;
+    // Engine prints status lines then JSON. Extract the JSON object.
+    const jsonMatch = stdout.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error("[grade] No JSON in output:", stdout.slice(-300));
+      return NextResponse.json({ error: "Engine returned no result" }, { status: 500 });
     }
 
-    if (!jsonStr) {
-      return NextResponse.json({ error: "Engine returned no result", debug: stdout }, { status: 500 });
-    }
-
-    const result = JSON.parse(jsonStr);
+    const result = JSON.parse(jsonMatch[0]);
     return NextResponse.json({ ...result, remaining: rate.remaining });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: "Grading failed", debug: message }, { status: 500 });
+    console.error("[grade] Engine error:", message);
+    return NextResponse.json({ error: "Grading failed. Try again." }, { status: 500 });
   }
 }
