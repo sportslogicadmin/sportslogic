@@ -67,6 +67,15 @@ function gradeColor(grade: string): string {
   return "text-red";
 }
 
+function gradeContext(grade: string): string {
+  const f = grade[0];
+  if (f === "A") return "Strong edge. The math is in your favor.";
+  if (f === "B") return "Solid bet. Better than most.";
+  if (f === "C") return "Average. The book's vig is standard here.";
+  if (f === "D") return "Below average. You're overpaying for this line.";
+  return "Bad value. The book is eating you alive on this one.";
+}
+
 function ScoreBar({ label, value }: { label: string; value: number }) {
   const pct = Math.max(0, Math.min(100, value));
   const color = pct >= 60 ? "bg-accent" : pct >= 40 ? "bg-amber" : "bg-red";
@@ -441,7 +450,8 @@ export default function GradePage() {
                 }`}>
                   {["A", "B"].includes(result.grade[0]) ? "BUY" : result.grade[0] === "C" ? "HOLD" : "SELL"}
                 </span>
-                <p className="text-sm text-text-secondary mt-2">{result.score.toFixed(1)} / 100</p>
+                <p className="text-sm text-text-secondary mt-2">{gradeContext(result.grade)}</p>
+                <p className="text-[11px] text-text-tertiary mt-1">{result.score.toFixed(1)} / 100</p>
               </div>
 
               <div className="px-5 pb-5">
@@ -510,6 +520,11 @@ export default function GradePage() {
                 </p>
               </div>
             </div>
+
+            {/* Context note */}
+            <p className="text-[11px] text-text-tertiary text-center mb-3">
+              Average bet grades C — most lines have standard vig. B or above means you found real value.
+            </p>
 
             {/* Remaining */}
             {result.remaining !== undefined && (
