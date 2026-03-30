@@ -48,9 +48,14 @@ export default function Home() {
               SL
             </span>
           </div>
-          <span className="text-lg font-semibold text-text-primary">
-            SportsLogic
-          </span>
+          <div>
+            <span className="text-lg font-semibold text-text-primary block leading-tight">
+              SportsLogic
+            </span>
+            <span className="text-[12px] text-text-tertiary">
+              A logical, edge-based way to sports bet
+            </span>
+          </div>
         </div>
         <a
           href="#waitlist"
@@ -75,9 +80,10 @@ export default function Home() {
           <span className="text-accent">edge</span> before you bet.
         </h1>
         <p className="relative text-base sm:text-[17px] text-text-secondary max-w-[520px] mx-auto leading-[1.7] mb-10">
-          AI-powered analysis for any bet — parlays, straight bets, props,
-          futures. Screenshot your slip, get an instant grade with expected
-          value, leg-by-leg breakdown, and smarter alternatives.
+          We don&apos;t predict winners. We calculate edges. Upload any bet
+          slip and our AI breaks down the math — expected value, line
+          comparison, correlation analysis. No gut feelings. No locks.
+          Just the numbers.
         </p>
         <div id="waitlist" className="relative">
           <EmailForm />
@@ -206,19 +212,19 @@ export default function Home() {
 
       {/* ── SECTION 3.5: BUILT DIFFERENT ── */}
       <section className="w-full max-w-[1080px] mx-auto px-6 pt-12 sm:pt-16 pb-16">
-        <SectionLabel>BUILT DIFFERENT</SectionLabel>
+        <SectionLabel>THE MATH BEHIND EVERY GRADE</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-[640px] mx-auto">
           <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
-            <p className="text-lg font-semibold text-accent mb-1">6 factors</p>
-            <p className="text-xs text-text-secondary">analyzed per bet</p>
+            <p className="text-lg font-semibold text-accent mb-1">6 weighted factors</p>
+            <p className="text-xs text-text-secondary">power every grade</p>
           </div>
           <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
-            <p className="text-lg font-semibold text-accent mb-1">Every major book</p>
-            <p className="text-xs text-text-secondary">odds compared in real-time</p>
+            <p className="text-lg font-semibold text-accent mb-1">Real-time odds</p>
+            <p className="text-xs text-text-secondary">from every major book</p>
           </div>
           <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
-            <p className="text-lg font-semibold text-accent mb-1">A+ to F</p>
-            <p className="text-xs text-text-secondary">transparent grading scale</p>
+            <p className="text-lg font-semibold text-accent mb-1">Decision quality</p>
+            <p className="text-xs text-text-secondary">not outcome prediction</p>
           </div>
         </div>
       </section>
