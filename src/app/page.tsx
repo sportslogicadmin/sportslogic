@@ -1,23 +1,10 @@
+import { EmailForm } from "./email-form";
+
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <p className="text-xs font-semibold tracking-[2px] text-text-tertiary uppercase text-center mb-12">
       {children}
     </p>
-  );
-}
-
-function EmailRow() {
-  return (
-    <div className="flex flex-col sm:flex-row gap-3 w-full max-w-[420px] mx-auto">
-      <input
-        type="email"
-        placeholder="Enter your email"
-        className="flex-1 h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm placeholder:text-text-tertiary outline-none transition-all duration-200 focus:border-accent/50 focus:shadow-[0_0_0_2px_rgba(0,232,123,0.15)]"
-      />
-      <button className="h-12 px-6 rounded-lg bg-accent text-bg text-sm font-medium whitespace-nowrap hover:brightness-110 transition-all cursor-pointer">
-        Join waitlist
-      </button>
-    </div>
   );
 }
 
@@ -93,7 +80,7 @@ export default function Home() {
           value, leg-by-leg breakdown, and smarter alternatives.
         </p>
         <div id="waitlist" className="relative">
-          <EmailRow />
+          <EmailForm />
         </div>
         <p className="relative text-xs text-text-tertiary mt-4">
           Free to start. No credit card required.
@@ -354,7 +341,7 @@ export default function Home() {
         <h2 className="text-2xl sm:text-4xl font-semibold mb-8">
           The edge is waiting.
         </h2>
-        <EmailRow />
+        <EmailForm />
       </section>
 
       <footer className="w-full max-w-[1080px] mx-auto px-6 pt-8 pb-10 border-t border-border">
