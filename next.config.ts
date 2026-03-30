@@ -1,16 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  async redirects() {
-    return [
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "www.sportslogic.ai" }],
-        destination: "https://sportslogic.ai/:path*",
-        permanent: true,
-      },
-    ];
-  },
+  /* www -> apex redirect is handled by Vercel domain settings */
 };
 
 export default nextConfig;
