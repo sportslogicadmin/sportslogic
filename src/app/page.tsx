@@ -9,6 +9,14 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function Divider() {
+  return (
+    <div className="w-full max-w-[1080px] mx-auto px-6">
+      <div className="h-px bg-border/30" />
+    </div>
+  );
+}
+
 const legs = [
   { name: "Chiefs ML (-145)", grade: "A", ev: "+6.1% EV", color: "bg-accent", glow: "dot-glow-green" },
   { name: "Celtics -4.5 (-110)", grade: "B+", ev: "+2.8% EV", color: "bg-accent", glow: "dot-glow-green" },
@@ -35,6 +43,105 @@ function CheckGreen() {
     <svg className="w-4 h-4 text-accent shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
     </svg>
+  );
+}
+
+/* ── Phone mockup with a bet slip inside ── */
+function PhoneMockup() {
+  return (
+    <div className="w-[200px] sm:w-[220px] mx-auto">
+      {/* Phone frame */}
+      <div className="bg-[#1a1a1a] rounded-[24px] p-2 border border-[#333] shadow-2xl">
+        {/* Notch */}
+        <div className="flex justify-center mb-1">
+          <div className="w-16 h-1.5 bg-[#333] rounded-full" />
+        </div>
+        {/* Screen */}
+        <div className="bg-[#0f1116] rounded-[16px] p-3 text-[10px] space-y-2">
+          <p className="text-text-tertiary text-[8px] uppercase tracking-wider text-center">4-Leg Parlay</p>
+          <div className="space-y-1.5">
+            <div className="flex justify-between bg-[#161923] rounded-md px-2 py-1.5">
+              <span className="text-text-primary text-[9px]">Chiefs ML</span>
+              <span className="text-text-secondary text-[9px]">-145</span>
+            </div>
+            <div className="flex justify-between bg-[#161923] rounded-md px-2 py-1.5">
+              <span className="text-text-primary text-[9px]">Celtics -4.5</span>
+              <span className="text-text-secondary text-[9px]">-110</span>
+            </div>
+            <div className="flex justify-between bg-[#161923] rounded-md px-2 py-1.5">
+              <span className="text-text-primary text-[9px]">Yankees O8.5</span>
+              <span className="text-text-secondary text-[9px]">-105</span>
+            </div>
+            <div className="flex justify-between bg-[#161923] rounded-md px-2 py-1.5">
+              <span className="text-text-primary text-[9px]">Mahomes O275</span>
+              <span className="text-text-secondary text-[9px]">-120</span>
+            </div>
+          </div>
+          <div className="flex justify-between items-center pt-1 border-t border-border">
+            <span className="text-text-tertiary text-[8px]">Payout</span>
+            <span className="text-accent text-[10px] font-bold">+892</span>
+          </div>
+          <div className="bg-accent rounded-md py-1.5 text-center">
+            <span className="text-bg text-[9px] font-bold uppercase">Place bet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Mini grade card for How It Works step 2 ── */
+function MiniGradeCard() {
+  return (
+    <div className="w-[200px] sm:w-[220px] mx-auto bg-surface border border-border rounded-xl p-3 text-[10px]"
+      style={{ boxShadow: "0 0 40px rgba(0, 232, 123, 0.06)" }}>
+      <div className="flex justify-between items-start mb-2">
+        <span className="text-[8px] text-text-secondary uppercase tracking-wider">4-Leg Parlay</span>
+        <span className="text-3xl font-bold text-accent leading-none">B+</span>
+      </div>
+      <div className="h-px bg-border mb-2" />
+      <div className="space-y-1.5">
+        {[
+          { name: "Chiefs ML", grade: "A", dot: "bg-accent" },
+          { name: "Celtics -4.5", grade: "B+", dot: "bg-accent" },
+          { name: "Yankees O8.5", grade: "C", dot: "bg-amber" },
+          { name: "Mahomes O275", grade: "D+", dot: "bg-red" },
+        ].map((l, i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <div className={`w-1.5 h-1.5 rounded-full ${l.dot}`} />
+            <span className="text-text-primary flex-1 text-[9px]">{l.name}</span>
+            <span className="text-text-secondary text-[9px] font-semibold">{l.grade}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Mini suggestion box for How It Works step 3 ── */
+function MiniSuggestion() {
+  return (
+    <div className="w-[200px] sm:w-[220px] mx-auto bg-surface border border-border rounded-xl p-3"
+      style={{ boxShadow: "0 0 40px rgba(0, 232, 123, 0.06)" }}>
+      <div className="bg-bg/60 border border-accent/20 rounded-lg p-3 mb-2">
+        <p className="text-[9px] text-text-secondary leading-relaxed">
+          <span className="text-accent font-semibold">AI suggestion:</span>{" "}
+          Swap leg 4 — Mahomes rush yds O29.5 has +3.8% EV. Raises parlay to A-.
+        </p>
+      </div>
+      <div className="flex items-center gap-2 justify-center">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-[8px] text-accent font-semibold uppercase tracking-wider">SMARTER BET</span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
+      <div className="mt-2 bg-[#161923] rounded-md p-2">
+        <div className="flex justify-between text-[9px]">
+          <span className="text-text-primary">Mahomes rush O29.5</span>
+          <span className="text-accent font-bold">A-</span>
+        </div>
+        <div className="text-[8px] text-accent mt-0.5">+3.8% EV</div>
+      </div>
+    </div>
   );
 }
 
@@ -74,82 +181,137 @@ export default function Home() {
           }}
         />
 
-        <p className="relative text-xs font-semibold tracking-[2px] text-text-tertiary uppercase mb-6 hero-animate-1">
-          A LOGICAL, EDGE-BASED WAY TO SPORTS BET
+        <p className="relative text-xs font-semibold tracking-[2px] text-text-tertiary uppercase mb-6">
+          THE GRADING TOOL BUILT FOR BETTORS
         </p>
-        <h1 className="relative text-[36px] sm:text-[48px] md:text-[60px] font-bold uppercase tracking-[-1px] leading-[1.05] max-w-[720px] mx-auto mb-6 hero-animate-2">
+        <h1 className="relative text-[36px] sm:text-[48px] md:text-[60px] font-bold uppercase tracking-[-1px] leading-[1.05] max-w-[720px] mx-auto mb-6">
           KNOW YOUR{" "}
           <span className="text-accent">EDGE</span> BEFORE YOU BET.
         </h1>
-        <p className="relative text-sm sm:text-[17px] text-text-secondary max-w-[520px] mx-auto leading-[1.7] mb-10 hero-animate-3">
-          We don&apos;t predict winners. We calculate edges. Upload any bet
-          slip and our AI breaks down the math — expected value, line
-          comparison, correlation analysis. No gut feelings. No locks.
-          Just the numbers.
+        <p className="relative text-sm sm:text-[17px] text-text-secondary max-w-[540px] mx-auto leading-[1.7] mb-10">
+          Screenshot any bet slip. Our AI breaks it down in seconds —
+          expected value, leg-by-leg analysis, and smarter alternatives.
+          The grading tool built for bettors who want to win.
         </p>
-        <div id="waitlist" className="relative hero-animate-4">
+        <div id="waitlist" className="relative">
           <EmailForm />
         </div>
-        <p className="relative text-xs text-text-tertiary mt-4 hero-animate-5 uppercase tracking-wide">
+        <p className="relative text-xs text-text-tertiary mt-4 uppercase tracking-wide">
           FREE TO START. NO CREDIT CARD REQUIRED.
+        </p>
+        <p className="relative text-xs text-text-tertiary mt-6">
+          Works with DraftKings &bull; FanDuel &bull; BetMGM &bull; ESPN Bet &bull; Caesars
         </p>
       </section>
 
-      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px bg-border/30" /></div>
+      <Divider />
 
-      {/* ── SECTION 2: HOW IT WORKS ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20 overflow-hidden">
+      {/* ── SECTION 2: HOW IT WORKS (visual product demo) ── */}
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20">
         <SectionLabel>HOW IT WORKS</SectionLabel>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
-          <div className="text-center md:text-left relative">
-            <p className="text-xs font-mono text-text-tertiary mb-3">01</p>
-            <h3 className="text-base font-bold uppercase text-text-primary mb-2 tracking-wide">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-6 items-start">
+          {/* Step 1 — Phone mockup */}
+          <div className="text-center relative">
+            <PhoneMockup />
+            <p className="text-xs font-mono text-text-tertiary mt-5 mb-2">01</p>
+            <h3 className="text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">
               SCREENSHOT YOUR BET
             </h3>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              Open any sportsbook app — DraftKings, FanDuel, BetMGM, whatever
-              you use. Screenshot your bet slip and upload it.
+            <p className="text-sm text-text-secondary leading-relaxed max-w-[260px] mx-auto">
+              Open any sportsbook app. Screenshot your bet slip and upload it.
             </p>
-            <div className="hidden md:block absolute right-0 top-8 translate-x-1/2">
-              <div className="w-8 h-px bg-text-tertiary relative">
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] border-l-text-tertiary" />
-              </div>
+            {/* Arrow */}
+            <div className="hidden md:block absolute right-0 top-[120px] translate-x-1/2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-text-tertiary">
+                <path d="M5 12h14m0 0l-4-4m4 4l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
           </div>
 
-          <div className="text-center md:text-left relative">
-            <p className="text-xs font-mono text-text-tertiary mb-3">02</p>
-            <h3 className="text-base font-bold uppercase text-text-primary mb-2 tracking-wide">
-              GET YOUR GRADE
+          {/* Step 2 — Grade card */}
+          <div className="text-center relative">
+            <MiniGradeCard />
+            <p className="text-xs font-mono text-text-tertiary mt-5 mb-2">02</p>
+            <h3 className="text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">
+              AI GRADES EVERY LEG
             </h3>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              Our AI reads your slip, pulls live odds across books, and grades
-              every leg. You get an overall A+ to F rating with a full EV
-              breakdown.
+            <p className="text-sm text-text-secondary leading-relaxed max-w-[260px] mx-auto">
+              Get an overall grade plus a leg-by-leg EV breakdown in seconds.
             </p>
-            <div className="hidden md:block absolute right-0 top-8 translate-x-1/2">
-              <div className="w-8 h-px bg-text-tertiary relative">
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] border-l-text-tertiary" />
-              </div>
+            {/* Arrow */}
+            <div className="hidden md:block absolute right-0 top-[120px] translate-x-1/2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-text-tertiary">
+                <path d="M5 12h14m0 0l-4-4m4 4l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
           </div>
 
-          <div className="text-center md:text-left">
-            <p className="text-xs font-mono text-text-tertiary mb-3">03</p>
-            <h3 className="text-base font-bold uppercase text-text-primary mb-2 tracking-wide">
-              IMPROVE OR SHARE
+          {/* Step 3 — Suggestion */}
+          <div className="text-center">
+            <MiniSuggestion />
+            <p className="text-xs font-mono text-text-tertiary mt-5 mb-2">03</p>
+            <h3 className="text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">
+              GET SMARTER ALTERNATIVES
             </h3>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              See exactly which legs are dragging your grade down. Get AI
-              suggestions for smarter swaps. Share your grade card on social.
+            <p className="text-sm text-text-secondary leading-relaxed max-w-[260px] mx-auto">
+              See which legs are hurting you and get AI-powered swap suggestions.
             </p>
           </div>
         </div>
       </section>
 
-      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px bg-border/30" /></div>
+      <Divider />
 
-      {/* ── SECTION 3: SAMPLE GRADE CARD ── */}
+      {/* ── SECTION 3: WHY SPORTSLOGIC ── */}
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20">
+        <SectionLabel>WHY SPORTSLOGIC</SectionLabel>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-[900px] mx-auto">
+          <div className="bg-surface border border-border rounded-xl p-6">
+            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+              <span className="text-accent text-sm font-bold">01</span>
+            </div>
+            <h3 className="text-sm font-bold uppercase text-text-primary mb-3 tracking-wide">
+              NOT A PICKS SERVICE
+            </h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              We don&apos;t tell you what to bet. We grade the bets you&apos;re
+              already making. No locks, no guaranteed winners, just math.
+            </p>
+          </div>
+
+          <div className="bg-surface border border-border rounded-xl p-6">
+            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+              <span className="text-accent text-sm font-bold">02</span>
+            </div>
+            <h3 className="text-sm font-bold uppercase text-text-primary mb-3 tracking-wide">
+              TRANSPARENT GRADING
+            </h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Every grade is backed by expected value, line comparison across
+              books, correlation analysis, and situational factors. You see
+              exactly why a bet scored the way it did.
+            </p>
+          </div>
+
+          <div className="bg-surface border border-border rounded-xl p-6">
+            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+              <span className="text-accent text-sm font-bold">03</span>
+            </div>
+            <h3 className="text-sm font-bold uppercase text-text-primary mb-3 tracking-wide">
+              BUILT BY BETTORS
+            </h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              We built this because we were tired of losing money on parlays
+              that looked good but weren&apos;t. SportsLogic started as a tool
+              we made for ourselves.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <Divider />
+
+      {/* ── SECTION 4: SAMPLE GRADE CARD ── */}
       <section className="w-full max-w-[1080px] mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-16 sm:pb-20">
         <SectionLabel>SEE IT IN ACTION</SectionLabel>
 
@@ -224,28 +386,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── SECTION 3.5: THE MATH ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 pt-12 sm:pt-16 pb-16 sm:pb-20">
-        <SectionLabel>THE MATH BEHIND EVERY GRADE</SectionLabel>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-[640px] mx-auto">
-          <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
-            <p className="text-lg font-bold text-accent mb-1 uppercase">6 WEIGHTED FACTORS</p>
-            <p className="text-xs text-text-secondary uppercase tracking-wide">POWER EVERY GRADE</p>
-          </div>
-          <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
-            <p className="text-lg font-bold text-accent mb-1 uppercase">REAL-TIME ODDS</p>
-            <p className="text-xs text-text-secondary uppercase tracking-wide">FROM EVERY MAJOR BOOK</p>
-          </div>
-          <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
-            <p className="text-lg font-bold text-accent mb-1 uppercase">DECISION QUALITY</p>
-            <p className="text-xs text-text-secondary uppercase tracking-wide">NOT OUTCOME PREDICTION</p>
-          </div>
+      <Divider />
+
+      {/* ── SECTION 5: OUR STORY ── */}
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20">
+        <SectionLabel>OUR STORY</SectionLabel>
+        <div className="max-w-[600px] mx-auto text-center">
+          <p className="text-sm sm:text-base text-text-secondary leading-[1.8]">
+            SportsLogic started with a simple question — why are we losing
+            money on bets that feel right? We started building models to
+            calculate the real expected value behind every bet. We stopped
+            guessing and started grading. The results changed everything.
+            Now we&apos;re turning that same system into a tool anyone can use.
+            No experience needed. No math degree required. Just screenshot
+            your bet and we&apos;ll show you what the books don&apos;t want
+            you to see.
+          </p>
         </div>
       </section>
 
-      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px bg-border/30" /></div>
+      <Divider />
 
-      {/* ── SECTION 4: WHAT WE GRADE ── */}
+      {/* ── SECTION 6: WHAT WE GRADE ── */}
       <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20">
         <SectionLabel>WHAT WE GRADE</SectionLabel>
 
@@ -271,14 +433,14 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px bg-border/30" /></div>
+      <Divider />
 
-      {/* ── SECTION 5: PRICING ── */}
+      {/* ── SECTION 7: PRICING ── */}
       <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20">
         <SectionLabel>PRICING</SectionLabel>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[640px] mx-auto">
-          {/* Pro — shown first on mobile */}
+          {/* Pro */}
           <div className="bg-surface border border-accent rounded-xl p-6 flex flex-col order-first sm:order-last">
             <p className="text-xs font-semibold uppercase tracking-[1px] text-accent mb-4">PRO</p>
             <div className="mb-5">
@@ -298,7 +460,7 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Free — shown second on mobile */}
+          {/* Free */}
           <div className="bg-surface border border-border rounded-xl p-6 flex flex-col order-last sm:order-first">
             <p className="text-xs font-semibold uppercase tracking-[1px] text-text-tertiary mb-4">FREE</p>
             <div className="mb-5">
@@ -320,7 +482,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── SECTION 5.5: FAQ ── */}
+      {/* ── SECTION 8: FAQ ── */}
       <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20">
         <SectionLabel>FAQ</SectionLabel>
         <div className="max-w-[640px] mx-auto text-center">
@@ -359,11 +521,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── SECTION 6: FINAL CTA + FOOTER ── */}
+      {/* ── SECTION 9: FINAL CTA + FOOTER ── */}
       <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20 text-center">
-        <h2 className="text-2xl sm:text-4xl font-bold uppercase tracking-[-0.5px] mb-8">
+        <h2 className="text-2xl sm:text-4xl font-bold uppercase tracking-[-0.5px] mb-4">
           THE EDGE IS WAITING.
         </h2>
+        <p className="text-sm text-text-secondary mb-8">
+          Join 100+ bettors on the waitlist
+        </p>
         <EmailForm />
       </section>
 

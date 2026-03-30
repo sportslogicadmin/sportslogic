@@ -36,20 +36,3 @@ body {
   box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
 }
 
-/* Hero fade-in — CSS only, no JS */
-@keyframes hero-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.hero-animate-1 { opacity: 0; animation: hero-fade-in 0.5s ease-out 0.1s both; }
-.hero-animate-2 { opacity: 0; animation: hero-fade-in 0.5s ease-out 0.2s both; }
-.hero-animate-3 { opacity: 0; animation: hero-fade-in 0.5s ease-out 0.3s both; }
-.hero-animate-4 { opacity: 0; animation: hero-fade-in 0.5s ease-out 0.4s both; }
-.hero-animate-5 { opacity: 0; animation: hero-fade-in 0.5s ease-out 0.5s both; }
