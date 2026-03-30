@@ -16,6 +16,15 @@ const BET_TYPES = [
   { key: "moneyline", label: "MONEYLINE" },
   { key: "spread", label: "SPREAD" },
   { key: "total", label: "TOTAL" },
+  { key: "prop", label: "PLAYER PROP" },
+];
+
+const PROP_TYPES = [
+  { key: "points", label: "Points" },
+  { key: "rebounds", label: "Rebounds" },
+  { key: "assists", label: "Assists" },
+  { key: "threes", label: "Threes" },
+  { key: "pra", label: "Pts+Reb+Ast" },
 ];
 
 const BOOKS = [
@@ -80,6 +89,8 @@ export default function GradePage() {
   const [side, setSide] = useState("over");
   const [odds, setOdds] = useState("");
   const [book, setBook] = useState("fanduel");
+  const [playerName, setPlayerName] = useState("");
+  const [propType, setPropType] = useState("points");
   const [loading, setLoading] = useState(false);
   const [loadingGames, setLoadingGames] = useState(false);
   const [result, setResult] = useState<GradeResult | null>(null);
@@ -110,9 +121,11 @@ export default function GradePage() {
   }
   teams.sort();
 
+  const isProp = betType === "prop";
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!selectedTeam || !odds) return;
+    if (isProp ? !playerName || !odds : !selectedTeam || !odds) return;
 
     setLoading(true);
     setError("");
@@ -123,13 +136,15 @@ export default function GradePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          team: selectedTeam,
-          betType,
-          odds: odds.startsWith("+") ? odds : odds,
+          team: selectedTeam || undefined,
+          betType: isProp ? propType : betType,
+          odds: odds,
           sport,
           line: line ? parseFloat(line) : undefined,
-          side: betType === "total" ? side : undefined,
+          side: (isProp || betType === "total") ? side : undefined,
           book,
+          player: isProp ? playerName : undefined,
+          isProp,
         }),
       });
 
@@ -233,8 +248,74 @@ export default function GradePage() {
             </div>
           </div>
 
+          {/* Prop fields */}
+          {isProp && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">PLAYER NAME</label>
+                <input
+                  type="text"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  placeholder="e.g. Embiid"
+                  className="w-full h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm outline-none focus:border-accent/50 transition-colors placeholder:text-text-tertiary"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">PROP TYPE</label>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {PROP_TYPES.map((pt) => (
+                    <button
+                      key={pt.key}
+                      type="button"
+                      onClick={() => setPropType(pt.key)}
+                      className={`py-2 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all cursor-pointer ${
+                        propType === pt.key
+                          ? "bg-accent text-bg"
+                          : "bg-surface border border-border text-text-secondary hover:border-text-tertiary"
+                      }`}
+                    >
+                      {pt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">LINE</label>
+                  <input
+                    type="text"
+                    value={line}
+                    onChange={(e) => setLine(e.target.value)}
+                    placeholder="28.5"
+                    className="w-full h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm outline-none focus:border-accent/50 transition-colors placeholder:text-text-tertiary"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">SIDE</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {["over", "under"].map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setSide(s)}
+                        className={`h-12 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all cursor-pointer ${
+                          side === s
+                            ? "bg-accent text-bg"
+                            : "bg-surface border border-border text-text-secondary"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Line (for spread/total) */}
-          {(betType === "spread" || betType === "total") && (
+          {!isProp && (betType === "spread" || betType === "total") && (
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">
@@ -301,7 +382,7 @@ export default function GradePage() {
           {/* Submit */}
           <button
             type="submit"
-            disabled={loading || !selectedTeam || !odds}
+            disabled={loading || (isProp ? !playerName || !odds : !selectedTeam || !odds)}
             className="w-full h-14 rounded-lg bg-accent text-bg text-sm font-semibold uppercase tracking-[0.5px] hover:brightness-110 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? "GRADING..." : "GRADE THIS BET"}

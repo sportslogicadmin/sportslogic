@@ -42,9 +42,9 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { team, betType, odds, sport, line, side, book } = body;
+  const { team, betType, odds, sport, line, side, book, player, isProp } = body;
 
-  if (!team || !odds || !sport) {
+  if ((!team && !player) || !odds || !sport) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
@@ -55,16 +55,18 @@ export async function POST(request: Request) {
   }
 
   // Build args
-  const args = [
-    enginePath,
-    "--team", team,
-    "--type", betType || "moneyline",
-    "--odds", String(odds),
-    "--sport", sport,
-    "--json",
-  ];
-  if (line) args.push("--line", String(line));
-  if (side) args.push("--side", side);
+  const args = [enginePath, "--sport", sport, "--odds", String(odds), "--json"];
+
+  if (isProp && player) {
+    args.push("--prop", "--player", player, "--type", betType || "points");
+    if (side) args.push("--side", side);
+    if (line) args.push("--line", String(line));
+    if (team) args.push("--team", team);
+  } else {
+    args.push("--team", team || "", "--type", betType || "moneyline");
+    if (line) args.push("--line", String(line));
+    if (side) args.push("--side", side);
+  }
   if (book) args.push("--book", book);
 
   try {
