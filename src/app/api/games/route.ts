@@ -11,6 +11,17 @@ const SPORT_MAP: Record<string, string> = {
   ncaaf: "americanfootball_ncaaf",
 };
 
+type Outcome = { name: string; price: number; point?: number };
+type Market = { key: string; outcomes: Outcome[] };
+type Bookmaker = { key: string; markets: Market[] };
+type RawGame = {
+  id: string;
+  home_team: string;
+  away_team: string;
+  commence_time: string;
+  bookmakers: Bookmaker[];
+};
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const sport = searchParams.get("sport") ?? "nba";
@@ -20,9 +31,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "API key not configured" }, { status: 500 });
   }
 
-  // The Odds API returns all upcoming events with posted odds — includes today + tomorrow + beyond
   const res = await fetch(
-    `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h&oddsFormat=american&bookmakers=fanduel`,
+    `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?` +
+      `apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel,draftkings`,
     { next: { revalidate: 300 } }
   );
 
@@ -30,16 +41,29 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Failed to fetch games" }, { status: 502 });
   }
 
-  const data = await res.json();
+  const data: RawGame[] = await res.json();
 
   const games = data
-    .map((g: { id: string; home_team: string; away_team: string; commence_time: string }) => ({
-      id: g.id,
-      home: g.home_team,
-      away: g.away_team,
-      time: g.commence_time,
-    }))
-    .sort((a: { time: string }, b: { time: string }) => a.time.localeCompare(b.time));
+    .map((g) => {
+      // Extract odds from the first available bookmaker per market
+      const odds: Record<string, Outcome[]> = {};
+      for (const bk of g.bookmakers) {
+        for (const mkt of bk.markets) {
+          if (!odds[mkt.key]) {
+            odds[mkt.key] = mkt.outcomes;
+          }
+        }
+      }
+
+      return {
+        id: g.id,
+        home: g.home_team,
+        away: g.away_team,
+        time: g.commence_time,
+        odds,
+      };
+    })
+    .sort((a, b) => a.time.localeCompare(b.time));
 
   return NextResponse.json({ games });
 }

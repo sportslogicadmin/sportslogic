@@ -37,7 +37,14 @@ const BOOKS = [
   { key: "", label: "Other" },
 ];
 
-type Game = { id: string; home: string; away: string; time: string };
+type Outcome = { name: string; price: number; point?: number };
+type Game = {
+  id: string;
+  home: string;
+  away: string;
+  time: string;
+  odds: Record<string, Outcome[]>;
+};
 
 type GradeResult = {
   grade: string;
@@ -112,11 +119,14 @@ function ToggleGroup({
 export default function GradePage() {
   const [sport, setSport] = useState("nba");
   const [games, setGames] = useState<Game[]>([]);
+  const [selectedGameId, setSelectedGameId] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("");
   const [betType, setBetType] = useState("moneyline");
+  const [selectedBetKey, setSelectedBetKey] = useState("");
   const [line, setLine] = useState("");
   const [side, setSide] = useState("over");
   const [odds, setOdds] = useState("");
+  const [customOdds, setCustomOdds] = useState(false);
   const [book, setBook] = useState("fanduel");
   const [playerName, setPlayerName] = useState("");
   const [propType, setPropType] = useState("points");
@@ -127,13 +137,23 @@ export default function GradePage() {
 
   useEffect(() => {
     setLoadingGames(true);
+    setSelectedGameId("");
     setSelectedTeam("");
+    setSelectedBetKey("");
+    setOdds("");
     setResult(null);
     fetch(`/api/games?sport=${sport}`)
       .then((r) => r.json())
       .then((data) => { setGames(data.games || []); setLoadingGames(false); })
       .catch(() => { setGames([]); setLoadingGames(false); });
   }, [sport]);
+
+  // Reset bet selection when game or bet type changes
+  useEffect(() => {
+    setSelectedBetKey("");
+    setOdds("");
+    setCustomOdds(false);
+  }, [selectedGameId, betType]);
 
   function formatGameTime(iso: string) {
     const d = new Date(iso);
@@ -146,15 +166,60 @@ export default function GradePage() {
     return `${day} ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
   }
 
-  type TeamOption = { team: string; label: string };
-  const teamOptions: TeamOption[] = [];
-  for (const g of games) {
-    const tag = formatGameTime(g.time);
-    teamOptions.push({ team: g.away, label: `${g.away} @ ${g.home} — ${tag}` });
-    teamOptions.push({ team: g.home, label: `${g.home} vs ${g.away} — ${tag}` });
+  const selectedGame = games.find((g) => g.id === selectedGameId);
+  const isProp = betType === "prop";
+
+  // Build betting options for the selected game + bet type
+  type BetOption = { key: string; label: string; team: string; odds: number; line?: number; side?: string };
+  const betOptions: BetOption[] = [];
+
+  if (selectedGame && !isProp) {
+    const marketKey = betType === "moneyline" ? "h2h" : betType === "spread" ? "spreads" : "totals";
+    const outcomes = selectedGame.odds[marketKey] || [];
+
+    for (const o of outcomes) {
+      const price = o.price >= 0 ? `+${o.price}` : `${o.price}`;
+
+      if (betType === "moneyline") {
+        betOptions.push({
+          key: `ml-${o.name}`,
+          label: `${o.name} ML (${price})`,
+          team: o.name,
+          odds: o.price,
+        });
+      } else if (betType === "spread" && o.point !== undefined) {
+        const pt = o.point >= 0 ? `+${o.point}` : `${o.point}`;
+        betOptions.push({
+          key: `sp-${o.name}`,
+          label: `${o.name} ${pt} (${price})`,
+          team: o.name,
+          odds: o.price,
+          line: o.point,
+        });
+      } else if (betType === "total" && o.point !== undefined) {
+        betOptions.push({
+          key: `tot-${o.name.toLowerCase()}`,
+          label: `${o.name} ${o.point} (${price})`,
+          team: o.name,
+          odds: o.price,
+          line: o.point,
+          side: o.name.toLowerCase(),
+        });
+      }
+    }
   }
 
-  const isProp = betType === "prop";
+  // When user picks a bet option, auto-fill everything
+  function handleBetSelect(key: string) {
+    setSelectedBetKey(key);
+    const opt = betOptions.find((o) => o.key === key);
+    if (opt) {
+      setSelectedTeam(opt.team);
+      if (!customOdds) setOdds(String(opt.odds));
+      if (opt.line !== undefined) setLine(String(opt.line));
+      if (opt.side) setSide(opt.side);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -221,9 +286,17 @@ export default function GradePage() {
             </div>
             <div>
               <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">GAME</label>
-              <select value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)} className={selectCls}>
-                <option value="">{loadingGames ? "Loading..." : games.length ? "Select a team" : "No games available"}</option>
-                {teamOptions.map((t, i) => <option key={`${t.team}-${i}`} value={t.team}>{t.label}</option>)}
+              <select
+                value={selectedGameId}
+                onChange={(e) => setSelectedGameId(e.target.value)}
+                className={selectCls}
+              >
+                <option value="">{loadingGames ? "Loading..." : games.length ? "Select a game" : "No games available"}</option>
+                {games.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.away} @ {g.home} — {formatGameTime(g.time)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -234,6 +307,34 @@ export default function GradePage() {
               <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">BET TYPE</label>
               <ToggleGroup options={BET_TYPES} value={betType} onChange={setBetType} cols="grid-cols-4" />
             </div>
+
+            {/* Bet options — pick your side (non-prop) */}
+            {!isProp && selectedGame && betOptions.length > 0 && (
+              <div>
+                <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">PICK YOUR SIDE</label>
+                <div className="space-y-1.5">
+                  {betOptions.map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => handleBetSelect(opt.key)}
+                      className={`w-full h-12 px-4 rounded-lg text-sm font-medium text-left transition-all cursor-pointer flex items-center justify-between ${
+                        selectedBetKey === opt.key
+                          ? "bg-accent/10 border border-accent/40 text-text-primary"
+                          : "bg-bg border border-border text-text-secondary hover:border-text-tertiary"
+                      }`}
+                    >
+                      <span>{opt.label}</span>
+                      {selectedBetKey === opt.key && (
+                        <svg className="w-4 h-4 text-accent shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Prop fields */}
             {isProp && (
@@ -259,36 +360,40 @@ export default function GradePage() {
               </>
             )}
 
-            {/* Spread/total fields */}
-            {!isProp && (betType === "spread" || betType === "total") && (
+            {/* Book + odds override */}
+            <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">
-                    {betType === "spread" ? "SPREAD" : "LINE"}
-                  </label>
-                  <input type="text" value={line} onChange={(e) => setLine(e.target.value)} placeholder={betType === "spread" ? "-3.5" : "218.5"} className={inputCls} />
+                  <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">BOOK</label>
+                  <select value={book} onChange={(e) => setBook(e.target.value)} className={selectCls}>
+                    {BOOKS.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}
+                  </select>
                 </div>
-                {betType === "total" && (
+                {(isProp || customOdds) && (
                   <div>
-                    <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">SIDE</label>
-                    <ToggleGroup options={[{ key: "over", label: "OVER" }, { key: "under", label: "UNDER" }]} value={side} onChange={setSide} cols="grid-cols-2" />
+                    <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">YOUR ODDS</label>
+                    <input type="text" value={odds} onChange={(e) => setOdds(e.target.value)} placeholder="-110" className={inputCls} />
                   </div>
                 )}
               </div>
-            )}
 
-            {/* Odds + Book */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">YOUR ODDS</label>
-                <input type="text" value={odds} onChange={(e) => setOdds(e.target.value)} placeholder="-110" className={inputCls} />
-              </div>
-              <div>
-                <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">BOOK</label>
-                <select value={book} onChange={(e) => setBook(e.target.value)} className={selectCls}>
-                  {BOOKS.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}
-                </select>
-              </div>
+              {/* Custom odds toggle (only for non-prop when a bet is selected) */}
+              {!isProp && selectedBetKey && (
+                <button
+                  type="button"
+                  onClick={() => { setCustomOdds(!customOdds); if (customOdds) { const opt = betOptions.find(o => o.key === selectedBetKey); if (opt) setOdds(String(opt.odds)); } }}
+                  className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <div className={`w-3 h-3 rounded border transition-all ${customOdds ? "bg-accent border-accent" : "border-text-tertiary"}`} />
+                  Different odds on my book
+                </button>
+              )}
+              {!isProp && customOdds && (
+                <div>
+                  <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">YOUR ODDS</label>
+                  <input type="text" value={odds} onChange={(e) => setOdds(e.target.value)} placeholder="-110" className={inputCls} />
+                </div>
+              )}
             </div>
           </div>
 
