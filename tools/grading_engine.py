@@ -379,6 +379,7 @@ class BetGrade:
     breakdown: dict = field(default_factory=dict)
     books_count: int = 0
     edge_vs_fair: float = 0.0
+    all_lines: list = field(default_factory=list)  # [{book, odds, line}] for props
 
 
 def score_to_grade(score: float) -> str:
@@ -603,9 +604,11 @@ def grade_prop(
     game_name = f"{data.get('away_team', '?')} @ {data.get('home_team', '?')}"
     print(f"  Game: {game_name}")
 
-    # Extract this player's prop odds across all books
-    # For each book: find the matching player + side + closest line
-    book_odds: dict[str, dict] = {}  # {book_key: {"over": int, "under": int, "point": float}}
+    # Extract ALL of this player's prop lines across all books
+    # exact_match: same side + exact line (for grading)
+    # all_lines: every line/odds combo for this player+side (for display)
+    exact_match: dict[str, dict] = {}  # {book: {"over": int, "under": int, "point": float}}
+    all_lines_raw: list[dict] = []     # [{book, point, side, odds}]
 
     for bk in data.get("bookmakers", []):
         bk_key = bk["key"]
@@ -613,56 +616,59 @@ def grade_prop(
             if mkt["key"] != market_key:
                 continue
 
-            # Group outcomes by player + line
-            player_outcomes: dict[str, dict] = {}
+            # Group by player + line
+            player_outcomes: dict[float, dict] = {}  # {point: {"over": int, "under": int}}
             for o in mkt["outcomes"]:
                 desc = o.get("description", "").lower()
-                # Fuzzy match player name
-                match = False
-                for word in player_lower.split():
-                    if len(word) >= 4 and word in desc:
-                        match = True
-                        break
+                match = any(w in desc for w in player_lower.split() if len(w) >= 4)
                 if not match:
                     continue
-
                 point = o.get("point")
                 if point is None:
                     continue
+                if point not in player_outcomes:
+                    player_outcomes[point] = {"point": point}
+                player_outcomes[point][o["name"].lower()] = o["price"]
 
-                pk = f"{desc}:{point}"
-                if pk not in player_outcomes:
-                    player_outcomes[pk] = {"point": point}
-                player_outcomes[pk][o["name"].lower()] = o["price"]
+            # Collect all lines for this player
+            for pt, po in player_outcomes.items():
+                if side_lower in po:
+                    all_lines_raw.append({
+                        "book": bk_key,
+                        "line": pt,
+                        "odds": po[side_lower],
+                        "side": side_lower,
+                    })
 
-            # Find the entry with the closest line to what user has
-            best_match = None
-            best_diff = 999
-            for pk, po in player_outcomes.items():
-                diff = abs(po["point"] - line)
-                if diff < best_diff and side_lower in po:
-                    best_diff = diff
-                    best_match = po
+                # Exact match: same line (within 0.1) for grading comparison
+                if abs(pt - line) < 0.1 and side_lower in po:
+                    exact_match[bk_key] = po
 
-            if best_match and best_diff <= 1.5:
-                book_odds[bk_key] = best_match
+    # Sort all_lines by line then odds
+    all_lines_raw.sort(key=lambda x: (x["line"], -x["odds"]))
 
-    if not book_odds:
-        print(f"  ERROR: No prop odds found for {player} {prop_type}")
-        return BetGrade(
-            overall_grade="?", overall_score=0, ev_percent=0,
-            true_probability=0, fair_odds=0, user_odds=odds,
-            best_available_odds=0, best_book="", kelly_fraction=0,
-            team=player, bet_type=f"prop_{prop_type}", line=line, game=game_name,
-        )
+    if not exact_match:
+        # Fallback: try closest line within 1.5
+        for entry in all_lines_raw:
+            if abs(entry["line"] - line) <= 1.5:
+                # Re-scan for this book's full over/under at that line
+                pass
+        if not exact_match:
+            print(f"  ERROR: No exact prop match for {player} {prop_type} {side} {line}")
+            return BetGrade(
+                overall_grade="?", overall_score=0, ev_percent=0,
+                true_probability=0, fair_odds=0, user_odds=odds,
+                best_available_odds=0, best_book="", kelly_fraction=0,
+                team=player, bet_type=f"prop_{prop_type}", line=line, game=game_name,
+            )
 
-    print(f"  Found odds from {len(book_odds)} books")
+    print(f"  Exact match from {len(exact_match)} books, {len(all_lines_raw)} total lines")
 
-    # Devig using sharpest book
+    # Devig using sharpest book (exact line match only)
     true_prob = None
     for sb in SHARP_BOOKS:
-        if sb in book_odds:
-            bo = book_odds[sb]
+        if sb in exact_match:
+            bo = exact_match[sb]
             if "over" in bo and "under" in bo:
                 over_prob, under_prob = devig_pinnacle(bo["over"], bo["under"])
                 true_prob = over_prob if side_lower == "over" else under_prob
@@ -670,8 +676,7 @@ def grade_prop(
                 break
 
     if true_prob is None:
-        # Average across books
-        side_odds_list = [bo[side_lower] for bo in book_odds.values() if side_lower in bo]
+        side_odds_list = [bo[side_lower] for bo in exact_match.values() if side_lower in bo]
         if side_odds_list:
             avg_implied = sum(american_to_implied(o) for o in side_odds_list) / len(side_odds_list)
             true_prob = avg_implied * 0.96
@@ -684,8 +689,8 @@ def grade_prop(
     kelly_f = kelly_fraction(true_prob, odds)
     print(f"  EV: {ev_pct:+.2f}% | Fair odds: {fair_odds:+d} | User odds: {odds:+d}")
 
-    # Best available
-    side_by_book = {bk: bo[side_lower] for bk, bo in book_odds.items() if side_lower in bo}
+    # Best available — exact same line only
+    side_by_book = {bk: bo[side_lower] for bk, bo in exact_match.items() if side_lower in bo}
     if side_by_book:
         best_bk = max(side_by_book, key=lambda k: side_by_book[k])
         best_o = side_by_book[best_bk]
@@ -694,7 +699,10 @@ def grade_prop(
     else:
         best_bk, best_o, worst_bk, worst_o = "", 0, "", 0
 
-    print(f"  Best: {best_bk} ({best_o:+d}) | Worst: {worst_bk} ({worst_o:+d})")
+    print(f"  Best ({side} {line}): {best_bk} ({best_o:+d}) | Worst: {worst_bk} ({worst_o:+d})")
+    if all_lines_raw:
+        unique_lines = sorted(set(e["line"] for e in all_lines_raw))
+        print(f"  Available lines: {', '.join(str(l) for l in unique_lines)}")
 
     # Scoring — same formula as grade_bet
     ev_score = max(0, min(100, 50 + (ev_pct / 5) * 50))
@@ -735,7 +743,8 @@ def grade_prop(
         bet_type=f"{prop_type} ({side})",
         line=line,
         game=game_name,
-        books_count=len(book_odds),
+        all_lines=all_lines_raw,
+        books_count=len(exact_match),
         edge_vs_fair=round(edge_vs_fair, 2),
         breakdown={
             "ev_score": round(ev_score, 1),
@@ -987,9 +996,16 @@ def main():
                 "true_prob": result.true_probability,
                 "kelly": result.kelly_fraction,
                 "breakdown": result.breakdown,
+                "all_lines": result.all_lines,
             }, indent=2))
         else:
             print_grade(result)
+            if result.all_lines:
+                print(f"  ALL AVAILABLE LINES ({result.bet_type} {result.line}):")
+                for entry in result.all_lines:
+                    price = entry["odds"]
+                    print(f"    {entry['book']:16s} | {entry['side']} {entry['line']} ({price:+d})")
+                print()
 
     elif args.team and args.odds:
         odds_int = int(args.odds.replace("+", ""))

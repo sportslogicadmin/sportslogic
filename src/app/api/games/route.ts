@@ -43,9 +43,11 @@ export async function GET(request: Request) {
 
   const data: RawGame[] = await res.json();
 
+  const now = new Date().toISOString();
+
   const games = data
+    .filter((g) => g.commence_time > now) // only games that haven't started
     .map((g) => {
-      // Extract odds from the first available bookmaker per market
       const odds: Record<string, Outcome[]> = {};
       for (const bk of g.bookmakers) {
         for (const mkt of bk.markets) {
