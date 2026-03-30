@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { EmailForm } from "./email-form";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -16,10 +17,10 @@ const legs = [
 ];
 
 const betTypes = ["PARLAYS", "STRAIGHT BETS", "PLAYER PROPS", "SAME-GAME PARLAYS", "TEASERS", "FUTURES"];
-const sports = ["NFL", "NBA", "MLB", "NHL", "NCAAF", "NCAAB", "EPL", "La Liga", "MLS"];
+const sports = ["NFL", "NBA", "MLB", "NHL", "NCAAF", "NCAAB", "EPL", "LA LIGA", "MLS"];
 
-const freeFeatures = ["2 SCANS PER DAY", "BASIC GRADE (A–F)", "LINE COMPARISON", "COMMUNITY ACCESS (READ-ONLY)"];
-const proFeatures = ["UNLIMITED SCANS", "FULL REPORTS + EV BREAKDOWN", "AI SWAP SUGGESTIONS", "BET HISTORY + ROI TRACKING", "ALL COURSES + SIMULATORS", "REAL-TIME ALERTS"];
+const freeFeatures = ["2 scans per day", "Basic grade (A–F)", "Line comparison", "Community access (read-only)"];
+const proFeatures = ["Unlimited scans", "Full reports + EV breakdown", "AI swap suggestions", "Bet history + ROI tracking", "All courses + simulators", "Real-time alerts"];
 
 function Check() {
   return (
@@ -43,11 +44,14 @@ export default function Home() {
       {/* ── NAV ── */}
       <nav className="w-full max-w-[1080px] mx-auto flex items-center justify-between px-6 py-5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-            <span className="text-bg text-[13px] font-semibold font-mono leading-none">
-              SL
-            </span>
-          </div>
+          <Image
+            src="/logo.png"
+            alt="SportsLogic"
+            width={72}
+            height={36}
+            className="h-9 w-auto"
+            priority
+          />
           <span className="text-lg font-bold text-text-primary tracking-tight">
             SportsLogic
           </span>
@@ -62,7 +66,6 @@ export default function Home() {
 
       {/* ── SECTION 1: HERO ── */}
       <section className="w-full max-w-[1080px] mx-auto px-6 pt-24 sm:pt-32 pb-20 sm:pb-24 text-center relative">
-        {/* Hero glow */}
         <div
           className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] pointer-events-none"
           style={{
@@ -72,17 +75,17 @@ export default function Home() {
         />
 
         <p className="relative text-xs font-semibold tracking-[2px] text-text-tertiary uppercase mb-6 hero-animate-1">
-          A logical, edge-based way to sports bet
+          A LOGICAL, EDGE-BASED WAY TO SPORTS BET
         </p>
         <h1 className="relative text-[36px] sm:text-[48px] md:text-[60px] font-bold uppercase tracking-[-1px] leading-[1.05] max-w-[720px] mx-auto mb-6 hero-animate-2">
           KNOW YOUR{" "}
           <span className="text-accent">EDGE</span> BEFORE YOU BET.
         </h1>
-        <p className="relative text-sm sm:text-[17px] text-text-secondary max-w-[520px] mx-auto leading-[1.7] mb-10 hero-animate-3 uppercase">
-          WE DON&apos;T PREDICT WINNERS. WE CALCULATE EDGES. UPLOAD ANY BET
-          SLIP AND OUR AI BREAKS DOWN THE MATH — EXPECTED VALUE, LINE
-          COMPARISON, CORRELATION ANALYSIS. NO GUT FEELINGS. NO LOCKS.
-          JUST THE NUMBERS.
+        <p className="relative text-sm sm:text-[17px] text-text-secondary max-w-[520px] mx-auto leading-[1.7] mb-10 hero-animate-3">
+          We don&apos;t predict winners. We calculate edges. Upload any bet
+          slip and our AI breaks down the math — expected value, line
+          comparison, correlation analysis. No gut feelings. No locks.
+          Just the numbers.
         </p>
         <div id="waitlist" className="relative hero-animate-4">
           <EmailForm />
@@ -103,9 +106,9 @@ export default function Home() {
             <h3 className="text-base font-bold uppercase text-text-primary mb-2 tracking-wide">
               SCREENSHOT YOUR BET
             </h3>
-            <p className="text-sm text-text-secondary leading-relaxed uppercase">
-              OPEN ANY SPORTSBOOK APP — DRAFTKINGS, FANDUEL, BETMGM, WHATEVER
-              YOU USE. SCREENSHOT YOUR BET SLIP AND UPLOAD IT.
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Open any sportsbook app — DraftKings, FanDuel, BetMGM, whatever
+              you use. Screenshot your bet slip and upload it.
             </p>
             <div className="hidden md:block absolute right-0 top-8 translate-x-1/2">
               <div className="w-8 h-px bg-text-tertiary relative">
@@ -119,10 +122,10 @@ export default function Home() {
             <h3 className="text-base font-bold uppercase text-text-primary mb-2 tracking-wide">
               GET YOUR GRADE
             </h3>
-            <p className="text-sm text-text-secondary leading-relaxed uppercase">
-              OUR AI READS YOUR SLIP, PULLS LIVE ODDS ACROSS BOOKS, AND GRADES
-              EVERY LEG. YOU GET AN OVERALL A+ TO F RATING WITH A FULL EV
-              BREAKDOWN.
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Our AI reads your slip, pulls live odds across books, and grades
+              every leg. You get an overall A+ to F rating with a full EV
+              breakdown.
             </p>
             <div className="hidden md:block absolute right-0 top-8 translate-x-1/2">
               <div className="w-8 h-px bg-text-tertiary relative">
@@ -136,9 +139,9 @@ export default function Home() {
             <h3 className="text-base font-bold uppercase text-text-primary mb-2 tracking-wide">
               IMPROVE OR SHARE
             </h3>
-            <p className="text-sm text-text-secondary leading-relaxed uppercase">
-              SEE EXACTLY WHICH LEGS ARE DRAGGING YOUR GRADE DOWN. GET AI
-              SUGGESTIONS FOR SMARTER SWAPS. SHARE YOUR GRADE CARD ON SOCIAL.
+            <p className="text-sm text-text-secondary leading-relaxed">
+              See exactly which legs are dragging your grade down. Get AI
+              suggestions for smarter swaps. Share your grade card on social.
             </p>
           </div>
         </div>
@@ -154,7 +157,6 @@ export default function Home() {
           className="max-w-[520px] mx-auto bg-surface border border-border rounded-xl overflow-hidden"
           style={{ boxShadow: "0 0 80px rgba(0, 232, 123, 0.08)" }}
         >
-          {/* Green gradient header */}
           <div
             className="p-5 sm:p-6 pb-0"
             style={{ background: "linear-gradient(180deg, rgba(0, 232, 123, 0.05) 0%, transparent 100%)" }}
@@ -164,7 +166,7 @@ export default function Home() {
                 <span className="text-xs font-semibold uppercase tracking-[1px] text-text-secondary">
                   4-LEG PARLAY
                 </span>
-                <p className="text-xs text-accent mt-1">
+                <p className="text-xs text-accent mt-1 uppercase tracking-wide">
                   OVERALL EXPECTED VALUE: +3.2%
                 </p>
               </div>
@@ -201,11 +203,11 @@ export default function Home() {
             <div className="h-px bg-border mb-5" />
 
             <div className="bg-bg/60 border border-border rounded-lg p-4 mb-4">
-              <p className="text-xs text-text-secondary leading-relaxed uppercase">
-                <span className="text-accent font-semibold">AI SUGGESTION:</span>{" "}
-                SWAP LEG 4 — MAHOMES RUSHING YARDS O29.5 HAS +3.8% EV AND
-                CORRELATES POSITIVELY WITH CHIEFS ML. THIS WOULD RAISE YOUR
-                PARLAY TO AN A-.
+              <p className="text-xs text-text-secondary leading-relaxed">
+                <span className="text-accent font-semibold">AI suggestion:</span>{" "}
+                Swap leg 4 — Mahomes rushing yards O29.5 has +3.8% EV and
+                correlates positively with Chiefs ML. This would raise your
+                parlay to an A-.
               </p>
             </div>
 
@@ -227,15 +229,15 @@ export default function Home() {
         <SectionLabel>THE MATH BEHIND EVERY GRADE</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-[640px] mx-auto">
           <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
-            <p className="text-lg font-bold uppercase text-accent mb-1">6 WEIGHTED FACTORS</p>
+            <p className="text-lg font-bold text-accent mb-1 uppercase">6 WEIGHTED FACTORS</p>
             <p className="text-xs text-text-secondary uppercase tracking-wide">POWER EVERY GRADE</p>
           </div>
           <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
-            <p className="text-lg font-bold uppercase text-accent mb-1">REAL-TIME ODDS</p>
+            <p className="text-lg font-bold text-accent mb-1 uppercase">REAL-TIME ODDS</p>
             <p className="text-xs text-text-secondary uppercase tracking-wide">FROM EVERY MAJOR BOOK</p>
           </div>
           <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
-            <p className="text-lg font-bold uppercase text-accent mb-1">DECISION QUALITY</p>
+            <p className="text-lg font-bold text-accent mb-1 uppercase">DECISION QUALITY</p>
             <p className="text-xs text-text-secondary uppercase tracking-wide">NOT OUTCOME PREDICTION</p>
           </div>
         </div>
@@ -281,7 +283,7 @@ export default function Home() {
             <p className="text-xs font-semibold uppercase tracking-[1px] text-accent mb-4">PRO</p>
             <div className="mb-5">
               <span className="text-3xl font-bold text-text-primary">$15</span>
-              <span className="text-sm text-text-secondary ml-1.5 uppercase">/MONTH</span>
+              <span className="text-sm text-text-secondary ml-1.5">/month</span>
             </div>
             <ul className="space-y-3 flex-1">
               {proFeatures.map((f) => (
@@ -301,7 +303,7 @@ export default function Home() {
             <p className="text-xs font-semibold uppercase tracking-[1px] text-text-tertiary mb-4">FREE</p>
             <div className="mb-5">
               <span className="text-3xl font-bold text-text-primary">$0</span>
-              <span className="text-sm text-text-secondary ml-1.5 uppercase">FOREVER</span>
+              <span className="text-sm text-text-secondary ml-1.5">forever</span>
             </div>
             <ul className="space-y-3 flex-1">
               {freeFeatures.map((f) => (
@@ -326,10 +328,10 @@ export default function Home() {
             <h3 className="text-base font-bold uppercase text-text-primary mb-2">
               IS THIS LEGAL?
             </h3>
-            <p className="text-sm text-text-secondary leading-[1.7] uppercase">
-              YES. SPORTSLOGIC PROVIDES ANALYSIS AND INFORMATION TOOLS ONLY — WE
-              NEVER PLACE BETS ON YOUR BEHALF. WE&apos;RE A RESEARCH TOOL, LIKE
-              A CALCULATOR FOR YOUR BETS.
+            <p className="text-sm text-text-secondary leading-[1.7]">
+              Yes. SportsLogic provides analysis and information tools only — we
+              never place bets on your behalf. We&apos;re a research tool, like
+              a calculator for your bets.
             </p>
           </div>
           <div className="h-px bg-border/30 mb-6" />
@@ -337,11 +339,11 @@ export default function Home() {
             <h3 className="text-base font-bold uppercase text-text-primary mb-2">
               HOW ACCURATE IS THE GRADING?
             </h3>
-            <p className="text-sm text-text-secondary leading-[1.7] uppercase">
-              OUR GRADES MEASURE DECISION QUALITY, NOT OUTCOME PREDICTION. WE
-              COMPARE YOUR BET AGAINST SHARP MARKET CONSENSUS AND MATHEMATICAL
-              EXPECTED VALUE. AN A+ BET CAN STILL LOSE — BUT OVER TIME,
-              HIGHER-GRADED BETS OUTPERFORM LOWER-GRADED ONES.
+            <p className="text-sm text-text-secondary leading-[1.7]">
+              Our grades measure decision quality, not outcome prediction. We
+              compare your bet against sharp market consensus and mathematical
+              expected value. An A+ bet can still lose — but over time,
+              higher-graded bets outperform lower-graded ones.
             </p>
           </div>
           <div className="h-px bg-border/30 mb-6" />
@@ -349,9 +351,9 @@ export default function Home() {
             <h3 className="text-base font-bold uppercase text-text-primary mb-2">
               WHAT SPORTSBOOKS DO YOU SUPPORT?
             </h3>
-            <p className="text-sm text-text-secondary leading-[1.7] uppercase">
-              WE CAN READ SCREENSHOTS FROM DRAFTKINGS, FANDUEL, BETMGM, CAESARS,
-              ESPN BET, AND MORE. IF YOU CAN SCREENSHOT IT, WE CAN GRADE IT.
+            <p className="text-sm text-text-secondary leading-[1.7]">
+              We can read screenshots from DraftKings, FanDuel, BetMGM, Caesars,
+              ESPN Bet, and more. If you can screenshot it, we can grade it.
             </p>
           </div>
         </div>
@@ -366,22 +368,22 @@ export default function Home() {
       </section>
 
       <footer className="w-full max-w-[1080px] mx-auto px-6 pt-8 pb-10 border-t border-border">
-        <p className="text-[12px] text-text-tertiary text-center sm:text-left mb-6 leading-relaxed max-w-[640px] uppercase tracking-wide">
-          SPORTSLOGIC IS NOT A SPORTSBOOK. WE PROVIDE ANALYSIS TOOLS FOR
-          INFORMATIONAL PURPOSES ONLY. 21+. GAMBLING PROBLEM? CALL
+        <p className="text-[12px] text-text-tertiary text-center sm:text-left mb-6 leading-relaxed max-w-[640px]">
+          SportsLogic is not a sportsbook. We provide analysis tools for
+          informational purposes only. 21+. Gambling problem? Call
           1-800-GAMBLER.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-text-tertiary uppercase">&copy; 2026 SPORTSLOGIC</p>
+          <p className="text-xs text-text-tertiary">&copy; 2026 SportsLogic</p>
           <div className="flex items-center gap-6">
-            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors uppercase">
-              TERMS
+            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors">
+              Terms
             </a>
-            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors uppercase">
-              PRIVACY
+            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors">
+              Privacy
             </a>
-            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors uppercase">
-              CONTACT
+            <a href="#" className="text-xs text-text-tertiary hover:text-text-secondary transition-colors">
+              Contact
             </a>
           </div>
         </div>
