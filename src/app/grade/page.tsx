@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const SPORTS = [
   { key: "nba", label: "NBA" },
@@ -13,18 +14,18 @@ const SPORTS = [
 ];
 
 const BET_TYPES = [
-  { key: "moneyline", label: "MONEYLINE" },
+  { key: "moneyline", label: "ML" },
   { key: "spread", label: "SPREAD" },
   { key: "total", label: "TOTAL" },
-  { key: "prop", label: "PLAYER PROP" },
+  { key: "prop", label: "PROP" },
 ];
 
 const PROP_TYPES = [
-  { key: "points", label: "Points" },
-  { key: "rebounds", label: "Rebounds" },
-  { key: "assists", label: "Assists" },
-  { key: "threes", label: "Threes" },
-  { key: "pra", label: "Pts+Reb+Ast" },
+  { key: "points", label: "PTS" },
+  { key: "rebounds", label: "REB" },
+  { key: "assists", label: "AST" },
+  { key: "threes", label: "3PT" },
+  { key: "pra", label: "PRA" },
 ];
 
 const BOOKS = [
@@ -53,17 +54,10 @@ type GradeResult = {
 };
 
 function gradeColor(grade: string): string {
-  const first = grade[0];
-  if (first === "A" || first === "B") return "text-accent";
-  if (first === "C") return "text-amber";
+  const f = grade[0];
+  if (f === "A" || f === "B") return "text-accent";
+  if (f === "C") return "text-amber";
   return "text-red";
-}
-
-function gradeBg(grade: string): string {
-  const first = grade[0];
-  if (first === "A" || first === "B") return "bg-accent/10 border-accent/30";
-  if (first === "C") return "bg-amber/10 border-amber/30";
-  return "bg-red/10 border-red/30";
 }
 
 function ScoreBar({ label, value }: { label: string; value: number }) {
@@ -71,11 +65,46 @@ function ScoreBar({ label, value }: { label: string; value: number }) {
   const color = pct >= 60 ? "bg-accent" : pct >= 40 ? "bg-amber" : "bg-red";
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-text-secondary w-28 shrink-0 uppercase">{label}</span>
-      <div className="flex-1 h-2 bg-border rounded-full overflow-hidden">
+      <span className="text-[11px] text-text-tertiary w-24 shrink-0 uppercase tracking-wide">{label}</span>
+      <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs text-text-secondary w-8 text-right">{Math.round(pct)}</span>
+      <span className="text-[11px] text-text-tertiary w-6 text-right">{Math.round(pct)}</span>
+    </div>
+  );
+}
+
+// Shared input class
+const inputCls = "w-full h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm outline-none focus:border-accent/50 focus:shadow-[0_0_0_2px_rgba(0,232,123,0.1)] transition-all placeholder:text-text-tertiary";
+const selectCls = `${inputCls} appearance-none cursor-pointer`;
+
+function ToggleGroup({
+  options,
+  value,
+  onChange,
+  cols = "grid-cols-3",
+}: {
+  options: { key: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+  cols?: string;
+}) {
+  return (
+    <div className={`grid ${cols} gap-1.5`}>
+      {options.map((o) => (
+        <button
+          key={o.key}
+          type="button"
+          onClick={() => onChange(o.key)}
+          className={`h-10 rounded-lg text-[11px] font-semibold uppercase tracking-wide transition-all cursor-pointer ${
+            value === o.key
+              ? "bg-accent text-bg"
+              : "bg-surface border border-border text-text-secondary hover:border-text-tertiary"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -96,34 +125,25 @@ export default function GradePage() {
   const [result, setResult] = useState<GradeResult | null>(null);
   const [error, setError] = useState("");
 
-  // Fetch games when sport changes
   useEffect(() => {
     setLoadingGames(true);
     setSelectedTeam("");
     setResult(null);
     fetch(`/api/games?sport=${sport}`)
       .then((r) => r.json())
-      .then((data) => {
-        setGames(data.games || []);
-        setLoadingGames(false);
-      })
-      .catch(() => {
-        setGames([]);
-        setLoadingGames(false);
-      });
+      .then((data) => { setGames(data.games || []); setLoadingGames(false); })
+      .catch(() => { setGames([]); setLoadingGames(false); });
   }, [sport]);
 
-  // Build team options from games — show matchup + date/time
   function formatGameTime(iso: string) {
     const d = new Date(iso);
     const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tom = new Date(now);
+    tom.setDate(tom.getDate() + 1);
     const isToday = d.toDateString() === now.toDateString();
-    const isTomorrow = d.toDateString() === tomorrow.toDateString();
-    const day = isToday ? "Today" : isTomorrow ? "Tomorrow" : d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-    const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-    return `${day} ${time}`;
+    const isTom = d.toDateString() === tom.toDateString();
+    const day = isToday ? "Today" : isTom ? "Tomorrow" : d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    return `${day} ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
   }
 
   type TeamOption = { team: string; label: string };
@@ -139,11 +159,9 @@ export default function GradePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (isProp ? !playerName || !odds : !selectedTeam || !odds) return;
-
     setLoading(true);
     setError("");
     setResult(null);
-
     try {
       const res = await fetch("/api/grade", {
         method: "POST",
@@ -151,7 +169,7 @@ export default function GradePage() {
         body: JSON.stringify({
           team: selectedTeam || undefined,
           betType: isProp ? propType : betType,
-          odds: odds,
+          odds,
           sport,
           line: line ? parseFloat(line) : undefined,
           side: (isProp || betType === "total") ? side : undefined,
@@ -160,13 +178,9 @@ export default function GradePage() {
           isProp,
         }),
       });
-
       const data = await res.json();
-      if (res.ok && !data.error) {
-        setResult(data);
-      } else {
-        setError(data.error || "Something went wrong");
-      }
+      if (res.ok && !data.error) setResult(data);
+      else setError(data.error || "Something went wrong");
     } catch {
       setError("Failed to connect to grading engine");
     } finally {
@@ -176,219 +190,105 @@ export default function GradePage() {
 
   return (
     <div className="w-full min-h-screen">
-      {/* Nav */}
-      <nav className="w-full max-w-[1080px] mx-auto flex items-center justify-between px-6 py-5">
-        <Link href="/" className="flex items-center gap-2.5">
-          <span className="text-lg font-bold text-text-primary tracking-tight">
-            SportsLogic
-          </span>
+      {/* ── NAV ── */}
+      <nav className="w-full max-w-[640px] mx-auto flex items-center justify-between px-6 py-5">
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/logo.png" alt="SportsLogic" width={56} height={28} className="h-7 w-auto" />
+          <span className="text-base font-bold text-text-primary tracking-tight">SportsLogic</span>
         </Link>
-        <Link
-          href="/"
-          className="text-xs text-text-tertiary hover:text-text-secondary transition-colors uppercase tracking-wide"
-        >
-          BACK TO HOME
+        <Link href="/" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors uppercase tracking-wide">
+          HOME
         </Link>
       </nav>
 
-      <div className="w-full max-w-[560px] mx-auto px-6 py-12">
-        {/* Header */}
-        <h1 className="text-2xl sm:text-3xl font-bold uppercase tracking-[-0.5px] text-center mb-2">
-          GRADE YOUR BET
-        </h1>
-        <p className="text-sm text-text-secondary text-center mb-10">
-          See your edge before you place it.
-        </p>
+      <div className="w-full max-w-[520px] mx-auto px-5 pb-16">
+        {/* ── HEADER ── */}
+        <div className="text-center pt-8 pb-10">
+          <h1 className="text-[28px] sm:text-[36px] font-bold uppercase tracking-[-0.5px] leading-tight">
+            GRADE YOUR <span className="text-accent">BET</span>
+          </h1>
+          <p className="text-sm text-text-secondary mt-2">Know your edge before you place it.</p>
+        </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Sport */}
-          <div>
-            <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">SPORT</label>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-              {SPORTS.map((s) => (
-                <button
-                  key={s.key}
-                  type="button"
-                  onClick={() => setSport(s.key)}
-                  className={`py-2 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all cursor-pointer ${
-                    sport === s.key
-                      ? "bg-accent text-bg"
-                      : "bg-surface border border-border text-text-secondary hover:border-text-tertiary"
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* ── FORM ── */}
+        <form onSubmit={handleSubmit} className="space-y-5">
 
-          {/* Team */}
-          <div>
-            <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">TEAM</label>
-            <select
-              value={selectedTeam}
-              onChange={(e) => setSelectedTeam(e.target.value)}
-              className="w-full h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm outline-none focus:border-accent/50 transition-colors appearance-none cursor-pointer"
-            >
-              <option value="">
-                {loadingGames ? "Loading games..." : games.length ? "Select a team" : "No games available"}
-              </option>
-              {teamOptions.map((t, i) => (
-                <option key={`${t.team}-${i}`} value={t.team}>{t.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Bet Type */}
-          <div>
-            <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">BET TYPE</label>
-            <div className="grid grid-cols-3 gap-2">
-              {BET_TYPES.map((bt) => (
-                <button
-                  key={bt.key}
-                  type="button"
-                  onClick={() => setBetType(bt.key)}
-                  className={`py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all cursor-pointer ${
-                    betType === bt.key
-                      ? "bg-accent text-bg"
-                      : "bg-surface border border-border text-text-secondary hover:border-text-tertiary"
-                  }`}
-                >
-                  {bt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Prop fields */}
-          {isProp && (
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">PLAYER NAME</label>
-                <input
-                  type="text"
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  placeholder="e.g. Embiid"
-                  className="w-full h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm outline-none focus:border-accent/50 transition-colors placeholder:text-text-tertiary"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">PROP TYPE</label>
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                  {PROP_TYPES.map((pt) => (
-                    <button
-                      key={pt.key}
-                      type="button"
-                      onClick={() => setPropType(pt.key)}
-                      className={`py-2 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all cursor-pointer ${
-                        propType === pt.key
-                          ? "bg-accent text-bg"
-                          : "bg-surface border border-border text-text-secondary hover:border-text-tertiary"
-                      }`}
-                    >
-                      {pt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">LINE</label>
-                  <input
-                    type="text"
-                    value={line}
-                    onChange={(e) => setLine(e.target.value)}
-                    placeholder="28.5"
-                    className="w-full h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm outline-none focus:border-accent/50 transition-colors placeholder:text-text-tertiary"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">SIDE</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {["over", "under"].map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setSide(s)}
-                        className={`h-12 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all cursor-pointer ${
-                          side === s
-                            ? "bg-accent text-bg"
-                            : "bg-surface border border-border text-text-secondary"
-                        }`}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Line (for spread/total) */}
-          {!isProp && (betType === "spread" || betType === "total") && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">
-                  {betType === "spread" ? "SPREAD" : "TOTAL LINE"}
-                </label>
-                <input
-                  type="text"
-                  value={line}
-                  onChange={(e) => setLine(e.target.value)}
-                  placeholder={betType === "spread" ? "-3.5" : "218.5"}
-                  className="w-full h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm outline-none focus:border-accent/50 transition-colors placeholder:text-text-tertiary"
-                />
-              </div>
-              {betType === "total" && (
-                <div>
-                  <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">SIDE</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {["over", "under"].map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setSide(s)}
-                        className={`h-12 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all cursor-pointer ${
-                          side === s
-                            ? "bg-accent text-bg"
-                            : "bg-surface border border-border text-text-secondary"
-                        }`}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Odds + Book */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Sport + Game group */}
+          <div className="bg-surface border border-border rounded-xl p-4 space-y-4">
             <div>
-              <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">YOUR ODDS</label>
-              <input
-                type="text"
-                value={odds}
-                onChange={(e) => setOdds(e.target.value)}
-                placeholder="-110"
-                className="w-full h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm outline-none focus:border-accent/50 transition-colors placeholder:text-text-tertiary"
-              />
+              <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">SPORT</label>
+              <ToggleGroup options={SPORTS} value={sport} onChange={setSport} cols="grid-cols-3 sm:grid-cols-6" />
             </div>
             <div>
-              <label className="text-xs text-text-tertiary uppercase tracking-wide block mb-2">SPORTSBOOK</label>
-              <select
-                value={book}
-                onChange={(e) => setBook(e.target.value)}
-                className="w-full h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm outline-none focus:border-accent/50 transition-colors appearance-none cursor-pointer"
-              >
-                {BOOKS.map((b) => (
-                  <option key={b.key} value={b.key}>{b.label}</option>
-                ))}
+              <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">GAME</label>
+              <select value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)} className={selectCls}>
+                <option value="">{loadingGames ? "Loading..." : games.length ? "Select a team" : "No games available"}</option>
+                {teamOptions.map((t, i) => <option key={`${t.team}-${i}`} value={t.team}>{t.label}</option>)}
               </select>
+            </div>
+          </div>
+
+          {/* Bet details group */}
+          <div className="bg-surface border border-border rounded-xl p-4 space-y-4">
+            <div>
+              <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">BET TYPE</label>
+              <ToggleGroup options={BET_TYPES} value={betType} onChange={setBetType} cols="grid-cols-4" />
+            </div>
+
+            {/* Prop fields */}
+            {isProp && (
+              <>
+                <div>
+                  <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">PLAYER</label>
+                  <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="e.g. Embiid" className={inputCls} />
+                </div>
+                <div>
+                  <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">PROP TYPE</label>
+                  <ToggleGroup options={PROP_TYPES} value={propType} onChange={setPropType} cols="grid-cols-5" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">LINE</label>
+                    <input type="text" value={line} onChange={(e) => setLine(e.target.value)} placeholder="28.5" className={inputCls} />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">SIDE</label>
+                    <ToggleGroup options={[{ key: "over", label: "OVER" }, { key: "under", label: "UNDER" }]} value={side} onChange={setSide} cols="grid-cols-2" />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Spread/total fields */}
+            {!isProp && (betType === "spread" || betType === "total") && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">
+                    {betType === "spread" ? "SPREAD" : "LINE"}
+                  </label>
+                  <input type="text" value={line} onChange={(e) => setLine(e.target.value)} placeholder={betType === "spread" ? "-3.5" : "218.5"} className={inputCls} />
+                </div>
+                {betType === "total" && (
+                  <div>
+                    <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">SIDE</label>
+                    <ToggleGroup options={[{ key: "over", label: "OVER" }, { key: "under", label: "UNDER" }]} value={side} onChange={setSide} cols="grid-cols-2" />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Odds + Book */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">YOUR ODDS</label>
+                <input type="text" value={odds} onChange={(e) => setOdds(e.target.value)} placeholder="-110" className={inputCls} />
+              </div>
+              <div>
+                <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">BOOK</label>
+                <select value={book} onChange={(e) => setBook(e.target.value)} className={selectCls}>
+                  {BOOKS.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -396,100 +296,121 @@ export default function GradePage() {
           <button
             type="submit"
             disabled={loading || (isProp ? !playerName || !odds : !selectedTeam || !odds)}
-            className="w-full h-14 rounded-lg bg-accent text-bg text-sm font-semibold uppercase tracking-[0.5px] hover:brightness-110 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full h-14 rounded-xl bg-accent text-bg text-sm font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
           >
             {loading ? "GRADING..." : "GRADE THIS BET"}
           </button>
         </form>
 
-        {/* Error */}
+        {/* ── ERROR ── */}
         {error && (
-          <div className="mt-6 p-4 rounded-lg bg-red/10 border border-red/30">
-            <p className="text-sm text-red text-center">{error}</p>
+          <div className="mt-6 p-4 rounded-xl bg-red/10 border border-red/30 text-center">
+            <p className="text-sm text-red">{error}</p>
           </div>
         )}
 
-        {/* Result */}
+        {/* ── RESULT ── */}
         {result && (
           <div className="mt-10">
-            {/* Grade hero */}
-            <div className={`rounded-xl border p-6 text-center mb-6 ${gradeBg(result.grade)}`}>
-              <p className="text-xs text-text-tertiary uppercase tracking-wide mb-2">YOUR GRADE</p>
-              <p className={`text-[80px] font-bold leading-none ${gradeColor(result.grade)}`}>
-                {result.grade}
-              </p>
-              <p className="text-sm text-text-secondary mt-2">{result.score}/100</p>
-            </div>
+            {/* Grade card with glow */}
+            <div
+              className="bg-surface border border-border rounded-xl overflow-hidden mb-6"
+              style={{ boxShadow: "0 0 80px rgba(0, 232, 123, 0.08)" }}
+            >
+              {/* Grade header with gradient */}
+              <div
+                className="px-5 pt-6 pb-4 text-center"
+                style={{ background: "linear-gradient(180deg, rgba(0, 232, 123, 0.05) 0%, transparent 100%)" }}
+              >
+                <p className="text-[11px] text-text-tertiary uppercase tracking-[2px] mb-3">YOUR GRADE</p>
+                <p className={`text-[72px] font-bold leading-none ${gradeColor(result.grade)}`}>
+                  {result.grade}
+                </p>
+                <p className="text-sm text-text-secondary mt-2">{result.score.toFixed(1)} / 100</p>
+              </div>
 
-            {/* Key stats */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-surface border border-border rounded-xl p-4 text-center">
-                <p className="text-xs text-text-tertiary uppercase tracking-wide mb-1">EXPECTED VALUE</p>
-                <p className={`text-xl font-bold ${result.ev >= 0 ? "text-accent" : "text-red"}`}>
-                  {result.ev >= 0 ? "+" : ""}{result.ev.toFixed(2)}%
-                </p>
-              </div>
-              <div className="bg-surface border border-border rounded-xl p-4 text-center">
-                <p className="text-xs text-text-tertiary uppercase tracking-wide mb-1">TRUE PROBABILITY</p>
-                <p className="text-xl font-bold text-text-primary">
-                  {(result.true_prob * 100).toFixed(1)}%
-                </p>
-              </div>
-              <div className="bg-surface border border-border rounded-xl p-4 text-center">
-                <p className="text-xs text-text-tertiary uppercase tracking-wide mb-1">FAIR ODDS</p>
-                <p className="text-xl font-bold text-text-primary">
-                  {result.fair_odds >= 0 ? "+" : ""}{result.fair_odds}
-                </p>
-              </div>
-              <div className="bg-surface border border-border rounded-xl p-4 text-center">
-                <p className="text-xs text-text-tertiary uppercase tracking-wide mb-1">BEST AVAILABLE</p>
-                <p className="text-xl font-bold text-accent">
-                  {result.best_odds >= 0 ? "+" : ""}{result.best_odds}
-                </p>
-                <p className="text-[10px] text-text-tertiary mt-0.5 uppercase">{result.best_book}</p>
-              </div>
-            </div>
+              <div className="px-5 pb-5">
+                <div className="h-px bg-border mb-5" />
 
-            {/* Kelly */}
-            <div className="bg-surface border border-border rounded-xl p-4 mb-6">
-              <p className="text-xs text-text-tertiary uppercase tracking-wide mb-1">KELLY CRITERION</p>
-              <p className="text-sm text-text-secondary">
-                {result.kelly > 0 ? (
-                  <>Suggested stake: <span className="text-accent font-semibold">{(result.kelly * 100).toFixed(2)}%</span> of bankroll</>
-                ) : (
-                  <span className="text-red">No edge — Kelly says pass on this bet.</span>
-                )}
-              </p>
-            </div>
-
-            {/* Breakdown */}
-            {result.breakdown && (
-              <div className="bg-surface border border-border rounded-xl p-5 mb-6">
-                <p className="text-xs text-text-tertiary uppercase tracking-wide mb-4">SCORE BREAKDOWN</p>
-                <div className="space-y-3">
-                  <ScoreBar label="EV (50%)" value={result.breakdown.ev_score} />
-                  <ScoreBar label="Line Value (20%)" value={result.breakdown.line_value_score} />
-                  <ScoreBar label="Market (15%)" value={result.breakdown.market_sharpness_score} />
-                  <ScoreBar label="Situational (15%)" value={result.breakdown.situational_score} />
+                {/* Stats grid */}
+                <div className="grid grid-cols-2 gap-3 mb-5">
+                  <div className="text-center">
+                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">EXPECTED VALUE</p>
+                    <p className={`text-lg font-bold ${result.ev >= 0 ? "text-accent" : "text-red"}`}>
+                      {result.ev >= 0 ? "+" : ""}{result.ev.toFixed(2)}%
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">TRUE PROB</p>
+                    <p className="text-lg font-bold text-text-primary">{(result.true_prob * 100).toFixed(1)}%</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">FAIR ODDS</p>
+                    <p className="text-lg font-bold text-text-primary">
+                      {result.fair_odds >= 0 ? "+" : ""}{result.fair_odds}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">BEST LINE</p>
+                    <p className="text-lg font-bold text-accent">
+                      {result.best_odds >= 0 ? "+" : ""}{result.best_odds}
+                    </p>
+                    <p className="text-[10px] text-accent mt-0.5 uppercase">{result.best_book}</p>
+                  </div>
                 </div>
+
+                <div className="h-px bg-border mb-5" />
+
+                {/* Kelly */}
+                <div className="mb-5">
+                  <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">KELLY CRITERION</p>
+                  {result.kelly > 0 ? (
+                    <p className="text-sm text-text-secondary">
+                      Suggested stake: <span className="text-accent font-bold">{(result.kelly * 100).toFixed(2)}%</span> of bankroll
+                    </p>
+                  ) : (
+                    <p className="text-sm text-red">No edge — Kelly says pass.</p>
+                  )}
+                </div>
+
+                <div className="h-px bg-border mb-5" />
+
+                {/* Breakdown */}
+                {result.breakdown && (
+                  <div>
+                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-3">BREAKDOWN</p>
+                    <div className="space-y-2.5">
+                      <ScoreBar label="EV (50%)" value={result.breakdown.ev_score} />
+                      <ScoreBar label="Line (20%)" value={result.breakdown.line_value_score} />
+                      <ScoreBar label="Market (15%)" value={result.breakdown.market_sharpness_score} />
+                      <ScoreBar label="Situation (15%)" value={result.breakdown.situational_score} />
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+
+              <div className="px-5 pb-4">
+                <p className="text-[10px] text-text-tertiary text-center uppercase tracking-wide">
+                  POWERED BY SPORTSLOGIC
+                </p>
+              </div>
+            </div>
 
             {/* Remaining */}
             {result.remaining !== undefined && (
-              <p className="text-xs text-text-tertiary text-center">
+              <p className="text-[11px] text-text-tertiary text-center">
                 {result.remaining > 0
                   ? `${result.remaining} free grade${result.remaining === 1 ? "" : "s"} remaining today`
-                  : "No free grades remaining today"}
+                  : "Upgrade to Pro for unlimited grades"}
               </p>
             )}
           </div>
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="w-full max-w-[1080px] mx-auto px-6 pt-8 pb-10 border-t border-border mt-12">
-        <p className="text-[12px] text-text-tertiary text-center leading-relaxed">
+      {/* ── FOOTER ── */}
+      <footer className="w-full max-w-[640px] mx-auto px-6 pt-8 pb-10 border-t border-border">
+        <p className="text-[11px] text-text-tertiary text-center leading-relaxed">
           SportsLogic is not a sportsbook. Analysis tools for informational purposes only. 21+.
         </p>
       </footer>
