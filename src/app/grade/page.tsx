@@ -431,6 +431,16 @@ export default function GradePage() {
                 <p className={`text-[72px] font-bold leading-none ${gradeColor(result.grade)}`}>
                   {result.grade}
                 </p>
+                {/* BUY / HOLD / SELL label */}
+                <span className={`inline-block mt-3 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
+                  ["A", "B"].includes(result.grade[0])
+                    ? "bg-accent/15 text-accent"
+                    : result.grade[0] === "C"
+                      ? "bg-amber/15 text-amber"
+                      : "bg-red/15 text-red"
+                }`}>
+                  {["A", "B"].includes(result.grade[0]) ? "BUY" : result.grade[0] === "C" ? "HOLD" : "SELL"}
+                </span>
                 <p className="text-sm text-text-secondary mt-2">{result.score.toFixed(1)} / 100</p>
               </div>
 
