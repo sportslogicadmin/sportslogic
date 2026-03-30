@@ -50,17 +50,17 @@ export function EmailForm() {
         <button
           type="submit"
           disabled={succeeded || status === "loading"}
-          className={`h-12 px-6 rounded-lg text-sm font-medium whitespace-nowrap transition-all cursor-pointer disabled:cursor-default ${
+          className={`h-12 px-6 rounded-lg text-xs font-semibold uppercase tracking-[0.5px] whitespace-nowrap transition-all cursor-pointer disabled:cursor-default ${
             succeeded
               ? "bg-accent/20 text-accent border border-accent/30"
               : "bg-accent text-bg hover:brightness-110"
           }`}
         >
           {status === "loading"
-            ? "Submitting..."
+            ? "SUBMITTING..."
             : succeeded
-              ? "You're on the list!"
-              : "Join waitlist"}
+              ? "YOU'RE ON THE LIST!"
+              : "JOIN WAITLIST"}
         </button>
       </form>
       {status === "error" && message && (

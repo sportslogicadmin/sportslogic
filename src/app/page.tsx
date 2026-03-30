@@ -2,17 +2,17 @@ import { EmailForm } from "./email-form";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs font-semibold tracking-[2px] text-text-tertiary uppercase text-center mb-12">
+    <p className="text-xs font-semibold tracking-[2px] text-text-tertiary uppercase text-center mb-12 sm:mb-14">
       {children}
     </p>
   );
 }
 
 const legs = [
-  { name: "Chiefs ML (-145)", grade: "A", ev: "+6.1% EV", color: "bg-accent" },
-  { name: "Celtics -4.5 (-110)", grade: "B+", ev: "+2.8% EV", color: "bg-accent" },
-  { name: "Yankees Over 8.5 (-105)", grade: "C", ev: "-1.2% EV", color: "bg-amber" },
-  { name: "Mahomes O275.5 pass yds (-120)", grade: "D+", ev: "-4.1% EV", color: "bg-red" },
+  { name: "Chiefs ML (-145)", grade: "A", ev: "+6.1% EV", color: "bg-accent", glow: "dot-glow-green" },
+  { name: "Celtics -4.5 (-110)", grade: "B+", ev: "+2.8% EV", color: "bg-accent", glow: "dot-glow-green" },
+  { name: "Yankees Over 8.5 (-105)", grade: "C", ev: "-1.2% EV", color: "bg-amber", glow: "dot-glow-amber" },
+  { name: "Mahomes O275.5 pass yds (-120)", grade: "D+", ev: "-4.1% EV", color: "bg-red", glow: "dot-glow-red" },
 ];
 
 const betTypes = ["Parlays", "Straight bets", "Player props", "Same-game parlays", "Teasers", "Futures"];
@@ -48,36 +48,37 @@ export default function Home() {
               SL
             </span>
           </div>
-          <span className="text-lg font-semibold text-text-primary">
+          <span className="text-lg font-bold text-text-primary tracking-tight">
             SportsLogic
           </span>
         </div>
         <a
           href="#waitlist"
-          className="h-9 px-4 rounded-lg bg-accent text-bg text-sm font-medium flex items-center hover:brightness-110 transition-all"
+          className="h-9 px-4 rounded-lg bg-accent text-bg text-xs font-semibold uppercase tracking-[0.5px] flex items-center hover:brightness-110 transition-all"
         >
-          Get early access
+          GET EARLY ACCESS
         </a>
       </nav>
 
       {/* ── SECTION 1: HERO ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 pt-24 sm:pt-32 pb-24 text-center relative">
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-24 sm:pt-32 pb-20 sm:pb-24 text-center relative">
+        {/* Hero glow */}
         <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] pointer-events-none"
+          className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] pointer-events-none"
           style={{
-            background: "radial-gradient(ellipse at center, rgba(0, 232, 123, 0.08) 0%, transparent 70%)",
-            filter: "blur(80px)",
+            background: "radial-gradient(ellipse at center, rgba(0, 232, 123, 0.07) 0%, transparent 65%)",
+            filter: "blur(60px)",
           }}
         />
 
         <p className="relative text-xs font-semibold tracking-[2px] text-text-tertiary uppercase mb-6 hero-animate-1">
           A logical, edge-based way to sports bet
         </p>
-        <h1 className="relative text-4xl sm:text-5xl md:text-[56px] font-semibold tracking-[-1.5px] leading-[1.1] max-w-[680px] mx-auto mb-6 hero-animate-2">
-          Know your{" "}
-          <span className="text-accent">edge</span> before you bet.
+        <h1 className="relative text-[36px] sm:text-[48px] md:text-[60px] font-bold uppercase tracking-[-1px] leading-[1.05] max-w-[720px] mx-auto mb-6 hero-animate-2">
+          KNOW YOUR{" "}
+          <span className="text-accent">EDGE</span> BEFORE YOU BET.
         </h1>
-        <p className="relative text-base sm:text-[17px] text-text-secondary max-w-[520px] mx-auto leading-[1.7] mb-10 hero-animate-3">
+        <p className="relative text-sm sm:text-[17px] text-text-secondary max-w-[520px] mx-auto leading-[1.7] mb-10 hero-animate-3">
           We don&apos;t predict winners. We calculate edges. Upload any bet
           slip and our AI breaks down the math — expected value, line
           comparison, correlation analysis. No gut feelings. No locks.
@@ -91,16 +92,16 @@ export default function Home() {
         </p>
       </section>
 
-      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px" style={{ background: "rgba(255,255,255,0.04)" }} /></div>
+      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px bg-border/30" /></div>
 
       {/* ── SECTION 2: HOW IT WORKS ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 overflow-hidden">
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20 overflow-hidden">
         <SectionLabel>HOW IT WORKS</SectionLabel>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
           <div className="text-center md:text-left relative">
             <p className="text-xs font-mono text-text-tertiary mb-3">01</p>
-            <h3 className="text-[17px] font-semibold text-text-primary mb-2">
-              Screenshot your bet
+            <h3 className="text-base font-bold uppercase text-text-primary mb-2 tracking-wide">
+              SCREENSHOT YOUR BET
             </h3>
             <p className="text-sm text-text-secondary leading-relaxed">
               Open any sportsbook app — DraftKings, FanDuel, BetMGM, whatever
@@ -115,8 +116,8 @@ export default function Home() {
 
           <div className="text-center md:text-left relative">
             <p className="text-xs font-mono text-text-tertiary mb-3">02</p>
-            <h3 className="text-[17px] font-semibold text-text-primary mb-2">
-              Get your grade
+            <h3 className="text-base font-bold uppercase text-text-primary mb-2 tracking-wide">
+              GET YOUR GRADE
             </h3>
             <p className="text-sm text-text-secondary leading-relaxed">
               Our AI reads your slip, pulls live odds across books, and grades
@@ -132,8 +133,8 @@ export default function Home() {
 
           <div className="text-center md:text-left">
             <p className="text-xs font-mono text-text-tertiary mb-3">03</p>
-            <h3 className="text-[17px] font-semibold text-text-primary mb-2">
-              Improve or share
+            <h3 className="text-base font-bold uppercase text-text-primary mb-2 tracking-wide">
+              IMPROVE OR SHARE
             </h3>
             <p className="text-sm text-text-secondary leading-relaxed">
               See exactly which legs are dragging your grade down. Get AI
@@ -143,101 +144,114 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px" style={{ background: "rgba(255,255,255,0.04)" }} /></div>
+      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px bg-border/30" /></div>
 
       {/* ── SECTION 3: SAMPLE GRADE CARD ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-16">
+      <section className="w-full max-w-[1080px] mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-16 sm:pb-20">
         <SectionLabel>SEE IT IN ACTION</SectionLabel>
 
-        <div className="max-w-[520px] mx-auto bg-surface border border-border rounded-xl p-5 sm:p-6">
-          <div className="flex items-start justify-between mb-1">
-            <span className="text-sm font-medium text-text-secondary">
-              4-leg parlay
-            </span>
-            <span className="text-4xl font-semibold text-accent leading-none">
-              B+
-            </span>
-          </div>
-          <p className="text-xs text-accent mb-5">
-            Overall expected value: +3.2%
-          </p>
-
-          <div className="h-px bg-border mb-5" />
-
-          <div className="space-y-4 mb-5">
-            {legs.map((leg, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full ${leg.color} shrink-0`} />
-                <span className="text-sm text-text-primary flex-1 min-w-0 truncate">
-                  {leg.name}
+        <div
+          className="max-w-[520px] mx-auto bg-surface border border-border rounded-xl overflow-hidden"
+          style={{ boxShadow: "0 0 80px rgba(0, 232, 123, 0.08)" }}
+        >
+          {/* Green gradient header */}
+          <div
+            className="p-5 sm:p-6 pb-0"
+            style={{ background: "linear-gradient(180deg, rgba(0, 232, 123, 0.05) 0%, transparent 100%)" }}
+          >
+            <div className="flex items-start justify-between mb-1">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-[1px] text-text-secondary">
+                  4-LEG PARLAY
                 </span>
-                <span className="text-xs font-medium text-text-secondary whitespace-nowrap">
-                  {leg.grade}
-                </span>
-                <span
-                  className={`text-xs font-mono whitespace-nowrap ${
-                    leg.ev.startsWith("+") ? "text-accent" : "text-text-secondary"
-                  }`}
-                >
-                  {leg.ev}
-                </span>
+                <p className="text-xs text-accent mt-1">
+                  Overall expected value: +3.2%
+                </p>
               </div>
-            ))}
+              <span className="text-[64px] font-bold text-accent leading-none -mt-2">
+                B+
+              </span>
+            </div>
           </div>
 
-          <div className="h-px bg-border mb-5" />
+          <div className="px-5 sm:px-6 pb-5 sm:pb-6">
+            <div className="h-px bg-border mb-5" />
 
-          <div className="bg-bg/60 border border-border rounded-lg p-4 mb-4">
-            <p className="text-xs text-text-secondary leading-relaxed">
-              <span className="text-accent font-medium">AI suggestion:</span>{" "}
-              Swap leg 4 — Mahomes rushing yards O29.5 has +3.8% EV and
-              correlates positively with Chiefs ML. This would raise your
-              parlay to an A-.
+            <div className="space-y-4 mb-5">
+              {legs.map((leg, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${leg.color} shrink-0 ${leg.glow}`} />
+                  <span className="text-sm text-text-primary flex-1 min-w-0 truncate">
+                    {leg.name}
+                  </span>
+                  <span className="text-xs font-semibold text-text-secondary whitespace-nowrap">
+                    {leg.grade}
+                  </span>
+                  <span
+                    className={`text-xs font-mono whitespace-nowrap ${
+                      leg.ev.startsWith("+") ? "text-accent" : "text-text-secondary"
+                    }`}
+                  >
+                    {leg.ev}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="h-px bg-border mb-5" />
+
+            <div className="bg-bg/60 border border-border rounded-lg p-4 mb-4">
+              <p className="text-xs text-text-secondary leading-relaxed">
+                <span className="text-accent font-semibold">AI suggestion:</span>{" "}
+                Swap leg 4 — Mahomes rushing yards O29.5 has +3.8% EV and
+                correlates positively with Chiefs ML. This would raise your
+                parlay to an A-.
+              </p>
+            </div>
+
+            <p className="text-[11px] text-text-tertiary text-center">
+              Powered by SportsLogic
             </p>
           </div>
-
-          <p className="text-[11px] text-text-tertiary text-center">
-            Powered by SportsLogic
-          </p>
         </div>
 
         <div className="text-center mt-8">
-          <button className="h-12 px-8 rounded-lg bg-accent text-bg text-sm font-semibold hover:brightness-110 transition-all cursor-pointer">
-            Grade your first bet free
+          <button className="h-12 w-full sm:w-auto px-8 rounded-lg bg-accent text-bg text-xs font-semibold uppercase tracking-[0.5px] hover:brightness-110 transition-all cursor-pointer">
+            GRADE YOUR FIRST BET FREE
           </button>
         </div>
       </section>
 
       {/* ── SECTION 3.5: THE MATH ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 pt-12 sm:pt-16 pb-16">
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-12 sm:pt-16 pb-16 sm:pb-20">
         <SectionLabel>THE MATH BEHIND EVERY GRADE</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-[640px] mx-auto">
           <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
-            <p className="text-lg font-semibold text-accent mb-1">6 weighted factors</p>
-            <p className="text-xs text-text-secondary">power every grade</p>
+            <p className="text-lg font-bold uppercase text-accent mb-1">6 WEIGHTED FACTORS</p>
+            <p className="text-xs text-text-secondary">Power every grade</p>
           </div>
           <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
-            <p className="text-lg font-semibold text-accent mb-1">Real-time odds</p>
-            <p className="text-xs text-text-secondary">from every major book</p>
+            <p className="text-lg font-bold uppercase text-accent mb-1">REAL-TIME ODDS</p>
+            <p className="text-xs text-text-secondary">From every major book</p>
           </div>
           <div className="bg-surface border border-border rounded-xl p-5 text-center border-t-2 border-t-accent/20">
-            <p className="text-lg font-semibold text-accent mb-1">Decision quality</p>
-            <p className="text-xs text-text-secondary">not outcome prediction</p>
+            <p className="text-lg font-bold uppercase text-accent mb-1">DECISION QUALITY</p>
+            <p className="text-xs text-text-secondary">Not outcome prediction</p>
           </div>
         </div>
       </section>
 
-      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px" style={{ background: "rgba(255,255,255,0.04)" }} /></div>
+      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px bg-border/30" /></div>
 
       {/* ── SECTION 4: WHAT WE GRADE ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16">
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20">
         <SectionLabel>WHAT WE GRADE</SectionLabel>
 
         <div className="flex flex-wrap justify-center gap-2.5 mb-5 max-w-[640px] mx-auto">
           {betTypes.map((t) => (
             <span
               key={t}
-              className="px-4 py-2 rounded-full bg-surface border border-[#2A2E3E] text-sm font-medium text-text-primary"
+              className="px-4 py-2 rounded-full bg-surface border border-border text-sm font-medium text-text-primary"
             >
               {t}
             </span>
@@ -255,60 +269,62 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px" style={{ background: "rgba(255,255,255,0.04)" }} /></div>
+      <div className="w-full max-w-[1080px] mx-auto px-6"><div className="h-px bg-border/30" /></div>
 
       {/* ── SECTION 5: PRICING ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16">
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20">
         <SectionLabel>PRICING</SectionLabel>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[640px] mx-auto">
           {/* Pro — shown first on mobile */}
           <div className="bg-surface border border-accent rounded-xl p-6 flex flex-col order-first sm:order-last">
+            <p className="text-xs font-semibold uppercase tracking-[1px] text-accent mb-4">PRO</p>
             <div className="mb-5">
-              <span className="text-3xl font-semibold text-text-primary">$15</span>
+              <span className="text-3xl font-bold text-text-primary">$15</span>
               <span className="text-sm text-text-secondary ml-1.5">/month</span>
             </div>
             <ul className="space-y-3 flex-1">
               {proFeatures.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-xs text-text-secondary">
+                <li key={f} className="flex items-start gap-2.5 text-sm text-text-secondary">
                   <CheckGreen />
                   {f}
                 </li>
               ))}
             </ul>
-            <button className="w-full h-10 rounded-lg bg-accent text-bg text-sm font-medium hover:brightness-110 transition-all cursor-pointer mt-6">
-              Join waitlist
+            <button className="w-full h-10 rounded-lg bg-accent text-bg text-xs font-semibold uppercase tracking-[0.5px] hover:brightness-110 transition-all cursor-pointer mt-6">
+              JOIN WAITLIST
             </button>
           </div>
 
           {/* Free — shown second on mobile */}
           <div className="bg-surface border border-border rounded-xl p-6 flex flex-col order-last sm:order-first">
+            <p className="text-xs font-semibold uppercase tracking-[1px] text-text-tertiary mb-4">FREE</p>
             <div className="mb-5">
-              <span className="text-3xl font-semibold text-text-primary">$0</span>
+              <span className="text-3xl font-bold text-text-primary">$0</span>
               <span className="text-sm text-text-secondary ml-1.5">forever</span>
             </div>
             <ul className="space-y-3 flex-1">
               {freeFeatures.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-xs text-text-secondary">
+                <li key={f} className="flex items-start gap-2.5 text-sm text-text-secondary">
                   <Check />
                   {f}
                 </li>
               ))}
             </ul>
-            <button className="w-full h-10 rounded-lg bg-transparent border border-text-tertiary text-text-secondary text-sm font-medium hover:border-text-secondary transition-all cursor-pointer mt-6">
-              Start free
+            <button className="w-full h-10 rounded-lg bg-transparent border border-text-tertiary text-text-secondary text-xs font-semibold uppercase tracking-[0.5px] hover:border-text-secondary transition-all cursor-pointer mt-6">
+              START FREE
             </button>
           </div>
         </div>
       </section>
 
       {/* ── SECTION 5.5: FAQ ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16">
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20">
         <SectionLabel>FAQ</SectionLabel>
         <div className="max-w-[640px] mx-auto text-center">
           <div className="pb-6">
-            <h3 className="text-base font-semibold text-text-primary mb-2">
-              Is this legal?
+            <h3 className="text-base font-bold uppercase text-text-primary mb-2">
+              IS THIS LEGAL?
             </h3>
             <p className="text-sm text-text-secondary leading-[1.7]">
               Yes. SportsLogic provides analysis and information tools only — we
@@ -316,10 +332,10 @@ export default function Home() {
               a calculator for your bets.
             </p>
           </div>
-          <div className="h-px mb-6" style={{ background: "rgba(255,255,255,0.04)" }} />
+          <div className="h-px bg-border/30 mb-6" />
           <div className="pb-6">
-            <h3 className="text-base font-semibold text-text-primary mb-2">
-              How accurate is the grading?
+            <h3 className="text-base font-bold uppercase text-text-primary mb-2">
+              HOW ACCURATE IS THE GRADING?
             </h3>
             <p className="text-sm text-text-secondary leading-[1.7]">
               Our grades measure decision quality, not outcome prediction. We
@@ -328,10 +344,10 @@ export default function Home() {
               higher-graded bets outperform lower-graded ones.
             </p>
           </div>
-          <div className="h-px mb-6" style={{ background: "rgba(255,255,255,0.04)" }} />
+          <div className="h-px bg-border/30 mb-6" />
           <div>
-            <h3 className="text-base font-semibold text-text-primary mb-2">
-              What sportsbooks do you support?
+            <h3 className="text-base font-bold uppercase text-text-primary mb-2">
+              WHAT SPORTSBOOKS DO YOU SUPPORT?
             </h3>
             <p className="text-sm text-text-secondary leading-[1.7]">
               We can read screenshots from DraftKings, FanDuel, BetMGM, Caesars,
@@ -342,9 +358,9 @@ export default function Home() {
       </section>
 
       {/* ── SECTION 6: FINAL CTA + FOOTER ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 text-center">
-        <h2 className="text-2xl sm:text-4xl font-semibold mb-8">
-          The edge is waiting.
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-20 sm:pt-24 pb-16 sm:pb-20 text-center">
+        <h2 className="text-2xl sm:text-4xl font-bold uppercase tracking-[-0.5px] mb-8">
+          THE EDGE IS WAITING.
         </h2>
         <EmailForm />
       </section>

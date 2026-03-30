@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-bg: #08090D;
-  --color-surface: #111318;
-  --color-border: #1C1F2A;
+  --color-bg: #0C0E14;
+  --color-surface: #161923;
+  --color-border: #252A37;
   --color-accent: #00E87B;
   --color-text-primary: #E2E4EA;
-  --color-text-secondary: #6B7084;
-  --color-text-tertiary: #3D4155;
+  --color-text-secondary: #8A8FA3;
+  --color-text-tertiary: #4F5468;
   --color-amber: #EAB308;
   --color-red: #EF4444;
   --font-sans: var(--font-inter);
@@ -21,8 +21,22 @@ body {
   background: var(--color-bg);
   color: var(--color-text-primary);
   font-family: var(--font-sans), system-ui, sans-serif;
+  background-image: radial-gradient(circle, #1A1F2B 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
+/* Leg color dot glows */
+.dot-glow-green {
+  box-shadow: 0 0 6px rgba(0, 232, 123, 0.4);
+}
+.dot-glow-amber {
+  box-shadow: 0 0 6px rgba(234, 179, 8, 0.4);
+}
+.dot-glow-red {
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+}
+
+/* Hero fade-in — CSS only, no JS */
 @keyframes hero-fade-in {
   from {
     opacity: 0;
