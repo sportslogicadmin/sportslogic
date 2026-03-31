@@ -81,7 +81,7 @@ function scoreToGrade(score: number): string {
 
 // ── API helpers ──
 
-type Outcome = { name: string; price: number; point?: number };
+type Outcome = { name: string; price: number; point?: number; description?: string };
 type Market = { key: string; outcomes: Outcome[] };
 type Bookmaker = { key: string; markets: Market[] };
 type Game = {
