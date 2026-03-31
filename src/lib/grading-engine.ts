@@ -420,6 +420,99 @@ export async function gradeProp(
   };
 }
 
+// ── Find better alternatives for a game ──
+
+export async function findAlternatives(
+  team: string,
+  sport: string,
+  currentScore: number,
+): Promise<GradeResult[]> {
+  const alternatives: (GradeResult & { label: string })[] = [];
+
+  const games = await fetchOdds(sport, "moneyline");
+  const game = findGame(games, team);
+  if (!game) return [];
+
+  const home = game.home_team;
+  const away = game.away_team;
+
+  // Grade all bet types for both teams
+  for (const betTeam of [home, away]) {
+    // ML
+    const mlGames = await fetchOdds(sport, "moneyline");
+    const mlGame = findGame(mlGames, betTeam);
+    if (mlGame) {
+      for (const bk of mlGame.bookmakers) {
+        for (const mkt of bk.markets) {
+          if (mkt.key !== "h2h") continue;
+          for (const o of mkt.outcomes) {
+            if (teamMatch(betTeam, o.name)) {
+              const r = await gradeBet(betTeam, "moneyline", o.price, sport);
+              if (!r.error && r.score > currentScore) {
+                alternatives.push({ ...r, label: `${betTeam} ML (${r.best_odds >= 0 ? "+" : ""}${r.best_odds})` });
+              }
+            }
+          }
+        }
+        break;
+      }
+    }
+
+    // Spread
+    const spGames = await fetchOdds(sport, "spread");
+    const spGame = findGame(spGames, betTeam);
+    if (spGame) {
+      for (const bk of spGame.bookmakers) {
+        for (const mkt of bk.markets) {
+          if (mkt.key !== "spreads") continue;
+          for (const o of mkt.outcomes) {
+            if (teamMatch(betTeam, o.name) && o.point !== undefined) {
+              const r = await gradeBet(betTeam, "spread", o.price, sport, o.point);
+              if (!r.error && r.score > currentScore) {
+                const pt = o.point >= 0 ? `+${o.point}` : `${o.point}`;
+                alternatives.push({ ...r, label: `${betTeam} ${pt} (${r.best_odds >= 0 ? "+" : ""}${r.best_odds})` });
+              }
+            }
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  // Totals
+  const totGames = await fetchOdds(sport, "total");
+  const totGame = findGame(totGames, team);
+  if (totGame) {
+    for (const bk of totGame.bookmakers) {
+      for (const mkt of bk.markets) {
+        if (mkt.key !== "totals") continue;
+        for (const o of mkt.outcomes) {
+          if (o.point !== undefined) {
+            const r = await gradeBet(o.name, "total", o.price, sport, o.point, o.name.toLowerCase());
+            if (!r.error && r.score > currentScore) {
+              alternatives.push({ ...r, label: `${o.name} ${o.point} (${r.best_odds >= 0 ? "+" : ""}${r.best_odds})` });
+            }
+          }
+        }
+      }
+      break;
+    }
+  }
+
+  // Dedup and sort
+  const seen = new Map<string, typeof alternatives[0]>();
+  for (const a of alternatives) {
+    if (!seen.has(a.label) || a.score > seen.get(a.label)!.score) {
+      seen.set(a.label, a);
+    }
+  }
+
+  return [...seen.values()]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+}
+
 function errorResult(msg: string): GradeResult {
   return {
     grade: "?",

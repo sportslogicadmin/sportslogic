@@ -58,6 +58,7 @@ type GradeResult = {
   breakdown: Record<string, number>;
   remaining?: number;
   error?: string;
+  alternatives?: { label: string; grade: string; score: number; ev: number; best_book: string }[];
 };
 
 const BOOK_NAMES: Record<string, string> = {
@@ -157,8 +158,8 @@ function ToggleGroup({
   );
 }
 
-type TopGrade = GradeResult & { team: string; betType: string; sport: string };
-type TopGradesData = { grades: TopGrade[]; updatedAt: string };
+type TopGrade = GradeResult & { team: string; betType: string; sport: string; relativeGrade?: string };
+type TopGradesData = { grades: TopGrade[]; updatedAt: string; totalScanned?: number };
 
 const FREE_VISIBLE = 3;
 
@@ -467,13 +468,19 @@ export default function GradePage() {
         {/* ── TONIGHT'S TOP GRADES (compact, below form) ── */}
         {!result && (topLoading || (topGrades && topGrades.grades.length > 0)) && (
           <div className="mt-10 pt-8 border-t border-border/30">
-            <div className="flex items-baseline justify-between mb-4">
-              <h2 className="text-xs font-bold uppercase text-text-tertiary tracking-[1.5px]">TONIGHT&apos;S TOP GRADES</h2>
-              {topGrades?.updatedAt && (
-                <span className="text-[10px] text-text-tertiary">
-                  {Math.round((Date.now() - new Date(topGrades.updatedAt).getTime()) / 60000)}m ago
-                </span>
-              )}
+            <div className="mb-4">
+              <div className="flex items-baseline justify-between">
+                <h2 className="font-heading text-xs font-bold uppercase text-text-tertiary tracking-[1.5px]">TONIGHT&apos;S TOP GRADES</h2>
+                {topGrades?.updatedAt && (
+                  <span className="text-[10px] text-text-tertiary">
+                    {Math.round((Date.now() - new Date(topGrades.updatedAt).getTime()) / 60000)}m ago
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] text-text-tertiary mt-1">
+                Graded relative to tonight&apos;s market
+                {topGrades?.totalScanned ? ` · ${topGrades.totalScanned} bets scanned` : ""}
+              </p>
             </div>
 
             {topLoading ? (
@@ -486,7 +493,8 @@ export default function GradePage() {
               <>
                 <div className="space-y-2">
                   {topGrades?.grades.slice(0, FREE_VISIBLE).map((g, i) => {
-                    const f = g.grade[0];
+                    const rg = g.relativeGrade ?? g.grade;
+                    const f = rg[0];
                     const color = f === "A" || f === "B" ? "text-accent" : f === "C" ? "text-amber" : "text-red";
                     const signal = f === "A" || f === "B" ? "BUY" : "HOLD";
                     const signalCls = f === "A" || f === "B" ? "text-accent" : "text-amber";
@@ -494,7 +502,7 @@ export default function GradePage() {
                     return (
                       <div key={i} className="bg-surface border border-border rounded-lg px-3 py-2.5 flex items-center gap-2">
                         <span className="text-[10px] font-mono text-text-tertiary w-4 shrink-0">{i + 1}</span>
-                        <span className={`text-sm font-bold w-7 shrink-0 ${color}`}>{g.grade}</span>
+                        <span className={`font-heading text-sm font-bold w-7 shrink-0 ${color}`}>{rg}</span>
                         <div className="flex-1 min-w-0 flex items-baseline gap-1.5 overflow-hidden">
                           <span className="text-xs text-text-primary font-medium truncate">{g.team}</span>
                           <span className="text-[10px] text-text-tertiary truncate">{g.betType}</span>
@@ -630,6 +638,30 @@ export default function GradePage() {
                 </p>
               </div>
             </div>
+
+            {/* Better alternatives */}
+            {result.alternatives && result.alternatives.length > 0 && (
+              <div className="bg-surface border border-accent/20 rounded-xl p-4 mb-4">
+                <p className="font-heading text-[11px] text-accent uppercase tracking-[1.5px] font-bold mb-3">BETTER OPTIONS FOR THIS GAME</p>
+                <div className="space-y-2">
+                  {result.alternatives.map((alt, i) => {
+                    const af = alt.grade[0];
+                    const ac = af === "A" || af === "B" ? "text-accent" : af === "C" ? "text-amber" : "text-red";
+                    return (
+                      <div key={i} className="flex items-center gap-2">
+                        <span className={`font-heading text-sm font-bold w-7 shrink-0 ${ac}`}>{alt.grade}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-text-primary truncate">{alt.label}</p>
+                          <p className="text-[10px] text-text-tertiary">
+                            {alt.ev >= 0 ? "+" : ""}{alt.ev.toFixed(2)}% EV · {bookName(alt.best_book)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Context note */}
             <p className="text-[11px] text-text-tertiary text-center mb-3">

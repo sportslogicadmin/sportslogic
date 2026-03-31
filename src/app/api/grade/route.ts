@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { gradeBet, gradeProp } from "@/lib/grading-engine";
+import { gradeBet, gradeProp, findAlternatives } from "@/lib/grading-engine";
 
 // Simple in-memory rate limiter (resets on server restart)
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
@@ -53,7 +53,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: result.error }, { status: 404 });
     }
 
-    return NextResponse.json({ ...result, remaining: rate.remaining });
+    // Find better alternatives if grade is C or below
+    let alternatives: { label: string; grade: string; score: number; ev: number; best_book: string }[] = [];
+    const gradeFirst = result.grade[0];
+    if (["C", "D", "F"].includes(gradeFirst) && team) {
+      try {
+        const alts = await findAlternatives(team, sport, result.score);
+        alternatives = alts.map((a) => ({
+          label: (a as unknown as { label: string }).label,
+          grade: a.grade,
+          score: a.score,
+          ev: a.ev,
+          best_book: a.best_book,
+        }));
+      } catch { /* skip */ }
+    }
+
+    return NextResponse.json({ ...result, alternatives, remaining: rate.remaining });
   } catch (err: unknown) {
     console.error("[grade]", err);
     return NextResponse.json({ error: "Grading failed. Try again." }, { status: 500 });
