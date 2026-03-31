@@ -440,7 +440,12 @@ export default function GradePage() {
             disabled={loading || (isProp ? !playerName || !odds : !selectedTeam || !odds)}
             className="w-full h-14 rounded-xl bg-accent text-bg text-sm font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            {loading ? "GRADING..." : "GRADE THIS BET"}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-bg/30 border-t-bg rounded-full animate-spin" />
+                COMPARING 30+ BOOKS...
+              </span>
+            ) : "GRADE THIS BET"}
           </button>
         </form>
 
@@ -481,7 +486,7 @@ export default function GradePage() {
                 </span>
                 <InfoTip text="BUY means the math favors you. HOLD means it's average. SELL means you're overpaying." />
                 <p className="text-sm text-text-secondary mt-2">{gradeContext(result.grade)}</p>
-                <p className="text-[11px] text-text-tertiary mt-1">{result.score.toFixed(1)} / 100</p>
+                <p className="text-[11px] text-text-tertiary mt-1">EdgeScore: {result.score.toFixed(1)} / 100</p>
               </div>
 
               <div className="px-5 pb-5">

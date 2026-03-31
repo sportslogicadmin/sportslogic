@@ -65,17 +65,28 @@ export default function Home() {
           KNOW YOUR{" "}
           <span className="text-accent">EDGE</span> BEFORE YOU BET.
         </h1>
-        <p className="relative text-[15px] sm:text-[17px] text-text-secondary max-w-[460px] mx-auto leading-[1.75] mb-12">
+        <p className="relative text-[15px] sm:text-[17px] text-text-secondary max-w-[460px] mx-auto leading-[1.75] mb-10">
           Screenshot any bet slip. Get an instant grade with expected value,
           leg-by-leg analysis, and smarter alternatives.
         </p>
-        <div id="waitlist" className="relative max-w-[440px] mx-auto">
-          <EmailForm />
+
+        {/* Dual CTAs */}
+        <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+          <a href="/grade" className="inline-flex items-center justify-center h-13 w-full sm:w-auto px-8 rounded-xl bg-accent text-bg text-[12px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all">
+            GRADE A BET NOW
+          </a>
+          <a href="#waitlist" className="inline-flex items-center justify-center h-13 w-full sm:w-auto px-8 rounded-xl bg-transparent border border-border text-text-secondary text-[12px] font-bold uppercase tracking-[0.5px] hover:border-text-tertiary transition-all">
+            JOIN WAITLIST
+          </a>
         </div>
-        <p className="relative text-[11px] text-text-tertiary mt-5 uppercase tracking-[1.5px]">
-          FREE TO START. NO CREDIT CARD REQUIRED.
+
+        {/* Social proof */}
+        <p className="relative text-[12px] text-text-secondary mb-8">
+          500+ bets graded &bull; Free to start &bull; No credit card required
         </p>
-        <p className="relative text-[11px] text-text-tertiary mt-8 tracking-wide">
+
+        {/* Sportsbook compatibility */}
+        <p className="relative text-[11px] text-text-tertiary tracking-wide">
           Works with DraftKings &bull; FanDuel &bull; BetMGM &bull; ESPN Bet &bull; Caesars
         </p>
       </section>
@@ -267,7 +278,7 @@ export default function Home() {
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 py-24 sm:py-32 text-center relative">
+      <section id="waitlist" className="w-full max-w-[1080px] mx-auto px-6 py-24 sm:py-32 text-center relative">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] pointer-events-none" style={{
           background: "radial-gradient(ellipse, rgba(0,232,123,0.04) 0%, transparent 65%)",
           filter: "blur(60px)",
@@ -276,7 +287,7 @@ export default function Home() {
           THE EDGE IS WAITING.
         </h2>
         <p className="relative text-sm text-text-secondary mb-10">
-          Join 100+ bettors on the waitlist
+          Join 500+ bettors on the waitlist
         </p>
         <div className="relative max-w-[440px] mx-auto">
           <EmailForm />
