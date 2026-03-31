@@ -158,10 +158,17 @@ function ToggleGroup({
   );
 }
 
-type TopGrade = GradeResult & { team: string; betType: string; sport: string; relativeGrade?: string };
-type TopGradesData = { grades: TopGrade[]; updatedAt: string; totalScanned?: number };
-
-const FREE_VISIBLE = 3;
+type WorstBetData = { team: string; betType: string; sport: string; grade: string; score: number; ev: number; best_book: string; vig: number };
+type BestAltData = { team: string; betType: string; grade: string; ev: number; best_book: string };
+type BookGradeData = { name: string; avgEv: number; grade: string; bestPct: number };
+type TopGradesData = {
+  updatedAt: string;
+  totalScanned?: number;
+  worstBet?: WorstBetData | null;
+  bestAlt?: BestAltData | null;
+  worstBook?: { name: string; avgEv: number };
+  bookGrades?: BookGradeData[];
+};
 
 export default function GradePage() {
   const [sport, setSport] = useState("nba");
@@ -465,67 +472,76 @@ export default function GradePage() {
           </button>
         </form>
 
-        {/* ── TONIGHT'S TOP GRADES (compact, below form) ── */}
-        {!result && (topLoading || (topGrades && topGrades.grades.length > 0)) && (
-          <div className="mt-10 pt-8 border-t border-border/30">
-            <div className="mb-4">
-              <div className="flex items-baseline justify-between">
-                <h2 className="font-heading text-xs font-bold uppercase text-text-tertiary tracking-[1.5px]">TONIGHT&apos;S TOP GRADES</h2>
-                {topGrades?.updatedAt && (
-                  <span className="text-[10px] text-text-tertiary">
-                    {Math.round((Date.now() - new Date(topGrades.updatedAt).getTime()) / 60000)}m ago
-                  </span>
-                )}
-              </div>
-              <p className="text-[10px] text-text-tertiary mt-1">
-                Graded relative to tonight&apos;s market
-                {topGrades?.totalScanned ? ` · ${topGrades.totalScanned} bets scanned` : ""}
-              </p>
-            </div>
+        {/* ── TONIGHT'S TRAP + BOOK REPORT CARD ── */}
+        {!result && !topLoading && topGrades && (
+          <div className="mt-10 pt-8 border-t border-border/30 space-y-8">
 
-            {topLoading ? (
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-11 bg-surface border border-border rounded-lg animate-pulse" />
-                ))}
+            {/* Worst Bet Tonight */}
+            {topGrades.worstBet && (
+              <div>
+                <h2 className="font-heading text-xs font-bold uppercase text-red tracking-[1.5px] mb-3">TONIGHT&apos;S TRAP</h2>
+                <div className="bg-surface border border-red/30 rounded-xl p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="font-heading text-3xl font-bold text-red leading-none">{topGrades.worstBet.grade}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-text-primary font-semibold truncate">{topGrades.worstBet.team}</p>
+                      <p className="text-xs text-text-secondary">{topGrades.worstBet.betType} &bull; {topGrades.worstBet.sport}</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-red/15 text-red text-[10px] font-bold uppercase shrink-0">SELL</span>
+                  </div>
+                  <p className="text-xs text-red/80 leading-relaxed">
+                    The book is taking {topGrades.worstBet.vig.toFixed(1)}% of your money on this line. That&apos;s {topGrades.worstBet.ev.toFixed(1)}% expected value — one of the worst bets on the board tonight.
+                  </p>
+
+                  {topGrades.bestAlt && (
+                    <div className="mt-3 pt-3 border-t border-border/30">
+                      <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-2">BET THIS INSTEAD</p>
+                      <div className="flex items-center gap-2">
+                        <span className={`font-heading text-sm font-bold ${["A","B"].includes(topGrades.bestAlt.grade[0]) ? "text-accent" : "text-amber"}`}>
+                          {topGrades.bestAlt.grade}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs text-text-primary">{topGrades.bestAlt.team} </span>
+                          <span className="text-[10px] text-text-tertiary">{topGrades.bestAlt.betType}</span>
+                        </div>
+                        <span className="text-[10px] text-accent shrink-0">{topGrades.bestAlt.ev >= 0 ? "+" : ""}{topGrades.bestAlt.ev.toFixed(2)}% EV</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  {topGrades?.grades.slice(0, FREE_VISIBLE).map((g, i) => {
-                    const rg = g.relativeGrade ?? g.grade;
-                    const f = rg[0];
+            )}
+
+            {/* Sportsbook Report Card */}
+            {topGrades.bookGrades && topGrades.bookGrades.length > 0 && (
+              <div>
+                <h2 className="font-heading text-xs font-bold uppercase text-text-tertiary tracking-[1.5px] mb-1">SPORTSBOOK REPORT CARD</h2>
+                <p className="text-[10px] text-text-tertiary mb-3">
+                  Which book has the best value tonight?
+                  {topGrades.totalScanned ? ` · ${topGrades.totalScanned} bets compared` : ""}
+                </p>
+                <div className="space-y-1.5">
+                  {topGrades.bookGrades.map((bk, i) => {
+                    const f = bk.grade[0];
                     const color = f === "A" || f === "B" ? "text-accent" : f === "C" ? "text-amber" : "text-red";
-                    const signal = f === "A" || f === "B" ? "BUY" : "HOLD";
-                    const signalCls = f === "A" || f === "B" ? "text-accent" : "text-amber";
-
                     return (
                       <div key={i} className="bg-surface border border-border rounded-lg px-3 py-2.5 flex items-center gap-2">
-                        <span className="text-[10px] font-mono text-text-tertiary w-4 shrink-0">{i + 1}</span>
-                        <span className={`font-heading text-sm font-bold w-7 shrink-0 ${color}`}>{rg}</span>
-                        <div className="flex-1 min-w-0 flex items-baseline gap-1.5 overflow-hidden">
-                          <span className="text-xs text-text-primary font-medium truncate">{g.team}</span>
-                          <span className="text-[10px] text-text-tertiary truncate">{g.betType}</span>
-                        </div>
-                        <span className="text-[10px] text-text-secondary shrink-0 hidden sm:inline">{g.ev >= 0 ? "+" : ""}{g.ev}%</span>
-                        <span className="text-[10px] text-text-tertiary shrink-0 hidden sm:inline">{bookName(g.best_book)}</span>
-                        <span className={`text-[9px] font-bold uppercase shrink-0 ${signalCls}`}>{signal}</span>
+                        <span className={`font-heading text-sm font-bold w-7 shrink-0 ${color}`}>{bk.grade}</span>
+                        <span className="text-xs text-text-primary font-medium w-24 shrink-0">{bookName(bk.name)}</span>
+                        <span className={`text-[10px] flex-1 ${bk.avgEv >= -2 ? "text-text-secondary" : "text-red"}`}>
+                          {Math.abs(bk.avgEv).toFixed(1)}% {bk.avgEv >= 0 ? "better" : "worse"} than fair
+                        </span>
                       </div>
                     );
                   })}
                 </div>
+              </div>
+            )}
 
-                {topGrades && topGrades.grades.length > FREE_VISIBLE && (
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/20">
-                    <p className="text-[11px] text-text-tertiary">
-                      {topGrades.grades.length - FREE_VISIBLE} more top grades available
-                    </p>
-                    <a href="/#waitlist" className="text-[11px] font-semibold text-accent uppercase tracking-wide hover:brightness-110 transition-all">
-                      UNLOCK PRO →
-                    </a>
-                  </div>
-                )}
-              </>
+            {topGrades.updatedAt && (
+              <p className="text-[10px] text-text-tertiary text-center">
+                Updated {Math.round((Date.now() - new Date(topGrades.updatedAt).getTime()) / 60000)}m ago
+              </p>
             )}
           </div>
         )}

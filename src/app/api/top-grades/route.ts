@@ -35,7 +35,19 @@ const PROP_MARKETS = [
 ];
 
 type TopGrade = GradeResult & { team: string; betType: string; sport: string; relativeGrade?: string };
-type CachedResult = { grades: TopGrade[]; updatedAt: string; totalScanned: number };
+type WorstBetData = { team: string; betType: string; sport: string; grade: string; score: number; ev: number; best_book: string; vig: number };
+type BestAltData = { team: string; betType: string; grade: string; ev: number; best_book: string };
+type BookData = { name: string; avgEv: number };
+type BookGradeData = { name: string; avgEv: number; grade: string; bestPct: number };
+type CachedResult = {
+  grades: TopGrade[];
+  updatedAt: string;
+  totalScanned: number;
+  worstBet: WorstBetData | null;
+  bestAlt: BestAltData | null;
+  worstBook: BookData;
+  bookGrades: BookGradeData[];
+};
 
 let cache: CachedResult | null = null;
 let cacheExpiry = 0;
@@ -96,7 +108,7 @@ export async function GET() {
     let eventsRes: Response;
     try {
       eventsRes = await fetch(
-        `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel`,
+        `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel,draftkings,betmgm,caesars,espnbet`,
       );
       if (!eventsRes.ok) continue;
     } catch { continue; }
@@ -109,67 +121,36 @@ export async function GET() {
       const home = game.home_team as string;
       const away = game.away_team as string;
 
-      // ML both sides — use best_odds from grading engine, not seeded price
-      for (const team of [home, away]) {
-        try {
-          // Use 0 as a dummy price — gradeBet fetches real odds from all books internally
-          // We just need to seed with something reasonable. Use FanDuel if available.
-          let seedOdds = -110;
-          for (const bk of game.bookmakers ?? []) {
-            for (const mkt of bk.markets ?? []) {
-              if (mkt.key !== "h2h") continue;
-              for (const o of mkt.outcomes ?? []) {
-                if (o.name === team) seedOdds = o.price;
+      // Grade ML, spreads, totals — seed from EACH major book
+      for (const bk of game.bookmakers ?? []) {
+        const bkKey = bk.key as string;
+        for (const mkt of bk.markets ?? []) {
+          for (const o of mkt.outcomes ?? []) {
+            try {
+              let result: Awaited<ReturnType<typeof gradeBet>>;
+              let label: string;
+
+              if (mkt.key === "h2h") {
+                result = await gradeBet(o.name, "moneyline", o.price, sport);
+                if (result.error) continue;
+                label = `ML (${result.best_odds >= 0 ? "+" : ""}${result.best_odds}) on ${result.best_book}`;
+              } else if (mkt.key === "spreads" && o.point !== undefined) {
+                result = await gradeBet(o.name, "spread", o.price, sport, o.point);
+                if (result.error) continue;
+                const pt = o.point >= 0 ? `+${o.point}` : `${o.point}`;
+                label = `${pt} (${result.best_odds >= 0 ? "+" : ""}${result.best_odds}) on ${result.best_book}`;
+              } else if (mkt.key === "totals" && o.point !== undefined) {
+                result = await gradeBet(o.name, "total", o.price, sport, o.point, o.name.toLowerCase());
+                if (result.error) continue;
+                label = `${o.name} ${o.point} (${result.best_odds >= 0 ? "+" : ""}${result.best_odds}) on ${result.best_book}`;
+              } else {
+                continue;
               }
-            }
-          }
-          // Grade using best_odds from the engine (which fetches all books)
-          const result = await gradeBet(team, "moneyline", seedOdds, sport);
-          if (result.error) continue;
-          // IMPORTANT: display best_odds from the engine, which compared all US books
-          const bo = result.best_odds;
-          const bb = result.best_book;
-          allGrades.push({ ...result, team, betType: `ML (${bo >= 0 ? "+" : ""}${bo}) on ${bb}`, sport: sport.toUpperCase() });
-        } catch { /* skip */ }
-      }
 
-      // Spreads — seed from fanduel, grade against all books
-      for (const bk of game.bookmakers ?? []) {
-        for (const mkt of bk.markets ?? []) {
-          if (mkt.key !== "spreads") continue;
-          for (const o of mkt.outcomes ?? []) {
-            try {
-              const result = await gradeBet(o.name, "spread", o.price, sport, o.point);
-              if (result.error) continue;
-              const pt = o.point >= 0 ? `+${o.point}` : `${o.point}`;
-              const bo = result.best_odds;
-              const bb = result.best_book;
-              allGrades.push({ ...result, team: o.name, betType: `${pt} (${bo >= 0 ? "+" : ""}${bo}) on ${bb}`, sport: sport.toUpperCase() });
+              const teamName = mkt.key === "totals" ? `${away} vs ${home}` : o.name;
+              allGrades.push({ ...result, team: teamName, betType: label, sport: sport.toUpperCase(), _seedBook: bkKey, _seedOdds: o.price } as TopGrade & { _seedBook: string; _seedOdds: number });
             } catch { /* skip */ }
           }
-          break;
-        }
-      }
-
-      // Totals
-      for (const bk of game.bookmakers ?? []) {
-        for (const mkt of bk.markets ?? []) {
-          if (mkt.key !== "totals") continue;
-          for (const o of mkt.outcomes ?? []) {
-            try {
-              const result = await gradeBet(o.name, "total", o.price, sport, o.point, o.name.toLowerCase());
-              if (result.error) continue;
-              const bo = result.best_odds;
-              const bb = result.best_book;
-              allGrades.push({
-                ...result,
-                team: `${away} vs ${home}`,
-                betType: `${o.name} ${o.point} (${bo >= 0 ? "+" : ""}${bo}) on ${bb}`,
-                sport: sport.toUpperCase(),
-              });
-            } catch { /* skip */ }
-          }
-          break;
         }
       }
     }
@@ -232,7 +213,7 @@ export async function GET() {
 
   const totalScanned = allGrades.length;
 
-  // Dedup: one entry per team/player
+  // Dedup for top grades: one entry per team/player, keep highest
   const seen = new Map<string, TopGrade>();
   for (const g of allGrades) {
     const key = g.team;
@@ -242,19 +223,93 @@ export async function GET() {
     }
   }
 
-  // Sort by EV descending for relative ranking
   const deduped = [...seen.values()];
   deduped.sort((a, b) => b.ev - a.ev);
-
-  // Assign relative grades
   for (let i = 0; i < deduped.length; i++) {
     deduped[i].relativeGrade = relativeGrade(i, deduped.length);
   }
-
-  // Take top 10
   const top = deduped.slice(0, 10);
 
-  cache = { grades: top, updatedAt: new Date().toISOString(), totalScanned };
+  // Find WORST bet tonight (from all graded, not deduped — we want the actual worst line)
+  const gameLineGrades = allGrades.filter((g) => !g.betType.includes("points") && !g.betType.includes("rebounds") && !g.betType.includes("assists") && !g.betType.includes("threes"));
+  gameLineGrades.sort((a, b) => a.ev - b.ev);
+  const worstBet = gameLineGrades[0] ?? null;
+
+  // Find best alternative for the worst bet's game
+  // Extract game teams from the worst bet
+  let bestAlt: TopGrade | null = null;
+  if (worstBet) {
+    const worstTeam = worstBet.team;
+    const worstSport = worstBet.sport;
+    // Find all bets for the same sport that involve a different team/bet type
+    const sameGame = allGrades.filter((g) =>
+      g.sport === worstSport && g.team !== worstTeam && g.ev > worstBet.ev
+    );
+    sameGame.sort((a, b) => b.ev - a.ev);
+    bestAlt = sameGame[0] ?? null;
+  }
+
+  // Sportsbook report card — compare each book's odds to fair odds
+  const bookStats = new Map<string, { totalEv: number; count: number; bestCount: number }>();
+  const MAJOR_BOOKS_LIST = ["fanduel", "draftkings", "betmgm", "caesars", "espnbet"];
+  for (const bk of MAJOR_BOOKS_LIST) {
+    bookStats.set(bk, { totalEv: 0, count: 0, bestCount: 0 });
+  }
+  for (const g of allGrades) {
+    const ext = g as TopGrade & { _seedBook?: string };
+    if (ext._seedBook && bookStats.has(ext._seedBook)) {
+      const entry = bookStats.get(ext._seedBook)!;
+      entry.totalEv += g.ev;
+      entry.count++;
+    }
+    if (g.best_book && bookStats.has(g.best_book)) {
+      bookStats.get(g.best_book)!.bestCount++;
+    }
+  }
+
+  const bookGrades: { name: string; avgEv: number; grade: string; bestPct: number }[] = [];
+  for (const [bk, data] of bookStats) {
+    if (data.count === 0) continue;
+    const avgEv = data.totalEv / data.count;
+    const bestPct = data.bestCount / totalScanned * 100;
+    // Placeholder grade — will be reassigned relative below
+    let grade = "C";
+    bookGrades.push({ name: bk, avgEv: Math.round(avgEv * 100) / 100, grade, bestPct: Math.round(bestPct * 10) / 10 });
+  }
+  bookGrades.sort((a, b) => b.avgEv - a.avgEv);
+  // Assign relative grades — best book = A, worst = D
+  const bookGradeLetters = ["A", "B+", "B", "C+", "C", "D"];
+  for (let i = 0; i < bookGrades.length; i++) {
+    bookGrades[i].grade = bookGradeLetters[Math.min(i, bookGradeLetters.length - 1)];
+  }
+
+  // Worst book
+  const worstBook = bookGrades.length ? bookGrades[bookGrades.length - 1] : { name: "", avgEv: 0, grade: "?", bestPct: 0 };
+
+  cache = {
+    grades: top,
+    updatedAt: new Date().toISOString(),
+    totalScanned,
+    worstBet: worstBet ? {
+      team: worstBet.team,
+      betType: worstBet.betType,
+      sport: worstBet.sport,
+      grade: worstBet.grade,
+      score: worstBet.score,
+      ev: worstBet.ev,
+      best_book: worstBet.best_book,
+      vig: Math.round(Math.abs(worstBet.ev) * 100) / 100,
+    } : null,
+    bestAlt: bestAlt ? {
+      team: bestAlt.team,
+      betType: bestAlt.betType,
+      grade: bestAlt.grade,
+      ev: bestAlt.ev,
+      best_book: bestAlt.best_book,
+    } : null,
+    worstBook,
+    bookGrades,
+  };
   cacheExpiry = now + CACHE_TTL;
 
   return NextResponse.json(cache);
