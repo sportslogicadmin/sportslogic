@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { EmailForm } from "./email-form";
+import { MarketInsights } from "./market-insights";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -244,6 +245,11 @@ export default function Home() {
           </a>
         </div>
       </section>
+
+      <Divider />
+
+      {/* ── MARKET INSIGHTS (live data) ── */}
+      <MarketInsights />
 
       <Divider />
 
