@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>SportsLogic Video Template</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0C0E14;
+    --surface: #161923;
+    --border: #252A37;
+    --accent: #00E87B;
+    --text-primary: #E2E4EA;
+    --text-secondary: #8A8FA3;
+    --text-tertiary: #4F5468;
+    --amber: #EAB308;
+    --red: #EF4444;
+  }
+
+  body {
+    width: 1080px;
+    height: 1920px;
+    background: var(--bg);
+    background-image: radial-gradient(circle, #1A1F2B 1px, transparent 1px);
+    background-size: 24px 24px;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── Hero glow ── */
+  .hero-glow {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 600px;
+    background: radial-gradient(ellipse at center, rgba(0, 232, 123, 0.06) 0%, transparent 65%);
+    filter: blur(80px);
+    pointer-events: none;
+  }
+
+  /* ── Logo area ── */
+  .logo-area {
+    margin-top: 80px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 1;
+  }
+  .logo-area img {
+    height: 52px;
+    width: auto;
+  }
+  .logo-area .wordmark {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  /* ── Header label ── */
+  .section-label {
+    margin-top: 60px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    z-index: 1;
+    opacity: 0;
+    animation: fade-up 0.5s ease-out 0.3s both;
+  }
+
+  .header-title {
+    margin-top: 16px;
+    font-size: 42px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    text-align: center;
+    line-height: 1.1;
+    z-index: 1;
+    opacity: 0;
+    animation: fade-up 0.5s ease-out 0.5s both;
+  }
+  .header-title .accent { color: var(--accent); }
+
+  /* ── Grade card ── */
+  .grade-card {
+    margin-top: 56px;
+    width: 840px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    z-index: 1;
+    box-shadow: 0 0 100px rgba(0, 232, 123, 0.08);
+    opacity: 0;
+    animation: fade-up 0.5s ease-out 0.8s both;
+  }
+
+  .card-header {
+    padding: 40px 48px 0;
+    background: linear-gradient(180deg, rgba(0, 232, 123, 0.05) 0%, transparent 100%);
+  }
+  .card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .card-type {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  .card-ev {
+    font-size: 14px;
+    color: var(--accent);
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .card-payout {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+  .overall-grade {
+    font-size: 96px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    margin-top: -8px;
+    opacity: 0;
+    animation: scale-in 0.4s ease-out 1.2s both;
+  }
+
+  .card-body {
+    padding: 0 48px 44px;
+  }
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  /* ── Legs ── */
+  .leg {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+  }
+  .leg:last-child { border-bottom: none; }
+
+  .leg-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-green { background: var(--accent); box-shadow: 0 0 8px rgba(0, 232, 123, 0.5); }
+  .dot-amber { background: var(--amber); box-shadow: 0 0 8px rgba(234, 179, 8, 0.5); }
+  .dot-red { background: var(--red); box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
+
+  .leg-name {
+    flex: 1;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  .leg-grade {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    width: 48px;
+    text-align: center;
+  }
+  .leg-ev {
+    font-size: 16px;
+    font-family: 'Inter', monospace;
+    width: 120px;
+    text-align: right;
+  }
+  .ev-pos { color: var(--accent); }
+  .ev-neg { color: var(--text-secondary); }
+
+  /* Leg stagger animations */
+  .leg-1 { animation: fade-right 0.4s ease-out 1.8s both; }
+  .leg-2 { animation: fade-right 0.4s ease-out 2.8s both; }
+  .leg-3 { animation: fade-right 0.4s ease-out 3.8s both; }
+  .leg-4 { animation: fade-right 0.4s ease-out 4.8s both; }
+
+  /* ── AI Suggestion ── */
+  .suggestion {
+    margin-top: 28px;
+    padding: 24px;
+    background: rgba(12, 14, 20, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    opacity: 0;
+    animation: fade-up 0.4s ease-out 5.8s both;
+  }
+  .suggestion-label {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .suggestion-text {
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: auto;
+    padding-bottom: 80px;
+    text-align: center;
+    z-index: 1;
+  }
+  .footer-url {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+  }
+  .footer-tagline {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 10px;
+  }
+
+  /* ── Keyframes ── */
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-right {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes scale-in {
+    0% { opacity: 0; transform: scale(0.7); }
+    70% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero-glow"></div>
+
+<!-- Logo -->
+<div class="logo-area">
+  <img src="/logo.png" alt="SportsLogic">
+  <span class="wordmark">SportsLogic</span>
+</div>
+
+<!-- Header -->
+<p class="section-label">GRADING TONIGHT'S ACTION</p>
+<h1 class="header-title">TONIGHT'S POPULAR <span class="accent">PARLAY</span></h1>
+
+<!-- Grade Card -->
+<div class="grade-card">
+  <div class="card-header">
+    <div class="card-header-row">
+      <div>
+        <div class="card-type">4-LEG PARLAY</div>
+        <div class="card-ev">OVERALL EV: +1.4%</div>
+        <div class="card-payout">Payout: +1200</div>
+      </div>
+      <div class="overall-grade">B-</div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="divider"></div>
+
+    <!-- Leg 1 -->
+    <div class="leg leg-1">
+      <div class="leg-dot dot-green"></div>
+      <span class="leg-name">Spurs ML (+135)</span>
+      <span class="leg-grade">A-</span>
+      <span class="leg-ev ev-pos">+5.2% EV</span>
+    </div>
+
+    <!-- Leg 2 -->
+    <div class="leg leg-2">
+      <div class="leg-dot dot-green"></div>
+      <span class="leg-name">Cavaliers ML (-180)</span>
+      <span class="leg-grade">B+</span>
+      <span class="leg-ev ev-pos">+2.9% EV</span>
+    </div>
+
+    <!-- Leg 3 -->
+    <div class="leg leg-3">
+      <div class="leg-dot dot-amber"></div>
+      <span class="leg-name">Lakers ML (-110)</span>
+      <span class="leg-grade">C+</span>
+      <span class="leg-ev ev-neg">-0.8% EV</span>
+    </div>
+
+    <!-- Leg 4 -->
+    <div class="leg leg-4">
+      <div class="leg-dot dot-red"></div>
+      <span class="leg-name">Thunder ML (-240)</span>
+      <span class="leg-grade">C-</span>
+      <span class="leg-ev ev-neg">-3.1% EV</span>
+    </div>
+
+    <!-- AI Suggestion -->
+    <div class="suggestion">
+      <div class="suggestion-label">AI SUGGESTION</div>
+      <div class="suggestion-text">
+        Swap leg 4 — Thunder spread -5.5 has +1.8% EV and keeps your
+        correlation with Cavs ML. This would raise your parlay to a B+.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="footer-url">sportslogic.ai</div>
+  <div class="footer-tagline">GRADE ANY BET IN SECONDS</div>
+</div>
+
+</body>
+</html>
