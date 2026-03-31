@@ -35,6 +35,13 @@ const PROP_MAP: Record<string, string> = {
 
 const SHARP_BOOKS = ["pinnacle", "betonlineag", "bookmaker", "betcris", "circa"];
 
+// US retail books — what the user can actually bet at. Line value compares against these only.
+const US_BOOKS = new Set([
+  "fanduel", "draftkings", "betmgm", "caesars", "espnbet", "betrivers",
+  "fanatics", "hardrockbet", "hardrockbet_az", "betparx", "wynnbet",
+  "ballybet", "fliff", "bovada", "betonlineag",
+]);
+
 const GRADE_MAP: [number, string][] = [
   [90, "A+"], [84, "A"], [78, "A-"], [72, "B+"], [66, "B"], [60, "B-"],
   [54, "C+"], [46, "C"], [38, "C-"], [30, "D+"], [22, "D"], [14, "D-"],
@@ -257,9 +264,13 @@ export async function gradeBet(
   const ev = calcEV(trueProb, userOdds);
   const kelly = calcKelly(trueProb, userOdds);
 
+  // Compare line value against US retail books only (what user can actually bet at)
   const allOurs = [...bookOdds.entries()].map(([bk, bo]) => ({ book: bk, odds: bo.ours }));
-  const best = allOurs.reduce((a, b) => (b.odds > a.odds ? b : a));
-  const worst = allOurs.reduce((a, b) => (b.odds < a.odds ? b : a));
+  const usOurs = allOurs.filter((x) => US_BOOKS.has(x.book));
+  const compareSet = usOurs.length >= 2 ? usOurs : allOurs; // fallback if no US books
+
+  const best = compareSet.reduce((a, b) => (b.odds > a.odds ? b : a));
+  const worst = compareSet.reduce((a, b) => (b.odds < a.odds ? b : a));
 
   const { composite, breakdown } = computeScore(ev, userOdds, best.odds, worst.odds);
 
@@ -370,8 +381,12 @@ export async function gradeProp(
     .map(([bk, bo]) => ({ book: bk, odds: bo[sideLower as "over" | "under"] }))
     .filter((x) => x.odds !== undefined);
 
-  const best = sideByBook.length ? sideByBook.reduce((a, b) => (b.odds > a.odds ? b : a)) : { book: "", odds: 0 };
-  const worst = sideByBook.length ? sideByBook.reduce((a, b) => (b.odds < a.odds ? b : a)) : { book: "", odds: 0 };
+  // Compare against US books only for line value
+  const usSideByBook = sideByBook.filter((x) => US_BOOKS.has(x.book));
+  const compareSet = usSideByBook.length >= 2 ? usSideByBook : sideByBook;
+
+  const best = compareSet.length ? compareSet.reduce((a, b) => (b.odds > a.odds ? b : a)) : { book: "", odds: 0 };
+  const worst = compareSet.length ? compareSet.reduce((a, b) => (b.odds < a.odds ? b : a)) : { book: "", odds: 0 };
 
   const { composite, breakdown } = computeScore(ev, userOdds, best.odds, worst.odds);
 

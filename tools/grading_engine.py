@@ -60,6 +60,13 @@ MARKET_MAP = {
 # Sharp books ranked by priority — Pinnacle is king
 SHARP_BOOKS = ["pinnacle", "betonlineag", "bookmaker", "betcris", "circa"]
 
+# US retail books — line value comparison uses these only
+US_BOOKS = {
+    "fanduel", "draftkings", "betmgm", "caesars", "espnbet", "betrivers",
+    "fanatics", "hardrockbet", "hardrockbet_az", "betparx", "wynnbet",
+    "ballybet", "fliff", "bovada", "betonlineag",
+}
+
 # Grade thresholds
 GRADE_MAP = [
     (90, "A+"), (82, "B+"), (74, "B"), (66, "B-"),  # adjusted to feel right
@@ -465,11 +472,13 @@ def grade_bet(
     kelly = kelly_fraction(true_prob, odds)
     print(f"  EV: {ev_pct:+.2f}% | Fair odds: {fair_odds:+d} | User odds: {odds:+d}")
 
-    # 5. Best available odds
-    best_book_key = max(all_odds, key=lambda k: all_odds[k]["odds"])
-    best_odds = all_odds[best_book_key]["odds"]
-    worst_book_key = min(all_odds, key=lambda k: all_odds[k]["odds"])
-    worst_odds = all_odds[worst_book_key]["odds"]
+    # 5. Best available odds — compare against US retail books only
+    us_odds = {k: v for k, v in all_odds.items() if k in US_BOOKS}
+    compare = us_odds if len(us_odds) >= 2 else all_odds
+    best_book_key = max(compare, key=lambda k: compare[k]["odds"])
+    best_odds = compare[best_book_key]["odds"]
+    worst_book_key = min(compare, key=lambda k: compare[k]["odds"])
+    worst_odds = compare[worst_book_key]["odds"]
 
     print(f"  Best: {best_book_key} ({best_odds:+d}) | Worst: {worst_book_key} ({worst_odds:+d})")
 
