@@ -12,6 +12,7 @@
 - [ ] Add "Our Story" post to X and Instagram as text graphic
 - [ ] Parlay grading on the /grade page (multi-leg input UI)
 - [ ] Add share functionality — generate shareable grade card image
+- [ ] Research AI avatar/lip-sync for videos — test ElevenLabs lip-sync, HeyGen, or Synthesia to add a talking face to content without using my real face
 
 ## Priority 3 (nice to have)
 - [ ] Screenshot upload feature (OCR via Claude Vision API)
