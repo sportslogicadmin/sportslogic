@@ -60,6 +60,15 @@ type GradeResult = {
   error?: string;
 };
 
+const BOOK_NAMES: Record<string, string> = {
+  fanduel: "FanDuel", draftkings: "DraftKings", betmgm: "BetMGM", caesars: "Caesars",
+  espnbet: "ESPN Bet", betrivers: "BetRivers", fanatics: "Fanatics", bovada: "Bovada",
+  hardrockbet: "Hard Rock", hardrockbet_az: "Hard Rock", betparx: "BetParx",
+  wynnbet: "WynnBet", ballybet: "Bally Bet", fliff: "Fliff", pinnacle: "Pinnacle",
+  betonlineag: "BetOnline", williamhill_us: "Caesars", lowvig: "LowVig", rebet: "Rebet",
+};
+function bookName(key: string) { return BOOK_NAMES[key] ?? key; }
+
 function gradeColor(grade: string): string {
   const f = grade[0];
   if (f === "A" || f === "B") return "text-accent";
@@ -323,99 +332,6 @@ export default function GradePage() {
           <p className="text-sm text-text-secondary mt-2">Know your edge before you place it.</p>
         </div>
 
-        {/* ── TONIGHT'S TOP GRADES ── */}
-        {(topLoading || (topGrades && topGrades.grades.length > 0)) && (
-          <div className="mb-10">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-sm font-bold uppercase text-text-primary tracking-wide">TONIGHT&apos;S TOP GRADES</h2>
-                <p className="text-[10px] text-text-tertiary mt-0.5">Auto-graded across all games and books</p>
-              </div>
-              {topGrades?.updatedAt && (
-                <p className="text-[10px] text-text-tertiary">
-                  Updated {Math.round((Date.now() - new Date(topGrades.updatedAt).getTime()) / 60000)}m ago
-                </p>
-              )}
-            </div>
-
-            {topLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-20 bg-surface border border-border rounded-xl animate-pulse" />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {topGrades?.grades.map((g, i) => {
-                  const locked = i >= FREE_VISIBLE;
-                  const f = g.grade[0];
-                  const color = f === "A" || f === "B" ? "text-accent" : f === "C" ? "text-amber" : "text-red";
-                  const pillBg = f === "A" || f === "B" ? "bg-accent/15 text-accent" : f === "C" ? "bg-amber/15 text-amber" : "bg-red/15 text-red";
-                  const signal = f === "A" || f === "B" ? "BUY" : f === "C" ? "HOLD" : "SELL";
-
-                  return (
-                    <div
-                      key={i}
-                      className={`bg-surface border border-border rounded-xl p-4 ${locked ? "relative overflow-hidden" : ""}`}
-                    >
-                      <div className="flex items-center gap-4">
-                        {/* Rank + Grade */}
-                        <div className="shrink-0 text-center w-14">
-                          <p className="text-[10px] font-mono text-text-tertiary">#{i + 1}</p>
-                          <p className={`text-2xl font-bold leading-tight ${locked ? "blur-sm" : color}`}>
-                            {g.grade}
-                          </p>
-                        </div>
-
-                        {/* Details */}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-text-primary font-semibold truncate">
-                            {g.team}
-                          </p>
-                          <p className="text-xs text-text-secondary mt-0.5">
-                            {g.betType} <span className="text-text-tertiary">&bull; {g.sport}</span>
-                          </p>
-                          <p className={`text-[10px] mt-1 ${locked ? "blur-sm" : "text-text-tertiary"}`}>
-                            {g.ev >= 0 ? "+" : ""}{g.ev}% EV &bull; Best: <span className="text-text-secondary">{g.best_book}</span>
-                          </p>
-                        </div>
-
-                        {/* Signal pill */}
-                        <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${locked ? "blur-sm bg-border text-text-tertiary" : pillBg}`}>
-                          {signal}
-                        </span>
-                      </div>
-
-                      {/* Lock overlay */}
-                      {locked && (
-                        <div className="absolute inset-0 bg-surface/50 backdrop-blur-[2px] rounded-xl flex items-center justify-center gap-1.5">
-                          <svg className="w-3.5 h-3.5 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                            <path d="M7 11V7a5 5 0 0110 0v4" />
-                          </svg>
-                          <span className="text-[10px] text-text-tertiary font-semibold uppercase tracking-wide">PRO</span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {/* Upgrade CTA */}
-                {topGrades && topGrades.grades.length > FREE_VISIBLE && (
-                  <div className="text-center pt-4">
-                    <p className="text-xs text-text-tertiary mb-3">
-                      {topGrades.grades.length - FREE_VISIBLE} more top grades locked
-                    </p>
-                    <a href="/#waitlist" className="inline-flex items-center h-10 px-6 rounded-lg bg-accent text-bg text-[11px] font-semibold uppercase tracking-[0.5px] hover:brightness-110 transition-all">
-                      UPGRADE TO PRO — $15/MO
-                    </a>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
         {/* ── FORM ── */}
         <form onSubmit={handleSubmit} className="space-y-5">
 
@@ -548,6 +464,64 @@ export default function GradePage() {
           </button>
         </form>
 
+        {/* ── TONIGHT'S TOP GRADES (compact, below form) ── */}
+        {!result && (topLoading || (topGrades && topGrades.grades.length > 0)) && (
+          <div className="mt-10 pt-8 border-t border-border/30">
+            <div className="flex items-baseline justify-between mb-4">
+              <h2 className="text-xs font-bold uppercase text-text-tertiary tracking-[1.5px]">TONIGHT&apos;S TOP GRADES</h2>
+              {topGrades?.updatedAt && (
+                <span className="text-[10px] text-text-tertiary">
+                  {Math.round((Date.now() - new Date(topGrades.updatedAt).getTime()) / 60000)}m ago
+                </span>
+              )}
+            </div>
+
+            {topLoading ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-11 bg-surface border border-border rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  {topGrades?.grades.slice(0, FREE_VISIBLE).map((g, i) => {
+                    const f = g.grade[0];
+                    const color = f === "A" || f === "B" ? "text-accent" : f === "C" ? "text-amber" : "text-red";
+                    const signal = f === "A" || f === "B" ? "BUY" : "HOLD";
+                    const signalCls = f === "A" || f === "B" ? "text-accent" : "text-amber";
+
+                    return (
+                      <div key={i} className="bg-surface border border-border rounded-lg px-3 py-2.5 flex items-center gap-2">
+                        <span className="text-[10px] font-mono text-text-tertiary w-4 shrink-0">{i + 1}</span>
+                        <span className={`text-sm font-bold w-7 shrink-0 ${color}`}>{g.grade}</span>
+                        <div className="flex-1 min-w-0 flex items-baseline gap-1.5 overflow-hidden">
+                          <span className="text-xs text-text-primary font-medium truncate">{g.team}</span>
+                          <span className="text-[10px] text-text-tertiary truncate">{g.betType}</span>
+                        </div>
+                        <span className="text-[10px] text-text-secondary shrink-0 hidden sm:inline">{g.ev >= 0 ? "+" : ""}{g.ev}%</span>
+                        <span className="text-[10px] text-text-tertiary shrink-0 hidden sm:inline">{bookName(g.best_book)}</span>
+                        <span className={`text-[9px] font-bold uppercase shrink-0 ${signalCls}`}>{signal}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {topGrades && topGrades.grades.length > FREE_VISIBLE && (
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/20">
+                    <p className="text-[11px] text-text-tertiary">
+                      {topGrades.grades.length - FREE_VISIBLE} more top grades available
+                    </p>
+                    <a href="/#waitlist" className="text-[11px] font-semibold text-accent uppercase tracking-wide hover:brightness-110 transition-all">
+                      UNLOCK PRO →
+                    </a>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
         {/* ── ERROR ── */}
         {error && (
           <div className="mt-6 p-4 rounded-xl bg-red/10 border border-red/30 text-center">
@@ -613,7 +587,7 @@ export default function GradePage() {
                     <p className="text-lg font-bold text-accent">
                       {result.best_odds >= 0 ? "+" : ""}{result.best_odds}
                     </p>
-                    <p className="text-[10px] text-accent mt-0.5 uppercase">{result.best_book}</p>
+                    <p className="text-[10px] text-accent mt-0.5 uppercase">{bookName(result.best_book)}</p>
                   </div>
                 </div>
 
