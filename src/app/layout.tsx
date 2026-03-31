@@ -21,6 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} antialiased scroll-smooth`}>
+      <head>
+        <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap" rel="stylesheet" />
+      </head>
       <body className="min-h-screen bg-bg text-text-primary font-sans">
         {children}
       </body>

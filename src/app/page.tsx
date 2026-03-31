@@ -3,7 +3,7 @@ import { EmailForm } from "./email-form";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs font-semibold tracking-[2px] text-text-tertiary uppercase text-center mb-12 sm:mb-14">
+    <p className="font-heading text-xs font-semibold tracking-[2px] text-text-tertiary uppercase text-center mb-12 sm:mb-14">
       {children}
     </p>
   );
@@ -60,7 +60,7 @@ export default function Home() {
             className="h-9 w-auto"
             priority
           />
-          <span className="text-lg font-bold text-text-primary tracking-tight">
+          <span className="font-heading text-lg font-bold text-text-primary tracking-tight">
             SportsLogic
           </span>
         </div>
@@ -81,10 +81,10 @@ export default function Home() {
             filter: "blur(60px)",
           }}
         />
-        <p className="relative text-xs font-semibold tracking-[2px] text-text-tertiary uppercase mb-6">
+        <p className="font-heading relative text-xs font-semibold tracking-[2px] text-text-tertiary uppercase mb-6">
           THE GRADING TOOL BUILT FOR BETTORS
         </p>
-        <h1 className="relative text-[36px] sm:text-[48px] md:text-[60px] font-bold uppercase tracking-[-1px] leading-[1.05] max-w-[720px] mx-auto mb-6">
+        <h1 className="font-heading relative text-[36px] sm:text-[48px] md:text-[60px] font-bold uppercase tracking-[-1px] leading-[1.05] max-w-[720px] mx-auto mb-6">
           KNOW YOUR{" "}
           <span className="text-accent">EDGE</span> BEFORE YOU BET.
         </h1>
@@ -110,23 +110,23 @@ export default function Home() {
         <SectionLabel>HOW IT WORKS</SectionLabel>
         <div className="max-w-[600px] mx-auto space-y-12 sm:space-y-14">
           <div className="flex items-start gap-5 sm:gap-8">
-            <span className="text-[48px] font-bold text-accent leading-none shrink-0 w-16 text-right">01</span>
+            <span className="font-heading text-[48px] font-bold text-accent leading-none shrink-0 w-16 text-right">01</span>
             <div className="pt-1">
-              <h3 className="text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">SCREENSHOT YOUR BET</h3>
+              <h3 className="font-heading text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">SCREENSHOT YOUR BET</h3>
               <p className="text-sm text-text-secondary leading-relaxed">Open DraftKings, FanDuel, whatever you use. Screenshot your slip.</p>
             </div>
           </div>
           <div className="flex items-start gap-5 sm:gap-8">
-            <span className="text-[48px] font-bold text-accent leading-none shrink-0 w-16 text-right">02</span>
+            <span className="font-heading text-[48px] font-bold text-accent leading-none shrink-0 w-16 text-right">02</span>
             <div className="pt-1">
-              <h3 className="text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">GET YOUR GRADE</h3>
+              <h3 className="font-heading text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">GET YOUR GRADE</h3>
               <p className="text-sm text-text-secondary leading-relaxed">Our AI reads every leg, pulls live odds, and grades it A+ through F.</p>
             </div>
           </div>
           <div className="flex items-start gap-5 sm:gap-8">
-            <span className="text-[48px] font-bold text-accent leading-none shrink-0 w-16 text-right">03</span>
+            <span className="font-heading text-[48px] font-bold text-accent leading-none shrink-0 w-16 text-right">03</span>
             <div className="pt-1">
-              <h3 className="text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">BET SMARTER</h3>
+              <h3 className="font-heading text-sm font-bold uppercase text-text-primary mb-2 tracking-wide">BET SMARTER</h3>
               <p className="text-sm text-text-secondary leading-relaxed">See which legs are killing your parlay. Get AI-powered swaps that improve your edge.</p>
             </div>
           </div>
@@ -143,7 +143,7 @@ export default function Home() {
             <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
               <span className="text-accent text-sm font-bold">01</span>
             </div>
-            <h3 className="text-sm font-bold uppercase text-text-primary mb-3 tracking-wide">
+            <h3 className="font-heading text-sm font-bold uppercase text-text-primary mb-3 tracking-wide">
               NOT A PICKS SERVICE
             </h3>
             <p className="text-sm text-text-secondary leading-relaxed">
@@ -156,7 +156,7 @@ export default function Home() {
             <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
               <span className="text-accent text-sm font-bold">02</span>
             </div>
-            <h3 className="text-sm font-bold uppercase text-text-primary mb-3 tracking-wide">
+            <h3 className="font-heading text-sm font-bold uppercase text-text-primary mb-3 tracking-wide">
               TRANSPARENT GRADING
             </h3>
             <p className="text-sm text-text-secondary leading-relaxed">
@@ -169,7 +169,7 @@ export default function Home() {
             <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
               <span className="text-accent text-sm font-bold">03</span>
             </div>
-            <h3 className="text-sm font-bold uppercase text-text-primary mb-3 tracking-wide">
+            <h3 className="font-heading text-sm font-bold uppercase text-text-primary mb-3 tracking-wide">
               BUILT BY BETTORS
             </h3>
             <p className="text-sm text-text-secondary leading-relaxed">
@@ -203,7 +203,7 @@ export default function Home() {
                   OVERALL EXPECTED VALUE: +3.2%
                 </p>
               </div>
-              <span className="text-[64px] font-bold text-accent leading-none -mt-2">
+              <span className="font-heading text-[64px] font-bold text-accent leading-none -mt-2">
                 B+
               </span>
             </div>
@@ -292,7 +292,7 @@ export default function Home() {
           <div className="bg-surface border border-accent rounded-xl p-6 flex flex-col order-first sm:order-last">
             <p className="text-xs font-semibold uppercase tracking-[1px] text-accent mb-4">PRO</p>
             <div className="mb-5">
-              <span className="text-3xl font-bold text-text-primary">$15</span>
+              <span className="font-heading text-3xl font-bold text-text-primary">$15</span>
               <span className="text-sm text-text-secondary ml-1.5">/month</span>
             </div>
             <ul className="space-y-3 flex-1">
@@ -310,7 +310,7 @@ export default function Home() {
           <div className="bg-surface border border-border rounded-xl p-6 flex flex-col order-last sm:order-first">
             <p className="text-xs font-semibold uppercase tracking-[1px] text-text-tertiary mb-4">FREE</p>
             <div className="mb-5">
-              <span className="text-3xl font-bold text-text-primary">$0</span>
+              <span className="font-heading text-3xl font-bold text-text-primary">$0</span>
               <span className="text-sm text-text-secondary ml-1.5">forever</span>
             </div>
             <ul className="space-y-3 flex-1">
@@ -333,7 +333,7 @@ export default function Home() {
         <SectionLabel>FAQ</SectionLabel>
         <div className="max-w-[640px] mx-auto text-center">
           <div className="pb-6">
-            <h3 className="text-base font-bold uppercase text-text-primary mb-2">IS THIS LEGAL?</h3>
+            <h3 className="font-heading text-base font-bold uppercase text-text-primary mb-2">IS THIS LEGAL?</h3>
             <p className="text-sm text-text-secondary leading-[1.7]">
               Yes. We provide analysis tools only — we never place bets on
               your behalf.
@@ -341,7 +341,7 @@ export default function Home() {
           </div>
           <div className="h-px bg-border/30 mb-6" />
           <div className="pb-6">
-            <h3 className="text-base font-bold uppercase text-text-primary mb-2">HOW ACCURATE IS THE GRADING?</h3>
+            <h3 className="font-heading text-base font-bold uppercase text-text-primary mb-2">HOW ACCURATE IS THE GRADING?</h3>
             <p className="text-sm text-text-secondary leading-[1.7]">
               We measure decision quality, not outcome prediction. An A+ bet
               can still lose — but higher-graded bets outperform over time.
@@ -349,7 +349,7 @@ export default function Home() {
           </div>
           <div className="h-px bg-border/30 mb-6" />
           <div>
-            <h3 className="text-base font-bold uppercase text-text-primary mb-2">WHAT SPORTSBOOKS DO YOU SUPPORT?</h3>
+            <h3 className="font-heading text-base font-bold uppercase text-text-primary mb-2">WHAT SPORTSBOOKS DO YOU SUPPORT?</h3>
             <p className="text-sm text-text-secondary leading-[1.7]">
               DraftKings, FanDuel, BetMGM, Caesars, ESPN Bet, and more. If
               you can screenshot it, we can grade it.
@@ -360,7 +360,7 @@ export default function Home() {
 
       {/* ── FINAL CTA ── */}
       <section className="w-full max-w-[1080px] mx-auto px-6 py-20 sm:py-24 text-center">
-        <h2 className="text-2xl sm:text-4xl font-bold uppercase tracking-[-0.5px] mb-4">
+        <h2 className="font-heading text-2xl sm:text-4xl font-bold uppercase tracking-[-0.5px] mb-4">
           THE EDGE IS WAITING.
         </h2>
         <p className="text-sm text-text-secondary mb-8">

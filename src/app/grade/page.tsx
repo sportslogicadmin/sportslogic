@@ -316,7 +316,7 @@ export default function GradePage() {
       <nav className="w-full max-w-[640px] mx-auto flex items-center justify-between px-6 py-5">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.png" alt="SportsLogic" width={56} height={28} className="h-7 w-auto" />
-          <span className="text-base font-bold text-text-primary tracking-tight">SportsLogic</span>
+          <span className="font-heading text-base font-bold text-text-primary tracking-tight">SportsLogic</span>
         </Link>
         <Link href="/" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors uppercase tracking-wide">
           HOME
@@ -326,7 +326,7 @@ export default function GradePage() {
       <div className="w-full max-w-[520px] mx-auto px-5 pb-16">
         {/* ── HEADER ── */}
         <div className="text-center pt-8 pb-10">
-          <h1 className="text-[28px] sm:text-[36px] font-bold uppercase tracking-[-0.5px] leading-tight">
+          <h1 className="font-heading text-[28px] sm:text-[36px] font-bold uppercase tracking-[-0.5px] leading-tight">
             GRADE YOUR <span className="text-accent">BET</span>
           </h1>
           <p className="text-sm text-text-secondary mt-2">Know your edge before you place it.</p>
@@ -543,7 +543,7 @@ export default function GradePage() {
                 style={{ background: "linear-gradient(180deg, rgba(0, 232, 123, 0.05) 0%, transparent 100%)" }}
               >
                 <p className="text-[11px] text-text-tertiary uppercase tracking-[2px] mb-3">YOUR GRADE</p>
-                <p className={`text-[72px] font-bold leading-none ${gradeColor(result.grade)}`}>
+                <p className={`font-heading text-[72px] font-bold leading-none ${gradeColor(result.grade)}`}>
                   {result.grade}
                 </p>
                 {/* BUY / HOLD / SELL label */}

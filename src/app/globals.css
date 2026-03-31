@@ -11,6 +11,11 @@
   --color-amber: #EAB308;
   --color-red: #EF4444;
   --font-sans: var(--font-inter);
+  --font-heading: 'Satoshi', var(--font-inter), system-ui, sans-serif;
+}
+
+.font-heading {
+  font-family: var(--font-heading);
 }
 
 html {
