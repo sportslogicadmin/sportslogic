@@ -59,21 +59,22 @@ export default function Home() {
         <div className="hero-mesh" />
 
         <p className="font-heading relative text-[11px] font-bold tracking-[3px] text-text-tertiary uppercase mb-8">
-          THE GRADING TOOL BUILT FOR BETTORS
+          THE AI PARLAY GRADER
         </p>
         <h1 className="font-heading relative text-[38px] sm:text-[52px] md:text-[64px] font-bold uppercase tracking-[-1.5px] leading-[1.02] max-w-[760px] mx-auto mb-8">
-          KNOW YOUR{" "}
-          <span className="text-accent">EDGE</span> BEFORE YOU BET.
+          DROP YOUR{" "}
+          <span className="text-accent">PARLAY.</span>{" "}
+          GET YOUR GRADE.
         </h1>
-        <p className="relative text-[15px] sm:text-[17px] text-text-secondary max-w-[460px] mx-auto leading-[1.75] mb-10">
-          Screenshot any bet slip. Get an instant grade with expected value,
-          leg-by-leg analysis, and smarter alternatives.
+        <p className="relative text-[15px] sm:text-[17px] text-text-secondary max-w-[480px] mx-auto leading-[1.75] mb-10">
+          Our AI reads your bet slip in seconds — grades every leg, finds the
+          weak spots, and suggests smarter swaps.
         </p>
 
         {/* Dual CTAs */}
         <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
           <a href="/grade" className="inline-flex items-center justify-center h-13 w-full sm:w-auto px-8 rounded-xl bg-accent text-bg text-[12px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all">
-            GRADE A BET NOW
+            GRADE YOUR PARLAY
           </a>
           <a href="#waitlist" className="inline-flex items-center justify-center h-13 w-full sm:w-auto px-8 rounded-xl bg-transparent border border-border text-text-secondary text-[12px] font-bold uppercase tracking-[0.5px] hover:border-text-tertiary transition-all">
             JOIN WAITLIST
@@ -96,9 +97,9 @@ export default function Home() {
         <SectionLabel>HOW IT WORKS</SectionLabel>
         <div className="max-w-[560px] mx-auto space-y-16 sm:space-y-20">
           {[
-            { n: "01", title: "SCREENSHOT YOUR BET", desc: "Upload a screenshot from any sportsbook app." },
-            { n: "02", title: "GET YOUR GRADE", desc: "AI grades every leg with live odds from 30+ books." },
-            { n: "03", title: "BET SMARTER", desc: "See which legs hurt you and get AI-powered swap suggestions." },
+            { n: "01", title: "SCREENSHOT YOUR PARLAY", desc: "Upload a screenshot from any sportsbook app." },
+            { n: "02", title: "AI GRADES EVERY LEG", desc: "We read your slip, pull live odds from 30+ books, and grade each leg." },
+            { n: "03", title: "FIX THE WEAK SPOTS", desc: "See which legs are dragging you down and get AI-powered swap suggestions." },
           ].map((step) => (
             <div key={step.n} className="flex items-start gap-6 sm:gap-10">
               <span className="font-heading text-[52px] sm:text-[56px] font-bold text-accent leading-none shrink-0 w-16 sm:w-20 text-right step-glow">
@@ -184,7 +185,7 @@ export default function Home() {
 
         <div className="text-center mt-10">
           <a href="/grade" className="inline-flex items-center h-13 sm:h-12 w-full sm:w-auto px-10 rounded-xl bg-accent text-bg text-[12px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all justify-center">
-            GRADE YOUR FIRST BET FREE
+            GRADE YOUR PARLAY FREE
           </a>
         </div>
       </section>

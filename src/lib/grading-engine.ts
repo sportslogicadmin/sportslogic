@@ -515,6 +515,118 @@ export async function findAlternatives(
     .slice(0, 3);
 }
 
+// ── Parlay grading ──
+
+export type ParlayLeg = {
+  team: string;
+  betType: string;
+  odds: number;
+  sport: string;
+  line?: number;
+  side?: string;
+  player?: string;
+  isProp?: boolean;
+};
+
+export type ParlayResult = {
+  overallGrade: string;
+  overallScore: number;
+  overallEv: number;
+  combinedTrueProb: number;
+  vigCost: number;
+  legCount: number;
+  legs: (GradeResult & { team: string; betType: string })[];
+  weakestLeg: string | null;
+  correlationWarnings: string[];
+  swapSuggestion: string | null;
+};
+
+export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
+  const gradedLegs: (GradeResult & { team: string; betType: string })[] = [];
+  let combinedTrueProb = 1;
+  let combinedImpliedProb = 1;
+
+  for (const leg of legs) {
+    const odds = typeof leg.odds === "string" ? parseInt(String(leg.odds).replace("+", ""), 10) : leg.odds;
+    let result: GradeResult;
+
+    if (leg.isProp && leg.player) {
+      result = await gradeProp(leg.player, leg.betType || "points", leg.side || "over", leg.line || 0, odds, leg.sport, leg.team);
+    } else {
+      result = await gradeBet(leg.team, leg.betType || "moneyline", odds, leg.sport, leg.line, leg.side);
+    }
+
+    gradedLegs.push({ ...result, team: leg.team, betType: leg.betType || "moneyline" });
+
+    if (result.true_prob > 0) {
+      combinedTrueProb *= result.true_prob;
+      combinedImpliedProb *= americanToImplied(odds);
+    }
+  }
+
+  // Parlay EV
+  let parlayEv = 0;
+  let vigCost = 0;
+  if (combinedImpliedProb > 0 && combinedTrueProb > 0) {
+    const parlayDecimal = 1 / combinedImpliedProb;
+    parlayEv = (combinedTrueProb * (parlayDecimal - 1) - (1 - combinedTrueProb)) * 100;
+    vigCost = ((combinedImpliedProb - combinedTrueProb) / combinedTrueProb) * 100;
+  }
+
+  // Correlation detection — same-game legs
+  const warnings: string[] = [];
+  const gameTeams = new Map<string, number>();
+  for (let i = 0; i < gradedLegs.length; i++) {
+    const t = gradedLegs[i].team.toLowerCase();
+    if (gameTeams.has(t)) {
+      warnings.push(`Legs ${gameTeams.get(t)! + 1} and ${i + 1} both involve ${gradedLegs[i].team} — likely correlated.`);
+    } else {
+      gameTeams.set(t, i);
+    }
+  }
+
+  // Composite parlay score
+  const avgScore = gradedLegs.length > 0
+    ? gradedLegs.reduce((sum, l) => sum + l.score, 0) / gradedLegs.length
+    : 0;
+  const worstScore = gradedLegs.length > 0
+    ? Math.min(...gradedLegs.map((l) => l.score))
+    : 0;
+  const corrPenalty = warnings.length * 5;
+  const weakPenalty = Math.max(0, (50 - worstScore) * 0.3);
+  const parlayScore = Math.max(0, avgScore - corrPenalty - weakPenalty);
+
+  // Find weakest leg
+  const weakest = gradedLegs.length > 0
+    ? gradedLegs.reduce((a, b) => (a.score < b.score ? a : b))
+    : null;
+
+  // Swap suggestion — find what the weakest leg's best alternative would be
+  let swapSuggestion: string | null = null;
+  if (weakest && weakest.score < 50) {
+    try {
+      const alts = await findAlternatives(weakest.team, legs[0]?.sport || "nba", weakest.score);
+      if (alts.length > 0) {
+        const best = alts[0] as GradeResult & { label?: string };
+        swapSuggestion = `Swap leg ${gradedLegs.indexOf(weakest) + 1}: ${best.label ?? weakest.team} grades ${best.grade} with ${best.ev >= 0 ? "+" : ""}${best.ev.toFixed(1)}% EV.`;
+      }
+    } catch { /* skip */ }
+  }
+
+  return {
+    overallGrade: scoreToGrade(parlayScore),
+    overallScore: Math.round(parlayScore * 10) / 10,
+    overallEv: Math.round(parlayEv * 100) / 100,
+    combinedTrueProb: Math.round(combinedTrueProb * 10000) / 10000,
+    vigCost: Math.round(vigCost * 100) / 100,
+    legCount: gradedLegs.length,
+    legs: gradedLegs,
+    weakestLeg: weakest ? `${weakest.team} (${weakest.grade})` : null,
+    correlationWarnings: warnings,
+    swapSuggestion,
+  };
+}
+
 function errorResult(msg: string): GradeResult {
   return {
     grade: "?",

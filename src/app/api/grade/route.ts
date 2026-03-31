@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { gradeBet, gradeProp, findAlternatives } from "@/lib/grading-engine";
+import { gradeBet, gradeProp, gradeParlay, findAlternatives, type ParlayLeg } from "@/lib/grading-engine";
 
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
 const FREE_LIMIT = 50;
@@ -41,10 +41,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { team, betType, odds, sport, line, side, player, isProp } = body as {
+  const { team, betType, odds, sport, line, side, player, isProp, parlayLegs } = body as {
     team?: string; betType?: string; odds?: string | number; sport?: string;
     line?: number; side?: string; player?: string; isProp?: boolean;
+    parlayLegs?: ParlayLeg[];
   };
+
+  // Parlay grading
+  if (parlayLegs && parlayLegs.length > 0) {
+    try {
+      const result = await gradeParlay(parlayLegs);
+      return NextResponse.json({ ...result, remaining: rate.remaining });
+    } catch (err) {
+      console.error("[grade-parlay]", err);
+      return NextResponse.json({ error: "Parlay grading failed. Try again." }, { status: 500 });
+    }
+  }
 
   if ((!team && !player) || !odds || !sport) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });

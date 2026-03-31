@@ -1,67 +1,49 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { bookName } from "@/lib/book-names";
 
-const SPORTS = [
-  { key: "nba", label: "NBA" },
-  { key: "nfl", label: "NFL" },
-  { key: "mlb", label: "MLB" },
-  { key: "nhl", label: "NHL" },
-  { key: "ncaab", label: "NCAAB" },
-  { key: "ncaaf", label: "NCAAF" },
-];
-
-const BET_TYPES = [
-  { key: "moneyline", label: "ML" },
-  { key: "spread", label: "SPREAD" },
-  { key: "total", label: "TOTAL" },
-  { key: "prop", label: "PROP" },
-];
-
-const PROP_TYPES = [
-  { key: "points", label: "PTS" },
-  { key: "rebounds", label: "REB" },
-  { key: "assists", label: "AST" },
-  { key: "threes", label: "3PT" },
-  { key: "pra", label: "PRA" },
-];
-
-const BOOKS = [
-  { key: "fanduel", label: "FanDuel" },
-  { key: "draftkings", label: "DraftKings" },
-  { key: "betmgm", label: "BetMGM" },
-  { key: "caesars", label: "Caesars" },
-  { key: "espnbet", label: "ESPN Bet" },
-  { key: "", label: "Other" },
-];
-
-type Outcome = { name: string; price: number; point?: number };
-type Game = {
-  id: string;
-  home: string;
-  away: string;
-  time: string;
-  odds: Record<string, Outcome[]>;
+type ParsedLeg = {
+  team: string;
+  opponent?: string | null;
+  bet_type: string;
+  line?: number | null;
+  odds: number;
+  side?: string | null;
+  player?: string | null;
+  prop_type?: string | null;
+  sport: string;
+  stake?: number | null;
+  potential_payout?: number | null;
 };
 
-type GradeResult = {
+type GradedLeg = {
+  team: string;
+  betType: string;
   grade: string;
   score: number;
   ev: number;
-  fair_odds: number;
   best_odds: number;
   best_book: string;
   true_prob: number;
-  kelly: number;
-  breakdown: Record<string, number>;
-  remaining?: number;
-  error?: string;
-  alternatives?: { label: string; grade: string; score: number; ev: number; best_book: string }[];
 };
 
-import { bookName } from "@/lib/book-names";
+type ParlayResult = {
+  overallGrade: string;
+  overallScore: number;
+  overallEv: number;
+  combinedTrueProb: number;
+  vigCost: number;
+  legCount: number;
+  legs: GradedLeg[];
+  weakestLeg: string | null;
+  correlationWarnings: string[];
+  swapSuggestion: string | null;
+};
+
+type Step = "upload" | "parsing" | "confirm" | "grading" | "result";
 
 function gradeColor(grade: string): string {
   const f = grade[0];
@@ -70,228 +52,127 @@ function gradeColor(grade: string): string {
   return "text-red";
 }
 
+function gradeBg(grade: string): string {
+  const f = grade[0];
+  if (f === "A" || f === "B") return "border-accent/30 bg-accent/5";
+  if (f === "C") return "border-amber/30 bg-amber/5";
+  return "border-red/30 bg-red/5";
+}
+
+function dotColor(grade: string): string {
+  const f = grade[0];
+  if (f === "A" || f === "B") return "bg-accent dot-glow-green";
+  if (f === "C") return "bg-amber dot-glow-amber";
+  return "bg-red dot-glow-red";
+}
+
 function gradeContext(grade: string): string {
   const f = grade[0];
   if (f === "A") return "Strong edge. The math is in your favor.";
-  if (f === "B") return "Solid bet. Better than most.";
-  if (f === "C") return "Average. The book's vig is standard here.";
-  if (f === "D") return "Below average. You're overpaying for this line.";
-  return "Bad value. The book is eating you alive on this one.";
+  if (f === "B") return "Solid parlay. Better than most.";
+  if (f === "C") return "Average. Standard vig on most legs.";
+  if (f === "D") return "Below average. Weak legs dragging you down.";
+  return "Bad value. The books love this parlay.";
 }
-
-function InfoTip({ text }: { text: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <span className="relative inline-block ml-1">
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
-        className="w-4 h-4 rounded-full bg-border text-text-tertiary text-[9px] font-bold inline-flex items-center justify-center cursor-pointer hover:bg-text-tertiary hover:text-bg transition-colors"
-      >
-        ?
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 rounded-lg bg-surface border border-border shadow-lg">
-            <p className="text-[11px] text-text-secondary leading-relaxed">{text}</p>
-          </div>
-        </>
-      )}
-    </span>
-  );
-}
-
-function ScoreBar({ label, value }: { label: string; value: number }) {
-  const pct = Math.max(0, Math.min(100, value));
-  const color = pct >= 60 ? "bg-accent" : pct >= 40 ? "bg-amber" : "bg-red";
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-[11px] text-text-tertiary w-24 shrink-0 uppercase tracking-wide">{label}</span>
-      <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
-      </div>
-      <span className="text-[11px] text-text-tertiary w-6 text-right">{Math.round(pct)}</span>
-    </div>
-  );
-}
-
-// Shared input class
-const inputCls = "w-full h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm outline-none focus:border-accent/50 focus:shadow-[0_0_0_2px_rgba(0,232,123,0.1)] transition-all placeholder:text-text-tertiary";
-const selectCls = `${inputCls} appearance-none cursor-pointer`;
-
-function ToggleGroup({
-  options,
-  value,
-  onChange,
-  cols = "grid-cols-3",
-}: {
-  options: { key: string; label: string }[];
-  value: string;
-  onChange: (v: string) => void;
-  cols?: string;
-}) {
-  return (
-    <div className={`grid ${cols} gap-1.5`}>
-      {options.map((o) => (
-        <button
-          key={o.key}
-          type="button"
-          onClick={() => onChange(o.key)}
-          className={`h-10 rounded-lg text-[11px] font-semibold uppercase tracking-wide transition-all cursor-pointer ${
-            value === o.key
-              ? "bg-accent text-bg"
-              : "bg-surface border border-border text-text-secondary hover:border-text-tertiary"
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 
 export default function GradePage() {
-  const [sport, setSport] = useState("nba");
-  const [games, setGames] = useState<Game[]>([]);
-  const [selectedGameId, setSelectedGameId] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState("");
-  const [betType, setBetType] = useState("moneyline");
-  const [selectedBetKey, setSelectedBetKey] = useState("");
-  const [line, setLine] = useState("");
-  const [side, setSide] = useState("over");
-  const [odds, setOdds] = useState("");
-  const [customOdds, setCustomOdds] = useState(false);
-  const [book, setBook] = useState("fanduel");
-  const [playerName, setPlayerName] = useState("");
-  const [propType, setPropType] = useState("points");
-  const [loading, setLoading] = useState(false);
-  const [loadingGames, setLoadingGames] = useState(false);
-  const [result, setResult] = useState<GradeResult | null>(null);
+  const [step, setStep] = useState<Step>("upload");
+  const [parsedLegs, setParsedLegs] = useState<ParsedLeg[]>([]);
+  const [result, setResult] = useState<ParlayResult | null>(null);
   const [error, setError] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setLoadingGames(true);
-    setSelectedGameId("");
-    setSelectedTeam("");
-    setSelectedBetKey("");
-    setOdds("");
-    setResult(null);
-    fetch(`/api/games?sport=${sport}`)
-      .then((r) => r.json())
-      .then((data) => { setGames(data.games || []); setLoadingGames(false); })
-      .catch(() => { setGames([]); setLoadingGames(false); });
-  }, [sport]);
-
-  // Reset bet selection when game or bet type changes
-  useEffect(() => {
-    setSelectedBetKey("");
-    setOdds("");
-    setCustomOdds(false);
-  }, [selectedGameId, betType]);
-
-  function formatGameTime(iso: string) {
-    const d = new Date(iso);
-    const now = new Date();
-    const tom = new Date(now);
-    tom.setDate(tom.getDate() + 1);
-    const isToday = d.toDateString() === now.toDateString();
-    const isTom = d.toDateString() === tom.toDateString();
-    const day = isToday ? "Today" : isTom ? "Tomorrow" : d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-    return `${day} ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
-  }
-
-  const selectedGame = games.find((g) => g.id === selectedGameId);
-  const isProp = betType === "prop";
-
-  // Build betting options for the selected game + bet type
-  type BetOption = { key: string; label: string; team: string; odds: number; line?: number; side?: string };
-  const betOptions: BetOption[] = [];
-
-  if (selectedGame && !isProp) {
-    const marketKey = betType === "moneyline" ? "h2h" : betType === "spread" ? "spreads" : "totals";
-    const outcomes = selectedGame.odds[marketKey] || [];
-
-    for (const o of outcomes) {
-      const price = o.price >= 0 ? `+${o.price}` : `${o.price}`;
-
-      if (betType === "moneyline") {
-        betOptions.push({
-          key: `ml-${o.name}`,
-          label: `${o.name} ML (${price})`,
-          team: o.name,
-          odds: o.price,
-        });
-      } else if (betType === "spread" && o.point !== undefined) {
-        const pt = o.point >= 0 ? `+${o.point}` : `${o.point}`;
-        betOptions.push({
-          key: `sp-${o.name}`,
-          label: `${o.name} ${pt} (${price})`,
-          team: o.name,
-          odds: o.price,
-          line: o.point,
-        });
-      } else if (betType === "total" && o.point !== undefined) {
-        betOptions.push({
-          key: `tot-${o.name.toLowerCase()}`,
-          label: `${o.name} ${o.point} (${price})`,
-          team: o.name,
-          odds: o.price,
-          line: o.point,
-          side: o.name.toLowerCase(),
-        });
-      }
+  const handleFile = useCallback(async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setError("Please upload an image file.");
+      return;
     }
-  }
 
-  // When user picks a bet option, auto-fill everything
-  function handleBetSelect(key: string) {
-    setSelectedBetKey(key);
-    const opt = betOptions.find((o) => o.key === key);
-    if (opt) {
-      setSelectedTeam(opt.team);
-      if (!customOdds) setOdds(String(opt.odds));
-      if (opt.line !== undefined) setLine(String(opt.line));
-      if (opt.side) setSide(opt.side);
-    }
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (isProp ? !playerName || !odds : !selectedTeam || !odds) return;
-    setLoading(true);
     setError("");
-    setResult(null);
+    setStep("parsing");
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      setImagePreview(dataUrl);
+
+      try {
+        const res = await fetch("/api/parse-slip", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: dataUrl }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.legs?.length > 0) {
+          setParsedLegs(data.legs);
+          setStep("confirm");
+        } else {
+          setError(data.error || "Could not read bet slip. Try a clearer screenshot.");
+          setStep("upload");
+        }
+      } catch {
+        setError("Failed to process image. Try again.");
+        setStep("upload");
+      }
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  }, [handleFile]);
+
+  const handleGrade = async () => {
+    setStep("grading");
+    setError("");
+
     try {
+      const parlayLegs = parsedLegs.map((leg) => ({
+        team: leg.team,
+        betType: leg.bet_type,
+        odds: leg.odds,
+        sport: leg.sport,
+        line: leg.line ?? undefined,
+        side: leg.side ?? undefined,
+        player: leg.player ?? undefined,
+        isProp: leg.bet_type === "prop",
+      }));
+
       const res = await fetch("/api/grade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          team: selectedTeam || undefined,
-          betType: isProp ? propType : betType,
-          odds,
-          sport,
-          line: line ? parseFloat(line) : undefined,
-          side: (isProp || betType === "total") ? side : undefined,
-          book,
-          player: isProp ? playerName : undefined,
-          isProp,
-        }),
+        body: JSON.stringify({ parlayLegs }),
       });
+
       const data = await res.json();
-      if (res.ok && !data.error) setResult(data);
-      else setError(data.error || "Something went wrong");
+      if (res.ok && data.overallGrade) {
+        setResult(data);
+        setStep("result");
+      } else {
+        setError(data.error || "Grading failed. Try again.");
+        setStep("confirm");
+      }
     } catch {
-      setError("Failed to connect to grading engine");
-    } finally {
-      setLoading(false);
+      setError("Grading failed. Try again.");
+      setStep("confirm");
     }
-  }
+  };
+
+  const reset = () => {
+    setStep("upload");
+    setParsedLegs([]);
+    setResult(null);
+    setError("");
+    setImagePreview(null);
+  };
 
   return (
     <div className="w-full min-h-screen">
-      {/* ── NAV ── */}
+      {/* Nav */}
       <nav className="w-full max-w-[640px] mx-auto flex items-center justify-between px-6 py-5">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.png" alt="SportsLogic" width={56} height={28} className="h-7 w-auto" />
@@ -303,307 +184,223 @@ export default function GradePage() {
       </nav>
 
       <div className="w-full max-w-[520px] mx-auto px-5 pb-16">
-        {/* ── HEADER ── */}
-        <div className="text-center pt-8 pb-10">
+        {/* Header */}
+        <div className="text-center pt-8 pb-8">
           <h1 className="font-heading text-[28px] sm:text-[36px] font-bold uppercase tracking-[-0.5px] leading-tight">
-            GRADE YOUR <span className="text-accent">BET</span>
+            DROP YOUR <span className="text-accent">PARLAY</span>
           </h1>
-          <p className="text-sm text-text-secondary mt-2">Know your edge before you place it.</p>
+          <p className="text-sm text-text-secondary mt-2">Screenshot your bet slip. We grade every leg.</p>
         </div>
 
-        {/* ── FORM ── */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-
-          {/* Sport + Game group */}
-          <div className="bg-surface border border-border rounded-xl p-4 space-y-4">
-            <div>
-              <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">SPORT</label>
-              <ToggleGroup options={SPORTS} value={sport} onChange={setSport} cols="grid-cols-3 sm:grid-cols-6" />
-            </div>
-            <div>
-              <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">GAME</label>
-              <select
-                aria-label="Select game"
-                value={selectedGameId}
-                onChange={(e) => setSelectedGameId(e.target.value)}
-                className={selectCls}
-              >
-                <option value="">{loadingGames ? "Loading..." : games.length ? "Select a game" : "No games available"}</option>
-                {games.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.away} @ {g.home} — {formatGameTime(g.time)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Bet details group */}
-          <div className="bg-surface border border-border rounded-xl p-4 space-y-4">
-            <div>
-              <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">BET TYPE</label>
-              <ToggleGroup options={BET_TYPES} value={betType} onChange={setBetType} cols="grid-cols-4" />
-            </div>
-
-            {/* Bet options — pick your side (non-prop) */}
-            {!isProp && selectedGame && betOptions.length > 0 && (
-              <div>
-                <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">PICK YOUR SIDE</label>
-                <div className="space-y-1.5">
-                  {betOptions.map((opt) => (
-                    <button
-                      key={opt.key}
-                      type="button"
-                      onClick={() => handleBetSelect(opt.key)}
-                      className={`w-full h-12 px-4 rounded-lg text-sm font-medium text-left transition-all cursor-pointer flex items-center justify-between ${
-                        selectedBetKey === opt.key
-                          ? "bg-accent/10 border border-accent/40 text-text-primary"
-                          : "bg-bg border border-border text-text-secondary hover:border-text-tertiary"
-                      }`}
-                    >
-                      <span>{opt.label}</span>
-                      {selectedBetKey === opt.key && (
-                        <svg className="w-4 h-4 text-accent shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </button>
-                  ))}
-                </div>
+        {/* ── UPLOAD STEP ── */}
+        {step === "upload" && (
+          <div>
+            <div
+              className="bg-surface border-2 border-dashed border-border rounded-2xl p-10 sm:p-14 text-center cursor-pointer hover:border-accent/40 transition-all"
+              onClick={() => fileRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+            >
+              <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-5">
+                <svg className="w-7 h-7 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                </svg>
               </div>
-            )}
-
-            {/* Prop fields */}
-            {isProp && (
-              <>
-                <div>
-                  <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">PLAYER</label>
-                  <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="e.g. Embiid" className={inputCls} />
-                </div>
-                <div>
-                  <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">PROP TYPE</label>
-                  <ToggleGroup options={PROP_TYPES} value={propType} onChange={setPropType} cols="grid-cols-5" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">LINE</label>
-                    <input type="text" value={line} onChange={(e) => setLine(e.target.value)} placeholder="28.5" className={inputCls} />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">SIDE</label>
-                    <ToggleGroup options={[{ key: "over", label: "OVER" }, { key: "under", label: "UNDER" }]} value={side} onChange={setSide} cols="grid-cols-2" />
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Book + odds override */}
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">BOOK</label>
-                  <select value={book} onChange={(e) => setBook(e.target.value)} className={selectCls}>
-                    {BOOKS.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}
-                  </select>
-                </div>
-                {(isProp || customOdds) && (
-                  <div>
-                    <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">YOUR ODDS</label>
-                    <input type="text" value={odds} onChange={(e) => setOdds(e.target.value)} placeholder="-110" className={inputCls} />
-                  </div>
-                )}
-              </div>
-
-              {/* Custom odds toggle (only for non-prop when a bet is selected) */}
-              {!isProp && selectedBetKey && (
-                <button
-                  type="button"
-                  onClick={() => { setCustomOdds(!customOdds); if (customOdds) { const opt = betOptions.find(o => o.key === selectedBetKey); if (opt) setOdds(String(opt.odds)); } }}
-                  className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors cursor-pointer flex items-center gap-1.5"
-                >
-                  <div className={`w-3 h-3 rounded border transition-all ${customOdds ? "bg-accent border-accent" : "border-text-tertiary"}`} />
-                  Different odds on my book
-                </button>
-              )}
-              {!isProp && customOdds && (
-                <div>
-                  <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">YOUR ODDS</label>
-                  <input type="text" value={odds} onChange={(e) => setOdds(e.target.value)} placeholder="-110" className={inputCls} />
-                </div>
-              )}
+              <p className="font-heading text-base font-bold text-text-primary uppercase tracking-wide mb-2">
+                TAP TO UPLOAD
+              </p>
+              <p className="text-sm text-text-secondary">
+                or drag and drop your bet slip screenshot
+              </p>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+              />
             </div>
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading || (isProp ? !playerName || !odds : !selectedTeam || !odds)}
-            className="w-full h-14 rounded-xl bg-accent text-bg text-sm font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-bg/30 border-t-bg rounded-full animate-spin" />
-                COMPARING 30+ BOOKS...
-              </span>
-            ) : "GRADE THIS BET"}
-          </button>
-        </form>
-
-
-        {/* ── ERROR ── */}
-        {error && (
-          <div className="mt-6 p-4 rounded-xl bg-red/10 border border-red/30 text-center">
-            <p className="text-sm text-red">{error}</p>
+            <p className="text-[11px] text-text-tertiary text-center mt-4 tracking-wide">
+              Works with DraftKings &bull; FanDuel &bull; BetMGM &bull; ESPN Bet &bull; Caesars
+            </p>
           </div>
         )}
 
-        {/* ── RESULT ── */}
-        {result && (
-          <div className="mt-10">
-            {/* Grade card with glow */}
-            <div
-              className="bg-surface border border-border rounded-xl overflow-hidden mb-6"
-              style={{ boxShadow: "0 0 80px rgba(0, 232, 123, 0.08)" }}
-            >
-              {/* Grade header with gradient */}
-              <div
-                className="px-5 pt-6 pb-4 text-center"
-                style={{ background: "linear-gradient(180deg, rgba(0, 232, 123, 0.05) 0%, transparent 100%)" }}
-              >
-                <p className="text-[11px] text-text-tertiary uppercase tracking-[2px] mb-3">YOUR GRADE</p>
-                <p className={`font-heading text-[72px] font-bold leading-none ${gradeColor(result.grade)}`}>
-                  {result.grade}
-                </p>
-                {/* BUY / HOLD / SELL label */}
-                <span className={`inline-block mt-3 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
-                  ["A", "B"].includes(result.grade[0])
-                    ? "bg-accent/15 text-accent"
-                    : result.grade[0] === "C"
-                      ? "bg-amber/15 text-amber"
-                      : "bg-red/15 text-red"
-                }`}>
-                  {["A", "B"].includes(result.grade[0]) ? "BUY" : result.grade[0] === "C" ? "HOLD" : "SELL"}
-                </span>
-                <InfoTip text="BUY means the math favors you. HOLD means it's average. SELL means you're overpaying." />
-                <p className="text-sm text-text-secondary mt-2">{gradeContext(result.grade)}</p>
-                <p className="text-[11px] text-text-tertiary mt-1">EdgeScore: {result.score.toFixed(1)} / 100</p>
-              </div>
+        {/* ── PARSING STEP ── */}
+        {step === "parsing" && (
+          <div className="text-center py-16">
+            <div className="w-10 h-10 border-3 border-accent/30 border-t-accent rounded-full animate-spin mx-auto mb-5" />
+            <p className="font-heading text-sm font-bold text-text-primary uppercase tracking-wide">READING YOUR SLIP...</p>
+            <p className="text-xs text-text-secondary mt-2">AI is extracting every leg from your screenshot</p>
+          </div>
+        )}
 
-              <div className="px-5 pb-5">
-                <div className="h-px bg-border mb-5" />
-
-                {/* Stats grid */}
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  <div className="text-center">
-                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">EV <InfoTip text="How much you'd profit on average if you made this bet 100 times." /></p>
-                    <p className={`text-lg font-bold ${result.ev >= 0 ? "text-accent" : "text-red"}`}>
-                      {result.ev >= 0 ? "+" : ""}{result.ev.toFixed(2)}%
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">TRUE PROB <InfoTip text="The real chance this bet wins, based on the sharpest odds in the market." /></p>
-                    <p className="text-lg font-bold text-text-primary">{(result.true_prob * 100).toFixed(1)}%</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">FAIR ODDS <InfoTip text="What the odds should be if there were zero sportsbook markup." /></p>
-                    <p className="text-lg font-bold text-text-primary">
-                      {result.fair_odds >= 0 ? "+" : ""}{result.fair_odds}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">BEST LINE <InfoTip text="The best odds for this bet across all major US sportsbooks right now." /></p>
-                    <p className="text-lg font-bold text-accent">
-                      {result.best_odds >= 0 ? "+" : ""}{result.best_odds}
-                    </p>
-                    <p className="text-[10px] text-accent mt-0.5 uppercase">{bookName(result.best_book)}</p>
-                  </div>
-                </div>
-
-                <div className="h-px bg-border mb-5" />
-
-                {/* Kelly */}
-                <div className="mb-5">
-                  <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">KELLY CRITERION <InfoTip text="The mathematically optimal percentage of your bankroll to bet based on your edge." /></p>
-                  {result.kelly > 0 ? (
-                    <p className="text-sm text-text-secondary">
-                      Suggested stake: <span className="text-accent font-bold">{(result.kelly * 100).toFixed(2)}%</span> of bankroll
-                    </p>
-                  ) : (
-                    <p className="text-sm text-red">No edge — Kelly says pass.</p>
-                  )}
-                </div>
-
-                <div className="h-px bg-border mb-5" />
-
-                {/* Breakdown */}
-                {result.breakdown && (
-                  <div>
-                    <div className="flex items-center gap-1 mb-3">
-                      <p className="text-[10px] text-text-tertiary uppercase tracking-wide">BREAKDOWN</p>
-                      <InfoTip text="Your grade is a weighted score from 0–100. EV (50%): is the expected value positive? Line Value (20%): are you getting the best number? Market (15%): which way are sharps moving? Situational (15%): game context like rest and matchups." />
-                    </div>
-                    <div className="space-y-2.5">
-                      <ScoreBar label="EV (50%)" value={result.breakdown.ev_score} />
-                      <ScoreBar label="Line (20%)" value={result.breakdown.line_value_score} />
-                      <ScoreBar label="Market (15%)" value={result.breakdown.market_sharpness_score} />
-                      <ScoreBar label="Situation (15%)" value={result.breakdown.situational_score} />
+        {/* ── CONFIRM STEP ── */}
+        {step === "confirm" && (
+          <div>
+            <div className="bg-surface border border-border rounded-2xl p-5 mb-5">
+              <p className="font-heading text-[11px] font-bold text-text-tertiary uppercase tracking-[2px] mb-4">
+                WE FOUND {parsedLegs.length} LEG{parsedLegs.length !== 1 ? "S" : ""}
+              </p>
+              <div className="space-y-3">
+                {parsedLegs.map((leg, i) => (
+                  <div key={i} className="flex items-center gap-3 py-2 border-b border-border/30 last:border-0">
+                    <span className="text-[10px] font-mono text-text-tertiary w-5 shrink-0">{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-text-primary font-medium truncate">
+                        {leg.player ?? leg.team}
+                      </p>
+                      <p className="text-[11px] text-text-secondary">
+                        {leg.bet_type === "spread" && leg.line != null ? `${leg.line >= 0 ? "+" : ""}${leg.line} ` : ""}
+                        {leg.bet_type === "total" && leg.line != null ? `${leg.side ?? "over"} ${leg.line} ` : ""}
+                        {leg.bet_type === "prop" && leg.prop_type ? `${leg.side ?? "over"} ${leg.line} ${leg.prop_type} ` : ""}
+                        {leg.bet_type === "moneyline" ? "ML " : ""}
+                        ({leg.odds >= 0 ? "+" : ""}{leg.odds})
+                        <span className="text-text-tertiary"> &bull; {leg.sport.toUpperCase()}</span>
+                      </p>
                     </div>
                   </div>
-                )}
-              </div>
-
-              <div className="px-5 pb-4">
-                <p className="text-[10px] text-text-tertiary text-center uppercase tracking-wide">
-                  POWERED BY SPORTSLOGIC
-                </p>
+                ))}
               </div>
             </div>
 
-            {/* Better alternatives — only show B- or better */}
-            {(() => {
-              const good = (result.alternatives ?? []).filter((a) => a.score >= 60);
-              if (!good.length) return null;
-              return (
-                <div className="bg-surface border border-accent/20 rounded-xl overflow-hidden mb-4">
-                  <div className="px-4 pt-4 pb-2">
-                    <p className="font-heading text-[11px] text-accent uppercase tracking-[1.5px] font-bold">BETTER OPTIONS FOR THIS GAME</p>
-                  </div>
-                  <div className="divide-y divide-border/30">
-                    {good.map((alt, i) => (
-                      <div key={i} className="px-4 py-3 flex items-center gap-3">
-                        <span className="font-heading text-base font-bold text-accent w-8 shrink-0">{alt.grade}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-text-primary font-medium truncate">{alt.label}</p>
-                          <p className="text-[10px] text-text-tertiary">
-                            {alt.ev >= 0 ? "+" : ""}{alt.ev.toFixed(2)}% EV · {bookName(alt.best_book)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+            <p className="text-xs text-text-secondary text-center mb-5">Look right? Hit grade to see your score.</p>
+
+            <button
+              onClick={handleGrade}
+              className="w-full h-14 rounded-xl bg-accent text-bg text-sm font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all cursor-pointer"
+            >
+              GRADE THIS PARLAY
+            </button>
+
+            <button
+              onClick={reset}
+              className="w-full h-10 text-xs text-text-tertiary hover:text-text-secondary transition-colors mt-3 cursor-pointer uppercase tracking-wide"
+            >
+              START OVER
+            </button>
+          </div>
+        )}
+
+        {/* ── GRADING STEP ── */}
+        {step === "grading" && (
+          <div className="text-center py-16">
+            <div className="w-10 h-10 border-3 border-accent/30 border-t-accent rounded-full animate-spin mx-auto mb-5" />
+            <p className="font-heading text-sm font-bold text-text-primary uppercase tracking-wide">GRADING YOUR PARLAY...</p>
+            <p className="text-xs text-text-secondary mt-2">Comparing {parsedLegs.length} legs across 30+ books</p>
+          </div>
+        )}
+
+        {/* ── RESULT STEP ── */}
+        {step === "result" && result && (
+          <div>
+            {/* Overall grade card */}
+            <div
+              className={`rounded-2xl border overflow-hidden mb-6 ${gradeBg(result.overallGrade)}`}
+              style={{ boxShadow: "0 0 60px rgba(0,232,123,0.06)" }}
+            >
+              <div className="px-5 pt-6 pb-4 text-center"
+                style={{ background: "linear-gradient(180deg, rgba(0,232,123,0.03) 0%, transparent 100%)" }}>
+                <p className="text-[11px] text-text-tertiary uppercase tracking-[2px] mb-2">
+                  {result.legCount}-LEG PARLAY
+                </p>
+                <p className={`font-heading text-[72px] font-bold leading-none ${gradeColor(result.overallGrade)}`}>
+                  {result.overallGrade}
+                </p>
+                <p className="text-sm text-text-secondary mt-2">{gradeContext(result.overallGrade)}</p>
+                <p className="text-[11px] text-text-tertiary mt-1">EdgeScore: {result.overallScore} / 100</p>
+              </div>
+
+              {/* Stats row */}
+              <div className="grid grid-cols-3 border-t border-border/30">
+                <div className="px-3 py-3 text-center border-r border-border/30">
+                  <p className="text-[10px] text-text-tertiary uppercase">EV</p>
+                  <p className={`text-sm font-bold ${result.overallEv >= 0 ? "text-accent" : "text-red"}`}>
+                    {result.overallEv >= 0 ? "+" : ""}{result.overallEv.toFixed(1)}%
+                  </p>
                 </div>
-              );
-            })()}
+                <div className="px-3 py-3 text-center border-r border-border/30">
+                  <p className="text-[10px] text-text-tertiary uppercase">WIN PROB</p>
+                  <p className="text-sm font-bold text-text-primary">{(result.combinedTrueProb * 100).toFixed(1)}%</p>
+                </div>
+                <div className="px-3 py-3 text-center">
+                  <p className="text-[10px] text-text-tertiary uppercase">VIG COST</p>
+                  <p className="text-sm font-bold text-red">{result.vigCost.toFixed(1)}%</p>
+                </div>
+              </div>
+            </div>
 
-            {/* Context note */}
-            <p className="text-[11px] text-text-tertiary text-center mb-3">
-              Average bet grades C — most lines have standard vig. B or above means you found real value.
-            </p>
+            {/* Individual legs */}
+            <div className="bg-surface border border-border rounded-2xl overflow-hidden mb-6">
+              <div className="px-5 pt-4 pb-2">
+                <p className="font-heading text-[11px] font-bold text-text-tertiary uppercase tracking-[2px]">LEG-BY-LEG BREAKDOWN</p>
+              </div>
+              <div className="divide-y divide-border/30">
+                {result.legs.map((leg, i) => (
+                  <div key={i} className="px-5 py-3.5 flex items-center gap-3">
+                    <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor(leg.grade)}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-text-primary font-medium truncate">{leg.team}</p>
+                      <p className="text-[10px] text-text-tertiary">{leg.betType} &bull; Best: {bookName(leg.best_book)}</p>
+                    </div>
+                    <span className={`font-heading text-base font-bold ${gradeColor(leg.grade)}`}>{leg.grade}</span>
+                    <span className={`text-xs font-mono ${leg.ev >= 0 ? "text-accent" : "text-text-tertiary"}`}>
+                      {leg.ev >= 0 ? "+" : ""}{leg.ev.toFixed(1)}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-            {/* Remaining */}
-            {result.remaining !== undefined && (
-              <p className="text-[11px] text-text-tertiary text-center">
-                {result.remaining > 0
-                  ? `${result.remaining} free grade${result.remaining === 1 ? "" : "s"} remaining today`
-                  : "Upgrade to Pro for unlimited grades"}
+            {/* Warnings */}
+            {result.correlationWarnings.length > 0 && (
+              <div className="bg-amber/5 border border-amber/20 rounded-xl p-4 mb-4">
+                <p className="text-[11px] font-bold text-amber uppercase tracking-wide mb-2">CORRELATION WARNING</p>
+                {result.correlationWarnings.map((w, i) => (
+                  <p key={i} className="text-xs text-text-secondary">{w}</p>
+                ))}
+              </div>
+            )}
+
+            {/* Swap suggestion */}
+            {result.swapSuggestion && (
+              <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 mb-4">
+                <p className="text-[11px] font-bold text-accent uppercase tracking-wide mb-2">AI SUGGESTION</p>
+                <p className="text-xs text-text-secondary leading-relaxed">{result.swapSuggestion}</p>
+              </div>
+            )}
+
+            {/* Weakest leg callout */}
+            {result.weakestLeg && (
+              <p className="text-[11px] text-text-tertiary text-center mb-6">
+                Weakest leg: {result.weakestLeg}
               </p>
             )}
+
+            {/* Actions */}
+            <div className="space-y-3">
+              <button
+                onClick={reset}
+                className="w-full h-12 rounded-xl bg-accent text-bg text-sm font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all cursor-pointer"
+              >
+                GRADE ANOTHER
+              </button>
+            </div>
+
+            <p className="text-[10px] text-text-tertiary text-center uppercase tracking-wide mt-6">POWERED BY SPORTSLOGIC</p>
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div className="mt-5 p-4 rounded-xl bg-red/10 border border-red/30 text-center">
+            <p className="text-sm text-red">{error}</p>
           </div>
         )}
       </div>
 
-      {/* ── FOOTER ── */}
-      <footer className="w-full max-w-[640px] mx-auto px-6 pt-8 pb-10 border-t border-border">
+      {/* Footer */}
+      <footer className="w-full max-w-[640px] mx-auto px-6 pt-8 pb-10 border-t border-border/30">
         <p className="text-[11px] text-text-tertiary text-center leading-relaxed">
           SportsLogic is not a sportsbook. Analysis tools for informational purposes only. 21+.
         </p>
