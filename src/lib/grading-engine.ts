@@ -99,14 +99,16 @@ type Game = {
   bookmakers: Bookmaker[];
 };
 
-const oddsCache = new Map<string, Game[]>();
+const oddsCache = new Map<string, { data: Game[]; expires: number }>();
+const ODDS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 async function fetchOdds(sport: string, market: string): Promise<Game[]> {
   const sportKey = SPORT_MAP[sport] ?? sport;
   const marketKey = MARKET_MAP[market] ?? market;
   const cacheKey = `${sportKey}:${marketKey}`;
 
-  if (oddsCache.has(cacheKey)) return oddsCache.get(cacheKey)!;
+  const cached = oddsCache.get(cacheKey);
+  if (cached && Date.now() < cached.expires) return cached.data;
 
   const res = await fetch(
     `${ODDS_API_BASE}/sports/${sportKey}/odds/?` +
@@ -115,7 +117,7 @@ async function fetchOdds(sport: string, market: string): Promise<Game[]> {
   if (!res.ok) return [];
 
   const data: Game[] = await res.json();
-  oddsCache.set(cacheKey, data);
+  oddsCache.set(cacheKey, { data, expires: Date.now() + ODDS_CACHE_TTL });
   return data;
 }
 

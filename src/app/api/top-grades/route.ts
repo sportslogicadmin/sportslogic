@@ -91,7 +91,9 @@ export async function GET() {
 
           const result = await gradeBet(team, "moneyline", mlOdds, sport);
           if (result.error) continue;
-          allGrades.push({ ...result, team, betType: `ML (${mlOdds >= 0 ? "+" : ""}${mlOdds})`, sport: sport.toUpperCase() });
+          // Display best_odds from the grade result, not the seeded odds
+          const bestO = result.best_odds;
+          allGrades.push({ ...result, team, betType: `ML (${bestO >= 0 ? "+" : ""}${bestO})`, sport: sport.toUpperCase() });
         } catch { /* skip */ }
       }
 
@@ -104,7 +106,9 @@ export async function GET() {
               const result = await gradeBet(o.name, "spread", o.price, sport, o.point);
               if (result.error) continue;
               const pt = o.point >= 0 ? `+${o.point}` : `${o.point}`;
-              allGrades.push({ ...result, team: o.name, betType: `${pt} (${o.price >= 0 ? "+" : ""}${o.price})`, sport: sport.toUpperCase() });
+              // Display best_odds from the grade result, not the seeded odds
+              const bestO = result.best_odds;
+              allGrades.push({ ...result, team: o.name, betType: `${pt} (${bestO >= 0 ? "+" : ""}${bestO})`, sport: sport.toUpperCase() });
             } catch { /* skip */ }
           }
           break; // only need one book's spreads for seeding
