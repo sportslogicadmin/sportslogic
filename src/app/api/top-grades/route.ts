@@ -1,5 +1,22 @@
 import { NextResponse } from "next/server";
-import { gradeBet, gradeProp, type GradeResult } from "@/lib/grading-engine";
+import { gradeBet, type GradeResult } from "@/lib/grading-engine";
+
+// Inline quick-grade for props — avoids extra API calls per player
+function quickGradeProp(overOdds: number, underOdds: number, side: "over" | "under"): { ev: number; score: number; grade: string } {
+  const impOver = overOdds > 0 ? 100 / (overOdds + 100) : Math.abs(overOdds) / (Math.abs(overOdds) + 100);
+  const impUnder = underOdds > 0 ? 100 / (underOdds + 100) : Math.abs(underOdds) / (Math.abs(underOdds) + 100);
+  const total = impOver + impUnder;
+  const trueProb = side === "over" ? impOver / total : impUnder / total;
+  const userOdds = side === "over" ? overOdds : underOdds;
+  const profit = userOdds > 0 ? userOdds / 100 : 100 / Math.abs(userOdds);
+  const ev = (trueProb * profit - (1 - trueProb)) * 100;
+  const evScore = Math.max(0, Math.min(100, 50 + (ev / 3) * 50));
+  const score = evScore * 0.45 + 50 * 0.25 + 50 * 0.15 + 50 * 0.15; // assume avg line/market/sit
+  const GRADES: [number, string][] = [[90,"A+"],[84,"A"],[78,"A-"],[72,"B+"],[66,"B"],[60,"B-"],[54,"C+"],[46,"C"],[38,"C-"],[30,"D+"],[22,"D"],[14,"D-"],[0,"F"]];
+  let grade = "F";
+  for (const [t, g] of GRADES) { if (score >= t) { grade = g; break; } }
+  return { ev: Math.round(ev * 100) / 100, score: Math.round(score * 10) / 10, grade };
+}
 
 const ODDS_API_KEY = process.env.ODDS_API_KEY ?? "";
 const ODDS_API_BASE = "https://api.the-odds-api.com/v4";
@@ -12,14 +29,17 @@ const SPORT_MAP: Record<string, string> = {
   ncaab: "basketball_ncaab",
 };
 
-const PROP_MARKETS = ["player_points", "player_rebounds", "player_assists"];
+const PROP_MARKETS = [
+  "player_points", "player_rebounds", "player_assists",
+  "player_threes", "player_points_rebounds_assists",
+];
 
 type TopGrade = GradeResult & { team: string; betType: string; sport: string; relativeGrade?: string };
 type CachedResult = { grades: TopGrade[]; updatedAt: string; totalScanned: number };
 
 let cache: CachedResult | null = null;
 let cacheExpiry = 0;
-const CACHE_TTL = 15 * 60 * 1000;
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes — heavier scan
 
 function relativeGrade(rank: number, total: number): string {
   const pct = rank / total;
@@ -154,62 +174,59 @@ export async function GET() {
       }
     }
 
-    // Player props — sample top props for up to 4 games per sport
-    const propsGameIds = gameIds.slice(0, 4);
-    for (const eventId of propsGameIds) {
-      for (const propMarket of PROP_MARKETS) {
-        try {
-          const propRes = await fetch(
-            `${ODDS_API_BASE}/sports/${sportKey}/events/${eventId}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=${propMarket}&oddsFormat=american&bookmakers=fanduel,draftkings`,
-          );
-          if (!propRes.ok) continue;
-          const propData = await propRes.json();
+    // Player props — scan ALL games, ALL prop types, both over AND under
+    for (const eventId of gameIds) {
+      // Fetch all prop markets in one call per game (comma-separated)
+      const propMarketsStr = PROP_MARKETS.join(",");
+      try {
+        const propRes = await fetch(
+          `${ODDS_API_BASE}/sports/${sportKey}/events/${eventId}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=${propMarketsStr}&oddsFormat=american&bookmakers=fanduel`,
+        );
+        if (!propRes.ok) continue;
+        const propData = await propRes.json();
 
-          // Grade the first 3 props from FanDuel (top listed players)
-          const propType = propMarket.replace("player_", "");
-          let propsGraded = 0;
+        for (const bk of propData.bookmakers ?? []) {
+          for (const mkt of bk.markets ?? []) {
+            const propType = mkt.key.replace("player_", "");
 
-          for (const bk of propData.bookmakers ?? []) {
-            if (bk.key !== "fanduel" && bk.key !== "draftkings") continue;
-            for (const mkt of bk.markets ?? []) {
-              if (mkt.key !== propMarket) continue;
+            // Group by player + line
+            const byPlayer = new Map<string, { over?: number; under?: number; point: number; name: string }>();
+            for (const o of mkt.outcomes ?? []) {
+              const desc = o.description ?? "";
+              if (!desc || o.point === undefined) continue;
+              const pk = `${desc}:${o.point}`;
+              if (!byPlayer.has(pk)) byPlayer.set(pk, { name: desc, point: o.point });
+              byPlayer.get(pk)![o.name.toLowerCase() as "over" | "under"] = o.price;
+            }
 
-              // Group by player
-              const byPlayer = new Map<string, { over?: number; under?: number; point?: number; name?: string }>();
-              for (const o of mkt.outcomes ?? []) {
-                const desc = o.description ?? "";
-                if (!desc || o.point === undefined) continue;
-                if (!byPlayer.has(desc)) byPlayer.set(desc, { name: desc });
-                const entry = byPlayer.get(desc)!;
-                entry.point = o.point;
-                entry[o.name.toLowerCase() as "over" | "under"] = o.price;
-              }
-
-              for (const [playerName, po] of byPlayer) {
-                if (propsGraded >= 3) break;
-                if (po.over === undefined || po.point === undefined) continue;
-
-                try {
-                  const result = await gradeProp(
-                    playerName, propType, "over", po.point, po.over, sport
-                  );
-                  if (result.error) continue;
-
-                  const bo = result.best_odds;
-                  allGrades.push({
-                    ...result,
-                    team: playerName,
-                    betType: `O${po.point} ${propType} (${bo >= 0 ? "+" : ""}${bo})`,
-                    sport: sport.toUpperCase(),
-                  });
-                  propsGraded++;
-                } catch { /* skip */ }
+            // Quick-grade both sides for every player — no extra API calls
+            for (const [, po] of byPlayer) {
+              if (po.over === undefined || po.under === undefined) continue;
+              for (const side of ["over", "under"] as const) {
+                const userOdds = po[side]!;
+                const { ev, score, grade } = quickGradeProp(po.over, po.under, side);
+                const sideLabel = side === "over" ? "O" : "U";
+                const priceStr = userOdds >= 0 ? `+${userOdds}` : `${userOdds}`;
+                allGrades.push({
+                  grade,
+                  score,
+                  ev,
+                  fair_odds: 0,
+                  best_odds: userOdds,
+                  best_book: bk.key,
+                  true_prob: 0,
+                  kelly: 0,
+                  breakdown: {},
+                  team: po.name,
+                  betType: `${sideLabel}${po.point} ${propType} (${priceStr}) on ${bk.key}`,
+                  sport: sport.toUpperCase(),
+                });
               }
             }
-            break; // one book is enough for seeding
           }
-        } catch { /* skip */ }
-      }
+          break; // one book for seeding
+        }
+      } catch { /* skip */ }
     }
   }
 
