@@ -339,54 +339,57 @@ export default function GradePage() {
             </div>
 
             {topLoading ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-16 bg-surface border border-border rounded-lg animate-pulse" />
+                  <div key={i} className="h-20 bg-surface border border-border rounded-xl animate-pulse" />
                 ))}
               </div>
             ) : (
-              <div className="space-y-2 relative">
+              <div className="space-y-3">
                 {topGrades?.grades.map((g, i) => {
                   const locked = i >= FREE_VISIBLE;
                   const f = g.grade[0];
                   const color = f === "A" || f === "B" ? "text-accent" : f === "C" ? "text-amber" : "text-red";
+                  const pillBg = f === "A" || f === "B" ? "bg-accent/15 text-accent" : f === "C" ? "bg-amber/15 text-amber" : "bg-red/15 text-red";
                   const signal = f === "A" || f === "B" ? "BUY" : f === "C" ? "HOLD" : "SELL";
-                  const signalColor = f === "A" || f === "B" ? "text-accent" : f === "C" ? "text-amber" : "text-red";
 
                   return (
                     <div
                       key={i}
-                      className={`bg-surface border border-border rounded-lg px-4 py-3 flex items-center gap-3 ${locked ? "relative overflow-hidden" : ""}`}
+                      className={`bg-surface border border-border rounded-xl p-4 ${locked ? "relative overflow-hidden" : ""}`}
                     >
-                      {/* Rank */}
-                      <span className="text-xs font-mono text-text-tertiary w-5 shrink-0">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
+                      <div className="flex items-center gap-4">
+                        {/* Rank + Grade */}
+                        <div className="shrink-0 text-center w-14">
+                          <p className="text-[10px] font-mono text-text-tertiary">#{i + 1}</p>
+                          <p className={`text-2xl font-bold leading-tight ${locked ? "blur-sm" : color}`}>
+                            {g.grade}
+                          </p>
+                        </div>
 
-                      {/* Grade */}
-                      <span className={`text-lg font-bold w-10 shrink-0 ${locked ? "blur-sm" : color}`}>
-                        {g.grade}
-                      </span>
+                        {/* Details */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-text-primary font-semibold truncate">
+                            {g.team}
+                          </p>
+                          <p className="text-xs text-text-secondary mt-0.5">
+                            {g.betType} <span className="text-text-tertiary">&bull; {g.sport}</span>
+                          </p>
+                          <p className={`text-[10px] mt-1 ${locked ? "blur-sm" : "text-text-tertiary"}`}>
+                            {g.ev >= 0 ? "+" : ""}{g.ev}% EV &bull; Best: <span className="text-text-secondary">{g.best_book}</span>
+                          </p>
+                        </div>
 
-                      {/* Details */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-text-primary font-medium truncate">
-                          {g.team} <span className="text-text-tertiary font-normal">{g.betType}</span>
-                        </p>
-                        <p className={`text-[10px] ${locked ? "blur-sm" : "text-text-secondary"}`}>
-                          {g.sport} &bull; {g.ev >= 0 ? "+" : ""}{g.ev}% EV &bull; Best: {g.best_book}
-                        </p>
+                        {/* Signal pill */}
+                        <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${locked ? "blur-sm bg-border text-text-tertiary" : pillBg}`}>
+                          {signal}
+                        </span>
                       </div>
 
-                      {/* Signal */}
-                      <span className={`text-[10px] font-bold uppercase ${locked ? "blur-sm" : signalColor}`}>
-                        {signal}
-                      </span>
-
-                      {/* Lock overlay for non-free rows */}
+                      {/* Lock overlay */}
                       {locked && (
-                        <div className="absolute inset-0 bg-surface/60 backdrop-blur-[2px] flex items-center justify-center">
-                          <svg className="w-3.5 h-3.5 text-text-tertiary mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <div className="absolute inset-0 bg-surface/50 backdrop-blur-[2px] rounded-xl flex items-center justify-center gap-1.5">
+                          <svg className="w-3.5 h-3.5 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                             <path d="M7 11V7a5 5 0 0110 0v4" />
                           </svg>
@@ -399,11 +402,11 @@ export default function GradePage() {
 
                 {/* Upgrade CTA */}
                 {topGrades && topGrades.grades.length > FREE_VISIBLE && (
-                  <div className="text-center pt-3">
-                    <p className="text-xs text-text-tertiary mb-2">
-                      {topGrades.grades.length - FREE_VISIBLE} more top grades available
+                  <div className="text-center pt-4">
+                    <p className="text-xs text-text-tertiary mb-3">
+                      {topGrades.grades.length - FREE_VISIBLE} more top grades locked
                     </p>
-                    <a href="/#waitlist" className="inline-flex items-center h-9 px-5 rounded-lg bg-accent text-bg text-[11px] font-semibold uppercase tracking-[0.5px] hover:brightness-110 transition-all">
+                    <a href="/#waitlist" className="inline-flex items-center h-10 px-6 rounded-lg bg-accent text-bg text-[11px] font-semibold uppercase tracking-[0.5px] hover:brightness-110 transition-all">
                       UPGRADE TO PRO — $15/MO
                     </a>
                   </div>

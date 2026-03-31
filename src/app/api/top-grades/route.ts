@@ -113,9 +113,23 @@ export async function GET() {
     }
   }
 
+  // Dedup: same team + same bet type key = keep highest score only
+  const seen = new Map<string, TopGrade>();
+  for (const g of allGrades) {
+    // Normalize key: "New York Yankees|ML" or "Detroit Pistons|-2.5"
+    const lineMatch = g.betType.match(/([+-]?\d+\.?\d*)/);
+    const typeKey = g.betType.startsWith("ML") ? "ML" : lineMatch?.[1] ?? g.betType;
+    const key = `${g.team}|${typeKey}`;
+    const existing = seen.get(key);
+    if (!existing || g.score > existing.score) {
+      seen.set(key, g);
+    }
+  }
+
   // Sort by score descending, take top 10
-  allGrades.sort((a, b) => b.score - a.score);
-  const top = allGrades.slice(0, 10);
+  const deduped = [...seen.values()];
+  deduped.sort((a, b) => b.score - a.score);
+  const top = deduped.slice(0, 10);
 
   cache = { grades: top, updatedAt: new Date().toISOString() };
   cacheExpiry = now + CACHE_TTL;
