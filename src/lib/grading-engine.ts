@@ -140,13 +140,20 @@ async function fetchEvents(sport: string): Promise<Game[]> {
   return await res.json();
 }
 
+function teamMatch(query: string, candidate: string): boolean {
+  // Prefer exact substring match first
+  if (candidate.toLowerCase().includes(query.toLowerCase())) return true;
+  // Then try last word (team nickname — "Yankees", "Celtics", etc.)
+  const words = query.toLowerCase().split(" ");
+  const lastWord = words[words.length - 1];
+  if (lastWord.length >= 4 && candidate.toLowerCase().includes(lastWord)) return true;
+  return false;
+}
+
 function findGame(games: Game[], team: string): Game | undefined {
-  const t = team.toLowerCase();
-  return games.find((g) => {
-    const home = g.home_team.toLowerCase();
-    const away = g.away_team.toLowerCase();
-    return t.split(" ").some((w) => w.length >= 4 && (home.includes(w) || away.includes(w)));
-  });
+  return games.find((g) =>
+    teamMatch(team, g.home_team) || teamMatch(team, g.away_team)
+  );
 }
 
 // ── Scoring ──
@@ -227,9 +234,14 @@ export async function gradeBet(
           if (name === sideTarget) ours = o;
           else theirs = o;
         } else {
-          const isOurTeam = teamLower.split(" ").some((w) => w.length >= 4 && name.includes(w));
+          const isOurTeam = teamMatch(team, o.name);
           if (isOurTeam) {
-            if (line === undefined || o.point === undefined || Math.abs(o.point - line) < 2) {
+            const pointMatch = o.point === undefined
+              ? true
+              : line === undefined
+                ? true
+                : Math.abs(o.point - line) < 0.5;
+            if (pointMatch) {
               ours = o;
             }
           } else {
@@ -302,11 +314,9 @@ export async function gradeProp(
 ): Promise<GradeResult> {
   // Find event ID
   const events = await fetchEvents(sport);
-  const searchTerm = (team ?? player).toLowerCase();
+  const searchTerm = team ?? player;
   const event = events.find((ev) =>
-    searchTerm.split(" ").some(
-      (w) => w.length >= 4 && (ev.home_team.toLowerCase().includes(w) || ev.away_team.toLowerCase().includes(w))
-    )
+    teamMatch(searchTerm, ev.home_team) || teamMatch(searchTerm, ev.away_team)
   );
 
   if (!event) return errorResult("No game found for this player/team");
