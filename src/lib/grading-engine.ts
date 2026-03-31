@@ -159,7 +159,8 @@ function findGame(games: Game[], team: string): Game | undefined {
 // ── Scoring ──
 
 function computeScore(evPct: number, userOdds: number, bestOdds: number, worstOdds: number) {
-  const evScore = Math.max(0, Math.min(100, 50 + (evPct / 5) * 50));
+  // EV scale: +3% = 100, 0% = 50, -3% = 0 (tighter scale surfaces smaller edges)
+  const evScore = Math.max(0, Math.min(100, 50 + (evPct / 3) * 50));
 
   const oddsRange = bestOdds - worstOdds;
   const lineScore = oddsRange > 0
@@ -169,7 +170,10 @@ function computeScore(evPct: number, userOdds: number, bestOdds: number, worstOd
   const sharpnessScore = oddsRange <= 5 ? 70 : oddsRange <= 15 ? 50 : oddsRange <= 30 ? 40 : (evPct > 0 ? 60 : 30);
   const situationalScore = 50;
 
-  const composite = evScore * 0.50 + lineScore * 0.20 + sharpnessScore * 0.15 + situationalScore * 0.15;
+  // Bonus: positive EV + top-tier line = extra boost
+  const bonus = evPct > 0 && lineScore > 70 ? 5 : 0;
+
+  const composite = Math.min(100, evScore * 0.45 + lineScore * 0.25 + sharpnessScore * 0.15 + situationalScore * 0.15 + bonus);
 
   return {
     composite,

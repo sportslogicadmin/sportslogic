@@ -61,7 +61,7 @@ export async function GET() {
     let res: Response;
     try {
       res = await fetch(
-        `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads&oddsFormat=american&bookmakers=fanduel,draftkings`,
+        `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel,draftkings`,
       );
       if (!res.ok) continue;
     } catch { continue; }
@@ -112,6 +112,26 @@ export async function GET() {
             } catch { /* skip */ }
           }
           break; // only need one book's spreads for seeding
+        }
+      }
+
+      // Grade totals (over/under)
+      for (const bk of game.bookmakers ?? []) {
+        for (const mkt of bk.markets ?? []) {
+          if (mkt.key !== "totals") continue;
+          for (const o of mkt.outcomes ?? []) {
+            try {
+              const result = await gradeBet(o.name, "total", o.price, sport, o.point, o.name.toLowerCase());
+              if (result.error) continue;
+              allGrades.push({
+                ...result,
+                team: `${away} vs ${home}`,
+                betType: `${o.name} ${o.point} (${o.price >= 0 ? "+" : ""}${result.best_odds})`,
+                sport: sport.toUpperCase(),
+              });
+            } catch { /* skip */ }
+          }
+          break;
         }
       }
     }

@@ -484,37 +484,37 @@ def grade_bet(
 
     # 6. Composite scoring
 
-    # EV component (50%): +5% or more = 100, 0% = 50, -5% or worse = 0
-    ev_score = max(0, min(100, 50 + (ev_pct / 5) * 50))
+    # EV component (45%): +3% = 100, 0% = 50, -3% = 0 (tighter scale)
+    ev_score = max(0, min(100, 50 + (ev_pct / 3) * 50))
 
-    # Line value component (20%): where does user's odds sit vs best/worst?
+    # Line value component (25%): where does user's odds sit vs best/worst?
     odds_range = best_odds - worst_odds
     if odds_range > 0:
         line_score = ((odds - worst_odds) / odds_range) * 100
         line_score = max(0, min(100, line_score))
     else:
-        line_score = 50  # all books have same odds
+        line_score = 50
 
-    # Market sharpness (15%): how tight is the market? Tighter = more efficient = harder to find edge
-    # We measure spread between best and worst — tighter market = user should trust the price more
     if odds_range <= 5:
-        sharpness_score = 70  # very tight market, neutral-good
+        sharpness_score = 70
     elif odds_range <= 15:
-        sharpness_score = 50  # normal
+        sharpness_score = 50
     elif odds_range <= 30:
-        sharpness_score = 40  # wide, some opportunity
+        sharpness_score = 40
     else:
-        # Very wide — either stale lines or big move. Good if user is on the right side
         sharpness_score = 60 if ev_pct > 0 else 30
 
-    # Situational (15%): placeholder, neutral
     situational_score = 50
 
-    composite = (
-        ev_score * 0.50 +
-        line_score * 0.20 +
+    # Bonus: positive EV + top-tier line = extra boost
+    bonus = 5 if ev_pct > 0 and line_score > 70 else 0
+
+    composite = min(100,
+        ev_score * 0.45 +
+        line_score * 0.25 +
         sharpness_score * 0.15 +
-        situational_score * 0.15
+        situational_score * 0.15 +
+        bonus
     )
 
     grade = score_to_grade(composite)
@@ -714,7 +714,7 @@ def grade_prop(
         print(f"  Available lines: {', '.join(str(l) for l in unique_lines)}")
 
     # Scoring — same formula as grade_bet
-    ev_score = max(0, min(100, 50 + (ev_pct / 5) * 50))
+    ev_score = max(0, min(100, 50 + (ev_pct / 3) * 50))
 
     odds_range = best_o - worst_o
     if odds_range > 0:
@@ -732,8 +732,9 @@ def grade_prop(
         sharpness_score = 60 if ev_pct > 0 else 30
 
     situational_score = 50
+    bonus = 5 if ev_pct > 0 and line_score > 70 else 0
 
-    composite = ev_score * 0.50 + line_score * 0.20 + sharpness_score * 0.15 + situational_score * 0.15
+    composite = min(100, ev_score * 0.45 + line_score * 0.25 + sharpness_score * 0.15 + situational_score * 0.15 + bonus)
 
     user_implied = american_to_implied(odds)
     edge_vs_fair = (true_prob - user_implied) * 100
