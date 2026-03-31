@@ -13,6 +13,19 @@
 /tools/*.png
 __pycache__/
 
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Turbo
+.turbo/
+
 # dependencies
 /node_modules
 /.pnp

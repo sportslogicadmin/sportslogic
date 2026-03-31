@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { gradeBet, gradeProp, findAlternatives } from "@/lib/grading-engine";
 
-// Simple in-memory rate limiter (resets on server restart)
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
 const FREE_LIMIT = 50;
 
@@ -35,8 +34,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = await request.json();
-  const { team, betType, odds, sport, line, side, book, player, isProp } = body;
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+
+  const { team, betType, odds, sport, line, side, player, isProp } = body as {
+    team?: string; betType?: string; odds?: string | number; sport?: string;
+    line?: number; side?: string; player?: string; isProp?: boolean;
+  };
 
   if ((!team && !player) || !odds || !sport) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -44,28 +52,35 @@ export async function POST(request: Request) {
 
   try {
     const userOdds = parseInt(String(odds).replace("+", ""), 10);
+    if (isNaN(userOdds)) {
+      return NextResponse.json({ error: "Invalid odds format" }, { status: 400 });
+    }
 
     const result = isProp && player
       ? await gradeProp(player, betType || "points", side || "over", line || 0, userOdds, sport, team)
-      : await gradeBet(team, betType || "moneyline", userOdds, sport, line, side);
+      : await gradeBet(team || "", betType || "moneyline", userOdds, sport, line, side);
 
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 404 });
     }
 
     // Find better alternatives if grade is C or below
-    let alternatives: { label: string; grade: string; score: number; ev: number; best_book: string }[] = [];
+    type Alt = { label: string; grade: string; score: number; ev: number; best_book: string };
+    let alternatives: Alt[] = [];
     const gradeFirst = result.grade[0];
     if (["C", "D", "F"].includes(gradeFirst) && team) {
       try {
         const alts = await findAlternatives(team, sport, result.score);
-        alternatives = alts.map((a) => ({
-          label: (a as unknown as { label: string }).label,
-          grade: a.grade,
-          score: a.score,
-          ev: a.ev,
-          best_book: a.best_book,
-        }));
+        alternatives = alts.map((a) => {
+          const withLabel = a as GradeWithLabel;
+          return {
+            label: withLabel.label ?? `${team} (${a.grade})`,
+            grade: a.grade,
+            score: a.score,
+            ev: a.ev,
+            best_book: a.best_book,
+          };
+        });
       } catch { /* skip */ }
     }
 
@@ -75,3 +90,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Grading failed. Try again." }, { status: 500 });
   }
 }
+
+type GradeWithLabel = { label?: string; grade: string; score: number; ev: number; best_book: string };

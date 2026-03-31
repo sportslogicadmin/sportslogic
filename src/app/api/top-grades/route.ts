@@ -271,7 +271,7 @@ export async function GET() {
   for (const [bk, data] of bookStats) {
     if (data.count === 0) continue;
     const avgEv = data.totalEv / data.count;
-    const bestPct = data.bestCount / totalScanned * 100;
+    const bestPct = totalScanned > 0 ? data.bestCount / totalScanned * 100 : 0;
     // Placeholder grade — will be reassigned relative below
     let grade = "C";
     bookGrades.push({ name: bk, avgEv: Math.round(avgEv * 100) / 100, grade, bestPct: Math.round(bestPct * 10) / 10 });

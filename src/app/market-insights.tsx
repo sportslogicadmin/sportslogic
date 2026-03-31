@@ -2,12 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-const BOOK_NAMES: Record<string, string> = {
-  fanduel: "FanDuel", draftkings: "DraftKings", betmgm: "BetMGM", caesars: "Caesars",
-  espnbet: "ESPN Bet", betrivers: "BetRivers", fanatics: "Fanatics", bovada: "Bovada",
-  hardrockbet: "Hard Rock", pinnacle: "Pinnacle", betonlineag: "BetOnline",
-};
-function bk(key: string) { return BOOK_NAMES[key] ?? key; }
+import { bookName as bk } from "@/lib/book-names";
 
 type Data = {
   totalScanned?: number;

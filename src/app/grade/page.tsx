@@ -61,14 +61,7 @@ type GradeResult = {
   alternatives?: { label: string; grade: string; score: number; ev: number; best_book: string }[];
 };
 
-const BOOK_NAMES: Record<string, string> = {
-  fanduel: "FanDuel", draftkings: "DraftKings", betmgm: "BetMGM", caesars: "Caesars",
-  espnbet: "ESPN Bet", betrivers: "BetRivers", fanatics: "Fanatics", bovada: "Bovada",
-  hardrockbet: "Hard Rock", hardrockbet_az: "Hard Rock", betparx: "BetParx",
-  wynnbet: "WynnBet", ballybet: "Bally Bet", fliff: "Fliff", pinnacle: "Pinnacle",
-  betonlineag: "BetOnline", williamhill_us: "Caesars", lowvig: "LowVig", rebet: "Rebet",
-};
-function bookName(key: string) { return BOOK_NAMES[key] ?? key; }
+import { bookName } from "@/lib/book-names";
 
 function gradeColor(grade: string): string {
   const f = grade[0];
@@ -330,6 +323,7 @@ export default function GradePage() {
             <div>
               <label className="text-[11px] text-text-tertiary uppercase tracking-wide block mb-2">GAME</label>
               <select
+                aria-label="Select game"
                 value={selectedGameId}
                 onChange={(e) => setSelectedGameId(e.target.value)}
                 className={selectCls}

@@ -275,7 +275,9 @@ export async function gradeBet(
 
   if (trueProb === null) {
     const implied = [...bookOdds.values()].map((bo) => americanToImplied(bo.ours));
-    trueProb = (implied.reduce((a, b) => a + b, 0) / implied.length) * 0.96;
+    trueProb = implied.length > 0
+      ? (implied.reduce((a, b) => a + b, 0) / implied.length) * 0.96
+      : 0.5;
   }
 
   const fairOdds = impliedToAmerican(trueProb);
