@@ -76,6 +76,29 @@ function gradeContext(grade: string): string {
   return "Bad value. The book is eating you alive on this one.";
 }
 
+function InfoTip({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="relative inline-block ml-1">
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        className="w-4 h-4 rounded-full bg-border text-text-tertiary text-[9px] font-bold inline-flex items-center justify-center cursor-pointer hover:bg-text-tertiary hover:text-bg transition-colors"
+      >
+        ?
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 rounded-lg bg-surface border border-border shadow-lg">
+            <p className="text-[11px] text-text-secondary leading-relaxed">{text}</p>
+          </div>
+        </>
+      )}
+    </span>
+  );
+}
+
 function ScoreBar({ label, value }: { label: string; value: number }) {
   const pct = Math.max(0, Math.min(100, value));
   const color = pct >= 60 ? "bg-accent" : pct >= 40 ? "bg-amber" : "bg-red";
@@ -450,6 +473,7 @@ export default function GradePage() {
                 }`}>
                   {["A", "B"].includes(result.grade[0]) ? "BUY" : result.grade[0] === "C" ? "HOLD" : "SELL"}
                 </span>
+                <InfoTip text="BUY means the math favors you. HOLD means it's average. SELL means you're overpaying." />
                 <p className="text-sm text-text-secondary mt-2">{gradeContext(result.grade)}</p>
                 <p className="text-[11px] text-text-tertiary mt-1">{result.score.toFixed(1)} / 100</p>
               </div>
@@ -460,23 +484,23 @@ export default function GradePage() {
                 {/* Stats grid */}
                 <div className="grid grid-cols-2 gap-3 mb-5">
                   <div className="text-center">
-                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">EXPECTED VALUE</p>
+                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">EV <InfoTip text="How much you'd profit on average if you made this bet 100 times." /></p>
                     <p className={`text-lg font-bold ${result.ev >= 0 ? "text-accent" : "text-red"}`}>
                       {result.ev >= 0 ? "+" : ""}{result.ev.toFixed(2)}%
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">TRUE PROB</p>
+                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">TRUE PROB <InfoTip text="The real chance this bet wins, based on the sharpest odds in the market." /></p>
                     <p className="text-lg font-bold text-text-primary">{(result.true_prob * 100).toFixed(1)}%</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">FAIR ODDS</p>
+                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">FAIR ODDS <InfoTip text="What the odds should be if there were zero sportsbook markup." /></p>
                     <p className="text-lg font-bold text-text-primary">
                       {result.fair_odds >= 0 ? "+" : ""}{result.fair_odds}
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">BEST LINE</p>
+                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">BEST LINE <InfoTip text="The best odds for this bet across all major US sportsbooks right now." /></p>
                     <p className="text-lg font-bold text-accent">
                       {result.best_odds >= 0 ? "+" : ""}{result.best_odds}
                     </p>
@@ -488,7 +512,7 @@ export default function GradePage() {
 
                 {/* Kelly */}
                 <div className="mb-5">
-                  <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">KELLY CRITERION</p>
+                  <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-1">KELLY CRITERION <InfoTip text="The mathematically optimal percentage of your bankroll to bet based on your edge." /></p>
                   {result.kelly > 0 ? (
                     <p className="text-sm text-text-secondary">
                       Suggested stake: <span className="text-accent font-bold">{(result.kelly * 100).toFixed(2)}%</span> of bankroll
@@ -503,7 +527,10 @@ export default function GradePage() {
                 {/* Breakdown */}
                 {result.breakdown && (
                   <div>
-                    <p className="text-[10px] text-text-tertiary uppercase tracking-wide mb-3">BREAKDOWN</p>
+                    <div className="flex items-center gap-1 mb-3">
+                      <p className="text-[10px] text-text-tertiary uppercase tracking-wide">BREAKDOWN</p>
+                      <InfoTip text="Your grade is a weighted score from 0–100. EV (50%): is the expected value positive? Line Value (20%): are you getting the best number? Market (15%): which way are sharps moving? Situational (15%): game context like rest and matchups." />
+                    </div>
                     <div className="space-y-2.5">
                       <ScoreBar label="EV (50%)" value={result.breakdown.ev_score} />
                       <ScoreBar label="Line (20%)" value={result.breakdown.line_value_score} />
