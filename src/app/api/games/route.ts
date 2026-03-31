@@ -43,10 +43,13 @@ export async function GET(request: Request) {
 
   const data: RawGame[] = await res.json();
 
-  const now = new Date().toISOString();
+  const now = new Date();
+  const cutoff = new Date(now.getTime() + 48 * 60 * 60 * 1000); // 48 hours from now
+  const nowISO = now.toISOString();
+  const cutoffISO = cutoff.toISOString();
 
   const games = data
-    .filter((g) => g.commence_time > now) // only games that haven't started
+    .filter((g) => g.commence_time > nowISO && g.commence_time < cutoffISO) // upcoming within 48hrs
     .map((g) => {
       const odds: Record<string, Outcome[]> = {};
       for (const bk of g.bookmakers) {
@@ -67,5 +70,16 @@ export async function GET(request: Request) {
     })
     .sort((a, b) => a.time.localeCompare(b.time));
 
-  return NextResponse.json({ games });
+  // Dedup: if a team appears in multiple games at the same time, it's a conditional/futures matchup — keep only the first
+  const seen = new Set<string>();
+  const deduped = games.filter((g) => {
+    const homeKey = `${g.home}:${g.time}`;
+    const awayKey = `${g.away}:${g.time}`;
+    if (seen.has(homeKey) || seen.has(awayKey)) return false;
+    seen.add(homeKey);
+    seen.add(awayKey);
+    return true;
+  });
+
+  return NextResponse.json({ games: deduped });
 }
