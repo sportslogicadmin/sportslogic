@@ -26,18 +26,24 @@ export const metadata: Metadata = {
   creator: "SportsLogic",
   metadataBase: new URL("https://sportslogic.ai"),
   openGraph: {
-    title: "SportsLogic — Grade any bet in seconds",
-    description: "AI-powered bet grading. Expected value, line comparison, and smarter alternatives for every bet.",
+    title: "SportsLogic — Know Your Edge Before You Bet",
+    description: "AI-powered bet grading for every sport. Grade any bet in seconds.",
     url: "https://sportslogic.ai",
     siteName: "SportsLogic",
     locale: "en_US",
     type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "SportsLogic — Know Your Edge Before You Bet" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SportsLogic — Grade any bet in seconds",
-    description: "AI-powered bet grading. See your edge before you place it.",
+    title: "SportsLogic — Know Your Edge Before You Bet",
+    description: "AI-powered bet grading for every sport. Grade any bet in seconds.",
     creator: "@sportslogicai",
+    images: ["/og-image.png"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/icon-180.png",
   },
   robots: {
     index: true,

@@ -2,6 +2,92 @@
 
 ---
 
+## March 31, 2026 — Day 2
+
+### What was built
+
+**Grading Engine — TypeScript rewrite**
+- Rewrote entire Python grading engine in TypeScript (src/lib/grading-engine.ts)
+- Now runs natively on Vercel serverless — no Python dependency
+- Same math: Pinnacle devig, EV calculation, Kelly criterion, composite scoring
+- Supports moneyline, spread, total, and player props
+- Live on sportslogic.ai/grade — verified working in production
+
+**Grade page improvements**
+- Game selector auto-populates from live Odds API data (today + tomorrow)
+- Bet picker: select your side from buttons showing live odds, auto-fills form
+- "Different odds on my book" toggle for manual override
+- Player props tab (points, rebounds, assists, threes, PRA)
+- BUY/HOLD/SELL labels with color-coded pills
+- Info tooltips on every stat (tap to open, mobile-friendly)
+- Context lines explaining each grade in plain English
+- "Better Options" section showing B- or better alternatives when grade is C or below
+- "EdgeScore" branding for the 0-100 composite score
+- Loading animation: spinner + "COMPARING 30+ BOOKS..."
+- SEO metadata via grade/layout.tsx
+
+**Grading calibration**
+- EV scale tightened: +3% = 100 (was +5%). Small edges surface better.
+- Weight rebalanced: EV 45%, Line 25% (was 50/20). Line value matters more.
+- Line value compares against US retail books only (not Pinnacle/offshore)
+- +5 bonus when positive EV + top-tier line
+- Grade thresholds shifted down ~5 points
+- Fixed critical team matching bug: "New York Yankees" was matching "New York Mets" outcomes
+
+**Tonight's Trap + Sportsbook Report Card**
+- Finds the worst bet across all sports, shows red card with vig percentage
+- "BET THIS INSTEAD" with best alternative for same game
+- Sportsbook Report Card: grades each major US book relative to each other
+- Scans 450+ bets across NBA, MLB, NHL (ML, spreads, totals, props)
+- 30-minute cache, live on homepage
+
+**Homepage premium overhaul**
+- Animated CSS mesh gradient in hero (two drifting green ellipses)
+- Grade card: subtle float animation + enhanced green glow
+- 30% more whitespace between all sections
+- Step numbers with green text-shadow glow
+- Satoshi heading font throughout, Inter for body
+- Dual CTAs in hero: "GRADE A BET NOW" + "JOIN WAITLIST"
+- Social proof: "500+ bets graded"
+- Dot grid texture opacity reduced for subtlety
+
+**SEO + Social sharing**
+- Full OpenGraph tags with 1200x630 branded OG image
+- Twitter card (summary_large_image)
+- Keywords, theme color, robots directives
+- Favicon generated from brain logo (32px + 180px apple touch)
+- Proper page titles on both pages
+
+**Code quality audit — 14 issues fixed**
+- 3 division-by-zero guards in grading engine
+- JSON parse error handling in grade API
+- NaN odds validation
+- Shared book-names module (was duplicated in 3 files)
+- bookName() fallback capitalizes unknown keys
+- Accessibility: aria-labels on form inputs
+- .gitignore: IDE, OS, build artifacts added
+
+**Competitive research**
+- Analyzed OddsJam, PlayerProps.ai, ParlaSavant
+- Key takeaways implemented: direct tool CTA, branded scoring, loading states
+- Identified price advantage ($15 vs competitors' $50-80)
+
+### Bug fixes
+- TypeScript engine odds: team matching now uses exact substring + last-word fallback
+- Top grades odds mismatch: display now uses best_odds from engine, not seeded price
+- NCAAB filtering: 48hr window + dedup removes conditional/futures matchups
+- Started games filtered from game selector
+- Rate limit bumped for development (50/day)
+- Vercel build: added missing `description` field on Outcome type
+
+### Known issues
+- Top grades scan uses quickGradeProp (single-book devig) for props — won't find cross-book edges
+- ElevenLabs API key still needs rotation (exposed in Day 1 chat)
+- No user accounts or persistent grade history yet
+- No parlay grading UI on /grade page yet
+
+---
+
 ## March 30, 2026 — Day 1
 
 ### What was built
