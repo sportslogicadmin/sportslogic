@@ -41,16 +41,17 @@ export function EmailForm() {
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
         <input
           type="email"
-          placeholder="ENTER YOUR EMAIL"
+          placeholder="Enter your email"
+          aria-label="Email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={succeeded}
-          className="flex-1 h-12 px-4 rounded-lg bg-surface border border-border text-text-primary text-sm placeholder:text-text-tertiary outline-none transition-all duration-200 focus:border-accent/50 focus:shadow-[0_0_0_2px_rgba(0,232,123,0.15)] disabled:opacity-50"
+          className="flex-1 h-13 px-4 rounded-xl bg-surface border border-border text-text-primary text-sm placeholder:text-text-tertiary outline-none transition-all duration-200 focus:border-accent/50 focus:shadow-[0_0_0_2px_rgba(0,232,123,0.12)] disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={succeeded || status === "loading"}
-          className={`h-12 px-6 rounded-lg text-xs font-semibold uppercase tracking-[0.5px] whitespace-nowrap transition-all cursor-pointer disabled:cursor-default ${
+          className={`h-13 px-7 rounded-xl text-[11px] font-bold uppercase tracking-[0.5px] whitespace-nowrap transition-all cursor-pointer disabled:cursor-default ${
             succeeded
               ? "bg-accent/20 text-accent border border-accent/30"
               : "bg-accent text-bg hover:brightness-110"
