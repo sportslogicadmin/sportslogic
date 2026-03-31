@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
-import { execFile } from "child_process";
-import { promisify } from "util";
-import path from "path";
-import fs from "fs";
-
-const exec = promisify(execFile);
+import { gradeBet, gradeProp } from "@/lib/grading-engine";
 
 // Simple in-memory rate limiter (resets on server restart)
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
-const FREE_LIMIT = 50; // generous for dev/testing
+const FREE_LIMIT = 50;
 
 function checkRate(ip: string): { allowed: boolean; remaining: number } {
   const now = Date.now();
@@ -31,7 +26,6 @@ function checkRate(ip: string): { allowed: boolean; remaining: number } {
 }
 
 export async function POST(request: Request) {
-  // Rate limit by IP
   const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "unknown";
   const rate = checkRate(ip);
   if (!rate.allowed) {
@@ -48,42 +42,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  // Find the grading engine
-  const enginePath = path.join(process.cwd(), "tools", "grading_engine.py");
-  if (!fs.existsSync(enginePath)) {
-    return NextResponse.json({ error: "Grading engine not found" }, { status: 500 });
-  }
-
-  // Build args
-  const args = [enginePath, "--sport", sport, "--odds", String(odds), "--json"];
-
-  if (isProp && player) {
-    args.push("--prop", "--player", player, "--type", betType || "points");
-    if (side) args.push("--side", side);
-    if (line) args.push("--line", String(line));
-    if (team) args.push("--team", team);
-  } else {
-    args.push("--team", team || "", "--type", betType || "moneyline");
-    if (line) args.push("--line", String(line));
-    if (side) args.push("--side", side);
-  }
-  if (book) args.push("--book", book);
-
   try {
-    const { stdout, stderr } = await exec("python3", args, { timeout: 30000 });
+    const userOdds = parseInt(String(odds).replace("+", ""), 10);
 
-    // Engine prints status lines then JSON. Extract the JSON object.
-    const jsonMatch = stdout.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      console.error("[grade] No JSON in output:", stdout.slice(-300));
-      return NextResponse.json({ error: "Engine returned no result" }, { status: 500 });
+    const result = isProp && player
+      ? await gradeProp(player, betType || "points", side || "over", line || 0, userOdds, sport, team)
+      : await gradeBet(team, betType || "moneyline", userOdds, sport, line, side);
+
+    if (result.error) {
+      return NextResponse.json({ error: result.error }, { status: 404 });
     }
 
-    const result = JSON.parse(jsonMatch[0]);
     return NextResponse.json({ ...result, remaining: rate.remaining });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[grade] Engine error:", message);
+    console.error("[grade]", err);
     return NextResponse.json({ error: "Grading failed. Try again." }, { status: 500 });
   }
 }
