@@ -71,15 +71,17 @@ export async function GET() {
 
   for (const { short: sport, key: sportKey, gameIds } of activeSports) {
     // Fetch game odds (ML, spreads, totals)
-    let res: Response;
+    // Use gradeBet's own fetchOdds (all books) — grade directly with best_odds as the display
+    // Fetch events list to get team names for this sport
+    let eventsRes: Response;
     try {
-      res = await fetch(
-        `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel,draftkings`,
+      eventsRes = await fetch(
+        `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel`,
       );
-      if (!res.ok) continue;
+      if (!eventsRes.ok) continue;
     } catch { continue; }
 
-    const games = (await res.json()).filter(
+    const games = (await eventsRes.json()).filter(
       (g: { commence_time: string }) => g.commence_time > nowISO && g.commence_time < cutoff
     );
 
@@ -87,27 +89,31 @@ export async function GET() {
       const home = game.home_team as string;
       const away = game.away_team as string;
 
-      // ML both sides
+      // ML both sides — use best_odds from grading engine, not seeded price
       for (const team of [home, away]) {
         try {
-          let mlOdds: number | null = null;
+          // Use 0 as a dummy price — gradeBet fetches real odds from all books internally
+          // We just need to seed with something reasonable. Use FanDuel if available.
+          let seedOdds = -110;
           for (const bk of game.bookmakers ?? []) {
             for (const mkt of bk.markets ?? []) {
               if (mkt.key !== "h2h") continue;
               for (const o of mkt.outcomes ?? []) {
-                if (o.name === team) mlOdds = o.price;
+                if (o.name === team) seedOdds = o.price;
               }
             }
           }
-          if (mlOdds === null) continue;
-          const result = await gradeBet(team, "moneyline", mlOdds, sport);
+          // Grade using best_odds from the engine (which fetches all books)
+          const result = await gradeBet(team, "moneyline", seedOdds, sport);
           if (result.error) continue;
+          // IMPORTANT: display best_odds from the engine, which compared all US books
           const bo = result.best_odds;
-          allGrades.push({ ...result, team, betType: `ML (${bo >= 0 ? "+" : ""}${bo})`, sport: sport.toUpperCase() });
+          const bb = result.best_book;
+          allGrades.push({ ...result, team, betType: `ML (${bo >= 0 ? "+" : ""}${bo}) on ${bb}`, sport: sport.toUpperCase() });
         } catch { /* skip */ }
       }
 
-      // Spreads both sides
+      // Spreads — seed from fanduel, grade against all books
       for (const bk of game.bookmakers ?? []) {
         for (const mkt of bk.markets ?? []) {
           if (mkt.key !== "spreads") continue;
@@ -117,7 +123,8 @@ export async function GET() {
               if (result.error) continue;
               const pt = o.point >= 0 ? `+${o.point}` : `${o.point}`;
               const bo = result.best_odds;
-              allGrades.push({ ...result, team: o.name, betType: `${pt} (${bo >= 0 ? "+" : ""}${bo})`, sport: sport.toUpperCase() });
+              const bb = result.best_book;
+              allGrades.push({ ...result, team: o.name, betType: `${pt} (${bo >= 0 ? "+" : ""}${bo}) on ${bb}`, sport: sport.toUpperCase() });
             } catch { /* skip */ }
           }
           break;
@@ -132,10 +139,12 @@ export async function GET() {
             try {
               const result = await gradeBet(o.name, "total", o.price, sport, o.point, o.name.toLowerCase());
               if (result.error) continue;
+              const bo = result.best_odds;
+              const bb = result.best_book;
               allGrades.push({
                 ...result,
                 team: `${away} vs ${home}`,
-                betType: `${o.name} ${o.point} (${result.best_odds >= 0 ? "+" : ""}${result.best_odds})`,
+                betType: `${o.name} ${o.point} (${bo >= 0 ? "+" : ""}${bo}) on ${bb}`,
                 sport: sport.toUpperCase(),
               });
             } catch { /* skip */ }
