@@ -148,6 +148,11 @@ function ToggleGroup({
   );
 }
 
+type TopGrade = GradeResult & { team: string; betType: string; sport: string };
+type TopGradesData = { grades: TopGrade[]; updatedAt: string };
+
+const FREE_VISIBLE = 3;
+
 export default function GradePage() {
   const [sport, setSport] = useState("nba");
   const [games, setGames] = useState<Game[]>([]);
@@ -166,6 +171,17 @@ export default function GradePage() {
   const [loadingGames, setLoadingGames] = useState(false);
   const [result, setResult] = useState<GradeResult | null>(null);
   const [error, setError] = useState("");
+  const [topGrades, setTopGrades] = useState<TopGradesData | null>(null);
+  const [topLoading, setTopLoading] = useState(true);
+
+  // Fetch tonight's top grades on mount
+  useEffect(() => {
+    fetch("/api/top-grades")
+      .then((r) => r.json())
+      .then((data) => { if (data.grades) setTopGrades(data); })
+      .catch(() => {})
+      .finally(() => setTopLoading(false));
+  }, []);
 
   useEffect(() => {
     setLoadingGames(true);
@@ -306,6 +322,96 @@ export default function GradePage() {
           </h1>
           <p className="text-sm text-text-secondary mt-2">Know your edge before you place it.</p>
         </div>
+
+        {/* ── TONIGHT'S TOP GRADES ── */}
+        {(topLoading || (topGrades && topGrades.grades.length > 0)) && (
+          <div className="mb-10">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-sm font-bold uppercase text-text-primary tracking-wide">TONIGHT&apos;S TOP GRADES</h2>
+                <p className="text-[10px] text-text-tertiary mt-0.5">Auto-graded across all games and books</p>
+              </div>
+              {topGrades?.updatedAt && (
+                <p className="text-[10px] text-text-tertiary">
+                  Updated {Math.round((Date.now() - new Date(topGrades.updatedAt).getTime()) / 60000)}m ago
+                </p>
+              )}
+            </div>
+
+            {topLoading ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-16 bg-surface border border-border rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2 relative">
+                {topGrades?.grades.map((g, i) => {
+                  const locked = i >= FREE_VISIBLE;
+                  const f = g.grade[0];
+                  const color = f === "A" || f === "B" ? "text-accent" : f === "C" ? "text-amber" : "text-red";
+                  const signal = f === "A" || f === "B" ? "BUY" : f === "C" ? "HOLD" : "SELL";
+                  const signalColor = f === "A" || f === "B" ? "text-accent" : f === "C" ? "text-amber" : "text-red";
+
+                  return (
+                    <div
+                      key={i}
+                      className={`bg-surface border border-border rounded-lg px-4 py-3 flex items-center gap-3 ${locked ? "relative overflow-hidden" : ""}`}
+                    >
+                      {/* Rank */}
+                      <span className="text-xs font-mono text-text-tertiary w-5 shrink-0">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+
+                      {/* Grade */}
+                      <span className={`text-lg font-bold w-10 shrink-0 ${locked ? "blur-sm" : color}`}>
+                        {g.grade}
+                      </span>
+
+                      {/* Details */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-text-primary font-medium truncate">
+                          {g.team} <span className="text-text-tertiary font-normal">{g.betType}</span>
+                        </p>
+                        <p className={`text-[10px] ${locked ? "blur-sm" : "text-text-secondary"}`}>
+                          {g.sport} &bull; {g.ev >= 0 ? "+" : ""}{g.ev}% EV &bull; Best: {g.best_book}
+                        </p>
+                      </div>
+
+                      {/* Signal */}
+                      <span className={`text-[10px] font-bold uppercase ${locked ? "blur-sm" : signalColor}`}>
+                        {signal}
+                      </span>
+
+                      {/* Lock overlay for non-free rows */}
+                      {locked && (
+                        <div className="absolute inset-0 bg-surface/60 backdrop-blur-[2px] flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-text-tertiary mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0110 0v4" />
+                          </svg>
+                          <span className="text-[10px] text-text-tertiary font-semibold uppercase tracking-wide">PRO</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Upgrade CTA */}
+                {topGrades && topGrades.grades.length > FREE_VISIBLE && (
+                  <div className="text-center pt-3">
+                    <p className="text-xs text-text-tertiary mb-2">
+                      {topGrades.grades.length - FREE_VISIBLE} more top grades available
+                    </p>
+                    <a href="/#waitlist" className="inline-flex items-center h-9 px-5 rounded-lg bg-accent text-bg text-[11px] font-semibold uppercase tracking-[0.5px] hover:brightness-110 transition-all">
+                      UPGRADE TO PRO — $15/MO
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── FORM ── */}
         <form onSubmit={handleSubmit} className="space-y-5">
