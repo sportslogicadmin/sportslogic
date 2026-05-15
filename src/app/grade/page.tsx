@@ -3,7 +3,42 @@
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { bookName } from "@/lib/book-names";
+import { ShareButton } from "@/components/share-button";
+
+function GradeNavAuth() {
+  const { isSignedIn, user } = useUser();
+  const { signOut } = useClerk();
+
+  if (isSignedIn) {
+    return (
+      <div className="flex items-center gap-3">
+        <Link
+          href="/dashboard"
+          className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors uppercase tracking-wide"
+        >
+          MY GRADES
+        </Link>
+        <button
+          onClick={() => signOut({ redirectUrl: "/" })}
+          className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors uppercase tracking-wide cursor-pointer"
+        >
+          SIGN OUT
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href="/sign-in"
+      className="text-[11px] text-accent hover:brightness-110 transition-all uppercase tracking-wide"
+    >
+      SIGN IN TO SAVE
+    </Link>
+  );
+}
 
 type ParsedLeg = {
   team: string;
@@ -41,6 +76,7 @@ type ParlayResult = {
   weakestLeg: string | null;
   correlationWarnings: string[];
   swapSuggestion: string | null;
+  shareSlug?: string;
 };
 
 type Step = "upload" | "parsing" | "confirm" | "grading" | "result";
@@ -76,11 +112,13 @@ function gradeContext(grade: string): string {
 }
 
 export default function GradePage() {
+  const { isSignedIn } = useUser();
   const [step, setStep] = useState<Step>("upload");
   const [parsedLegs, setParsedLegs] = useState<ParsedLeg[]>([]);
   const [result, setResult] = useState<ParlayResult | null>(null);
   const [error, setError] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(async (file: File) => {
@@ -178,9 +216,7 @@ export default function GradePage() {
           <Image src="/logo.png" alt="SportsLogic" width={56} height={28} className="h-7 w-auto" />
           <span className="font-heading text-base font-bold text-text-primary tracking-tight">SportsLogic</span>
         </Link>
-        <Link href="/" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors uppercase tracking-wide">
-          HOME
-        </Link>
+        <GradeNavAuth />
       </nav>
 
       <div className="w-full max-w-[520px] mx-auto px-5 pb-16">
@@ -238,6 +274,15 @@ export default function GradePage() {
         {/* ── CONFIRM STEP ── */}
         {step === "confirm" && (
           <div>
+            {imagePreview && (
+              <div className="mb-4 flex justify-center">
+                <img
+                  src={imagePreview}
+                  alt="Your bet slip"
+                  className="max-h-36 rounded-xl border border-border/50 object-contain"
+                />
+              </div>
+            )}
             <div className="bg-surface border border-border rounded-2xl p-5 mb-5">
               <p className="font-heading text-[11px] font-bold text-text-tertiary uppercase tracking-[2px] mb-4">
                 WE FOUND {parsedLegs.length} LEG{parsedLegs.length !== 1 ? "S" : ""}
@@ -377,11 +422,58 @@ export default function GradePage() {
               </p>
             )}
 
+            {/* Copy link */}
+            {result.shareSlug && (
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`https://sportslogic.ai/grade/${result.shareSlug}`);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                }}
+                className="w-full h-11 rounded-xl bg-surface border border-border text-text-secondary text-[11px] font-bold uppercase tracking-[0.5px] hover:border-text-tertiary hover:text-text-primary transition-all cursor-pointer mt-4"
+              >
+                {copied ? "COPIED" : "COPY SHARE LINK"}
+              </button>
+            )}
+
+            {/* Share card + download */}
+            <ShareButton data={{
+              overallGrade: result.overallGrade,
+              ev: result.overallEv,
+              legCount: result.legCount,
+              swapSuggestion: result.swapSuggestion,
+              legs: result.legs.map((leg) => ({
+                label: `${leg.team} ${leg.betType}`,
+                grade: leg.grade,
+                ev: leg.ev,
+              })),
+              stake: parsedLegs.find((l) => l.stake != null)?.stake ?? null,
+              payout: parsedLegs.find((l) => l.potential_payout != null)?.potential_payout ?? null,
+            }} />
+
+            {/* Sign-up nudge for anonymous users */}
+            {!isSignedIn && result.shareSlug && (
+              <div className="mt-6 bg-surface border border-border rounded-2xl p-5 text-center">
+                <p className="font-heading text-sm font-bold text-text-primary uppercase tracking-wide mb-1">
+                  SAVE YOUR GRADE HISTORY
+                </p>
+                <p className="text-xs text-text-secondary mb-4">
+                  This grade is saved at a permanent link. Create a free account to track all your grades in one place.
+                </p>
+                <Link
+                  href="/sign-up"
+                  className="inline-flex items-center justify-center h-10 px-6 rounded-xl bg-accent text-bg text-[11px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all"
+                >
+                  CREATE FREE ACCOUNT
+                </Link>
+              </div>
+            )}
+
             {/* Actions */}
-            <div className="space-y-3">
+            <div className="space-y-3 mt-6">
               <button
                 onClick={reset}
-                className="w-full h-12 rounded-xl bg-accent text-bg text-sm font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all cursor-pointer"
+                className="w-full h-12 rounded-xl bg-surface border border-border text-text-secondary text-sm font-bold uppercase tracking-[0.5px] hover:border-text-tertiary hover:text-text-primary transition-all cursor-pointer"
               >
                 GRADE ANOTHER
               </button>

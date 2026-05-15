@@ -12,17 +12,37 @@ type Data = {
   updatedAt?: string;
 };
 
-export function MarketInsights() {
+export function MarketInsights({ booksCompared }: { booksCompared?: string }) {
   const [data, setData] = useState<Data | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     fetch("/api/top-grades")
       .then((r) => r.json())
       .then((d) => { if (d.worstBet) setData(d); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoaded(true));
   }, []);
 
-  if (!data) return null;
+  if (!loaded) return null;
+
+  if (!data) {
+    return (
+      <div className="w-full max-w-[1080px] mx-auto px-6 py-20 sm:py-24">
+        <div className="max-w-[640px] mx-auto">
+          <div className="bg-surface border border-border/40 rounded-xl p-8 text-center">
+            <p className="text-xs font-semibold tracking-[2px] text-text-tertiary uppercase mb-3">MARKET INSIGHTS</p>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Market data updates daily. Check back during game days.
+            </p>
+            {booksCompared && (
+              <p className="text-[11px] text-text-tertiary mt-2">{booksCompared} books monitored</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-[1080px] mx-auto px-6 py-20 sm:py-24">

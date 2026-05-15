@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Tier {
+  FREE
+  PRO
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  createdAt   DateTime @default(now())
+  tier        Tier     @default(FREE)
+  scanCount   Int      @default(0)
+  scanResetAt DateTime @default(now())
+  grades      Grade[]
+}
+
+model Grade {
+  id             String   @id @default(cuid())
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id])
+  createdAt      DateTime @default(now())
+  overallGrade   String
+  overallEV      Float
+  totalLegs      Int
+  swapSuggestion String?
+  shareSlug      String   @unique
+  isPublic       Boolean  @default(false)
+  legs           Leg[]
+}
+
+model Leg {
+  id      String  @id @default(cuid())
+  gradeId String
+  result  Grade   @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  team    String
+  market  String
+  line    Float?
+  odds    Int
+  ev      Float
+  grade   String
+  sport   String
+  isWeak  Boolean @default(false)
+}

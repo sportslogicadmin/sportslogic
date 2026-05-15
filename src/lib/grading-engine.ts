@@ -318,14 +318,47 @@ export async function gradeProp(
   sport: string,
   team?: string,
 ): Promise<GradeResult> {
-  // Find event ID
   const events = await fetchEvents(sport);
-  const searchTerm = team ?? player;
-  const event = events.find((ev) =>
-    teamMatch(searchTerm, ev.home_team) || teamMatch(searchTerm, ev.away_team)
-  );
 
-  if (!event) return errorResult("No game found for this player/team");
+  // Primary: match by team name (fast, single lookup)
+  let event: Game | undefined;
+  if (team && team.trim()) {
+    event = events.find((ev) =>
+      teamMatch(team, ev.home_team) || teamMatch(team, ev.away_team)
+    );
+  }
+
+  // Fallback: when team is missing or didn't match, scan prop data across all
+  // events until we find the player's name in a bookmaker's outcome descriptions.
+  // Capped at 8 events to limit API calls.
+  if (!event) {
+    for (const ev of events.slice(0, 8)) {
+      const probe = await fetchPropOdds(sport, ev.id, propType);
+      if (!probe) continue;
+      const bookmakers = (probe as unknown as { bookmakers: Bookmaker[] }).bookmakers ?? [];
+      const playerLower = player.toLowerCase();
+      const found = bookmakers.some((bk) =>
+        bk.markets.some((mkt) =>
+          mkt.outcomes.some((o) => {
+            const desc = (o.description ?? "").toLowerCase();
+            return playerLower.split(" ").some((w) => w.length >= 4 && desc.includes(w));
+          })
+        )
+      );
+      if (found) {
+        event = ev;
+        break;
+      }
+    }
+  }
+
+  if (!event) {
+    return errorResult(
+      team
+        ? `No ${sport.toUpperCase()} game found for "${team}"`
+        : `Could not find "${player}" in any active ${sport.toUpperCase()} game — try including the team name`
+    );
+  }
 
   const data = await fetchPropOdds(sport, event.id, propType);
   if (!data) return errorResult("Failed to fetch prop odds");

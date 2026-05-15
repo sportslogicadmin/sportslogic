@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { gradeBet, gradeProp, gradeParlay, findAlternatives, type ParlayLeg } from "@/lib/grading-engine";
+import { prisma } from "@/lib/prisma";
+import { generateSlug } from "@/lib/slug";
 
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
 const FREE_LIMIT = 50;
@@ -25,6 +28,7 @@ function checkRate(ip: string): { allowed: boolean; remaining: number } {
 }
 
 export async function POST(request: Request) {
+  const { userId } = await auth();
   const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "unknown";
   const rate = checkRate(ip);
   if (!rate.allowed) {
@@ -51,7 +55,42 @@ export async function POST(request: Request) {
   if (parlayLegs && parlayLegs.length > 0) {
     try {
       const result = await gradeParlay(parlayLegs);
-      return NextResponse.json({ ...result, remaining: rate.remaining });
+
+      let shareSlug: string | undefined;
+      try {
+        const slug = generateSlug();
+        await prisma.grade.create({
+          data: {
+            userId: userId ?? null,
+            overallGrade: result.overallGrade,
+            overallEV: result.overallEv,
+            totalLegs: result.legCount,
+            swapSuggestion: result.swapSuggestion,
+            shareSlug: slug,
+            isPublic: true,
+            legs: {
+              create: result.legs.map((leg, i) => {
+                const input = parlayLegs[i];
+                return {
+                  team: leg.team,
+                  market: leg.betType,
+                  line: input?.line ?? null,
+                  odds: input?.odds ?? leg.best_odds,
+                  ev: leg.ev,
+                  grade: leg.grade,
+                  sport: input?.sport ?? "unknown",
+                  isWeak: leg.grade[0] === "D" || leg.grade[0] === "F",
+                };
+              }),
+            },
+          },
+        });
+        shareSlug = slug;
+      } catch (dbErr) {
+        console.error("[grade-save]", dbErr);
+      }
+
+      return NextResponse.json({ ...result, shareSlug, remaining: rate.remaining });
     } catch (err) {
       console.error("[grade-parlay]", err);
       return NextResponse.json({ error: "Parlay grading failed. Try again." }, { status: 500 });

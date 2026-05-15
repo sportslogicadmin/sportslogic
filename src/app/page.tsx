@@ -1,15 +1,14 @@
+import Link from "next/link";
 import Image from "next/image";
 import { EmailForm } from "./email-form";
 import { MarketInsights } from "./market-insights";
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="font-heading text-[11px] font-bold tracking-[3px] text-text-tertiary uppercase text-center mb-14 sm:mb-16">
-      {children}
-    </p>
-  );
-}
+// ── Centralised marketing numbers ─────────────────────────────────────────────
+const BETS_GRADED = "500+";
+const BOOKS_COMPARED = "30+";
+const WAITLIST_COUNT = "500+";
 
+// ── Static data ────────────────────────────────────────────────────────────────
 const legs = [
   { name: "Chiefs ML (-145)", grade: "A", ev: "+6.1% EV", color: "bg-accent", glow: "dot-glow-green" },
   { name: "Celtics -4.5 (-110)", grade: "B+", ev: "+2.8% EV", color: "bg-accent", glow: "dot-glow-green" },
@@ -22,6 +21,15 @@ const sports = ["NFL", "NBA", "MLB", "NHL", "NCAAF", "NCAAB", "EPL", "LA LIGA", 
 
 const freeFeatures = ["2 scans per day", "Basic grade (A–F)", "Line comparison", "Community access (read-only)"];
 const proFeatures = ["Unlimited scans", "Full reports + EV breakdown", "AI swap suggestions", "Bet history + ROI tracking", "All courses + simulators", "Real-time alerts"];
+
+// ── Shared primitives ──────────────────────────────────────────────────────────
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="font-heading text-[11px] font-bold tracking-[3px] text-text-tertiary uppercase text-center mb-14 sm:mb-16">
+      {children}
+    </p>
+  );
+}
 
 function Check() {
   return (
@@ -42,51 +50,60 @@ function CheckGreen() {
 export default function Home() {
   return (
     <div className="w-full">
+
       {/* ── NAV ── */}
       <nav className="w-full max-w-[1080px] mx-auto flex items-center justify-between px-6 py-6">
         <div className="flex items-center gap-3">
           <Image src="/logo.png" alt="SportsLogic" width={72} height={36} className="h-9 w-auto" priority />
           <span className="font-heading text-lg font-bold text-text-primary tracking-tight">SportsLogic</span>
         </div>
-        <a href="#waitlist" className="h-9 px-5 rounded-lg bg-accent text-bg text-[11px] font-semibold uppercase tracking-[0.5px] flex items-center hover:brightness-110 transition-all">
+        <Link
+          href="/grade"
+          className="hidden sm:block text-[11px] font-semibold uppercase tracking-[0.5px] text-text-secondary hover:text-text-primary transition-colors"
+        >
+          GRADE YOUR PARLAY
+        </Link>
+        <a
+          href="#waitlist"
+          className="h-9 px-5 rounded-lg bg-accent text-bg text-[11px] font-semibold uppercase tracking-[0.5px] flex items-center hover:brightness-110 transition-all"
+        >
           GET EARLY ACCESS
         </a>
       </nav>
 
       {/* ── HERO ── */}
       <section className="w-full max-w-[1080px] mx-auto px-6 pt-28 sm:pt-40 pb-24 sm:pb-32 text-center relative">
-        {/* Animated mesh gradient */}
         <div className="hero-mesh" />
 
         <p className="font-heading relative text-[11px] font-bold tracking-[3px] text-text-tertiary uppercase mb-8">
-          THE AI PARLAY GRADER
+          BUILT FOR SMARTER BETTORS
         </p>
-        <h1 className="font-heading relative text-[38px] sm:text-[52px] md:text-[64px] font-bold uppercase tracking-[-1.5px] leading-[1.02] max-w-[760px] mx-auto mb-8">
-          DROP YOUR{" "}
-          <span className="text-accent">PARLAY.</span>{" "}
-          GET YOUR GRADE.
+        <h1 className="font-heading relative text-[38px] sm:text-[52px] md:text-[64px] font-bold tracking-[-1.5px] leading-[1.02] max-w-[760px] mx-auto mb-8">
+          Every parlay has weak spots.
         </h1>
         <p className="relative text-[15px] sm:text-[17px] text-text-secondary max-w-[480px] mx-auto leading-[1.75] mb-10">
-          Our AI reads your bet slip in seconds — grades every leg, finds the
-          weak spots, and suggests smarter swaps.
+          Drop in a screenshot from any sportsbook and get an instant breakdown
+          of what&apos;s overpriced, what&apos;s sharp, and what should probably come out.
         </p>
 
-        {/* Dual CTAs */}
         <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
-          <a href="/grade" className="inline-flex items-center justify-center h-13 w-full sm:w-auto px-8 rounded-xl bg-accent text-bg text-[12px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all">
+          <Link
+            href="/grade"
+            className="inline-flex items-center justify-center h-13 w-full sm:w-auto px-8 rounded-xl bg-accent text-bg text-[12px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all"
+          >
             GRADE YOUR PARLAY
-          </a>
-          <a href="#waitlist" className="inline-flex items-center justify-center h-13 w-full sm:w-auto px-8 rounded-xl bg-transparent border border-border text-text-secondary text-[12px] font-bold uppercase tracking-[0.5px] hover:border-text-tertiary transition-all">
+          </Link>
+          <a
+            href="#waitlist"
+            className="inline-flex items-center justify-center h-13 w-full sm:w-auto px-8 rounded-xl bg-transparent border border-border text-text-secondary text-[12px] font-bold uppercase tracking-[0.5px] hover:border-text-tertiary transition-all"
+          >
             JOIN WAITLIST
           </a>
         </div>
 
-        {/* Social proof */}
         <p className="relative text-[12px] text-text-secondary mb-8">
-          500+ bets graded &bull; Free to start &bull; No credit card required
+          {BETS_GRADED} bets graded &bull; Free to start &bull; No credit card required
         </p>
-
-        {/* Sportsbook compatibility */}
         <p className="relative text-[11px] text-text-tertiary tracking-wide">
           Works with DraftKings &bull; FanDuel &bull; BetMGM &bull; ESPN Bet &bull; Caesars
         </p>
@@ -97,9 +114,21 @@ export default function Home() {
         <SectionLabel>HOW IT WORKS</SectionLabel>
         <div className="max-w-[560px] mx-auto space-y-16 sm:space-y-20">
           {[
-            { n: "01", title: "SCREENSHOT YOUR PARLAY", desc: "Upload a screenshot from any sportsbook app." },
-            { n: "02", title: "AI GRADES EVERY LEG", desc: "We read your slip, pull live odds from 30+ books, and grade each leg." },
-            { n: "03", title: "FIX THE WEAK SPOTS", desc: "See which legs are dragging you down and get AI-powered swap suggestions." },
+            {
+              n: "01",
+              title: "UPLOAD YOUR SLIP",
+              desc: `Screenshot any parlay from DraftKings, FanDuel, BetMGM, and more.`,
+            },
+            {
+              n: "02",
+              title: "WE GRADE THE MARKET",
+              desc: "SportsLogic reads every leg, compares live odds across the market, and calculates the real expected value behind your bet.",
+            },
+            {
+              n: "03",
+              title: "IMPROVE THE BET",
+              desc: "Find the overpriced legs, see what's dragging your grade down, and get smarter swap suggestions in seconds.",
+            },
           ].map((step) => (
             <div key={step.n} className="flex items-start gap-6 sm:gap-10">
               <span className="font-heading text-[52px] sm:text-[56px] font-bold text-accent leading-none shrink-0 w-16 sm:w-20 text-right step-glow">
@@ -119,9 +148,21 @@ export default function Home() {
         <SectionLabel>WHY SPORTSLOGIC</SectionLabel>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-[920px] mx-auto">
           {[
-            { n: "01", title: "NOT A PICKS SERVICE", desc: "We grade the bets you're already making. No locks — just math." },
-            { n: "02", title: "TRANSPARENT GRADING", desc: "Every grade is backed by EV, line comparison, and correlation analysis." },
-            { n: "03", title: "BUILT BY BETTORS", desc: "We built this for ourselves first. Now it's yours." },
+            {
+              n: "01",
+              title: "NOT PICKS. JUST PRICING.",
+              desc: "We're not here to sell locks. We show you whether the number you're betting is actually worth taking.",
+            },
+            {
+              n: "02",
+              title: "EVERY GRADE HAS RECEIPTS",
+              desc: "Every score is backed by real odds data, EV calculations, and market comparison — not opinions.",
+            },
+            {
+              n: "03",
+              title: "SEE WHAT THE BOOKS SEE",
+              desc: "SportsLogic was built for bettors who want to think sharper, spot value faster, and stop donating juice to the books.",
+            },
           ].map((card) => (
             <div key={card.n} className="bg-surface border border-border rounded-2xl p-7">
               <div className="w-9 h-9 rounded-xl bg-accent/8 flex items-center justify-center mb-5">
@@ -134,15 +175,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── GRADE CARD ── */}
+      {/* ── GRADE CARD (mock) ── */}
       <section className="w-full max-w-[1080px] mx-auto px-4 sm:px-6 py-24 sm:py-32 relative">
         <SectionLabel>SEE IT IN ACTION</SectionLabel>
 
-        {/* Green glow behind card */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] pointer-events-none" style={{
-          background: "radial-gradient(circle, rgba(0,232,123,0.04) 0%, transparent 60%)",
-          filter: "blur(60px)",
-        }} />
+        <div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(0,232,123,0.04) 0%, transparent 60%)", filter: "blur(60px)" }}
+        />
 
         <div
           className="card-float max-w-[520px] mx-auto bg-surface border border-border rounded-2xl overflow-hidden relative"
@@ -174,9 +214,7 @@ export default function Home() {
             <div className="bg-bg/40 border border-accent/10 rounded-xl p-4 mb-5">
               <p className="text-xs text-text-secondary leading-relaxed">
                 <span className="text-accent font-semibold">AI suggestion:</span>{" "}
-                Swap leg 4 — Mahomes rushing yards O29.5 has +3.8% EV and
-                correlates positively with Chiefs ML. This would raise your
-                parlay to an A-.
+                Swap leg 4 — Mahomes rushing yards O29.5 has +3.8% EV and correlates positively with Chiefs ML. This would raise your parlay to an A-.
               </p>
             </div>
             <p className="text-[10px] text-text-tertiary text-center uppercase tracking-[1.5px]">POWERED BY SPORTSLOGIC</p>
@@ -184,26 +222,28 @@ export default function Home() {
         </div>
 
         <div className="text-center mt-10">
-          <a href="/grade" className="inline-flex items-center h-13 sm:h-12 w-full sm:w-auto px-10 rounded-xl bg-accent text-bg text-[12px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all justify-center">
+          <Link
+            href="/grade"
+            className="inline-flex items-center h-13 sm:h-12 w-full sm:w-auto px-10 rounded-xl bg-accent text-bg text-[12px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all justify-center"
+          >
             GRADE YOUR PARLAY FREE
-          </a>
+          </Link>
         </div>
       </section>
 
       {/* ── MARKET INSIGHTS (live data) ── */}
-      <MarketInsights />
+      <MarketInsights booksCompared={BOOKS_COMPARED} />
 
       {/* ── OUR STORY ── */}
       <section className="w-full max-w-[1080px] mx-auto px-6 py-24 sm:py-32">
         <SectionLabel>OUR STORY</SectionLabel>
         <div className="max-w-[520px] mx-auto text-center">
           <p className="text-[15px] text-text-secondary leading-[1.85]">
-            SportsLogic started with a simple question — why do we keep
-            losing money on bets that feel right? So we built models to
-            calculate the real expected value behind every bet. We stopped
-            guessing and started grading. Now we&apos;re building the tool
-            we wish we had from day one — one that shows you exactly what
-            the books don&apos;t want you to see. No math degree required.
+            Most bettors lose the same way — not because they&apos;re unlucky, but
+            because the price was bad from the start. We built SportsLogic to
+            make that visible. Every parlay is graded against real market data
+            so you can see where the value is, where it disappears, and how to
+            improve the bet before it&apos;s placed. Less guessing. Better numbers.
           </p>
         </div>
       </section>
@@ -227,8 +267,11 @@ export default function Home() {
       <section className="w-full max-w-[1080px] mx-auto px-6 py-24 sm:py-32">
         <SectionLabel>PRICING</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[640px] mx-auto">
-          <div className="bg-surface border border-accent/30 rounded-2xl p-7 flex flex-col order-first sm:order-last"
-            style={{ boxShadow: "0 0 40px rgba(0,232,123,0.04)" }}>
+          {/* PRO */}
+          <div
+            className="bg-surface border border-accent/30 rounded-2xl p-7 flex flex-col order-first sm:order-last"
+            style={{ boxShadow: "0 0 40px rgba(0,232,123,0.04)" }}
+          >
             <p className="font-heading text-[11px] font-bold uppercase tracking-[1.5px] text-accent mb-5">PRO</p>
             <div className="mb-6">
               <span className="font-heading text-4xl font-bold text-text-primary">$15</span>
@@ -239,10 +282,15 @@ export default function Home() {
                 <li key={f} className="flex items-start gap-2.5 text-sm text-text-secondary"><CheckGreen />{f}</li>
               ))}
             </ul>
-            <button className="w-full h-11 rounded-xl bg-accent text-bg text-[11px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all cursor-pointer mt-7">
+            <a
+              href="#waitlist"
+              className="w-full h-11 rounded-xl bg-accent text-bg text-[11px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all mt-7 flex items-center justify-center"
+            >
               JOIN WAITLIST
-            </button>
+            </a>
           </div>
+
+          {/* FREE */}
           <div className="bg-surface border border-border rounded-2xl p-7 flex flex-col order-last sm:order-first">
             <p className="font-heading text-[11px] font-bold uppercase tracking-[1.5px] text-text-tertiary mb-5">FREE</p>
             <div className="mb-6">
@@ -254,9 +302,12 @@ export default function Home() {
                 <li key={f} className="flex items-start gap-2.5 text-sm text-text-secondary"><Check />{f}</li>
               ))}
             </ul>
-            <button className="w-full h-11 rounded-xl bg-transparent border border-text-tertiary text-text-secondary text-[11px] font-bold uppercase tracking-[0.5px] hover:border-text-secondary transition-all cursor-pointer mt-7">
+            <Link
+              href="/grade"
+              className="w-full h-11 rounded-xl bg-transparent border border-text-tertiary text-text-secondary text-[11px] font-bold uppercase tracking-[0.5px] hover:border-text-secondary transition-all mt-7 flex items-center justify-center"
+            >
               START FREE
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -266,9 +317,18 @@ export default function Home() {
         <SectionLabel>FAQ</SectionLabel>
         <div className="max-w-[600px] mx-auto">
           {[
-            { q: "IS THIS LEGAL?", a: "Yes. We provide analysis tools only — we never place bets on your behalf." },
-            { q: "HOW ACCURATE IS THE GRADING?", a: "We measure decision quality, not outcome prediction. An A+ bet can still lose — but higher-graded bets outperform over time." },
-            { q: "WHAT SPORTSBOOKS DO YOU SUPPORT?", a: "DraftKings, FanDuel, BetMGM, Caesars, ESPN Bet, and more. If you can screenshot it, we can grade it." },
+            {
+              q: "IS THIS LEGAL?",
+              a: "Yes. SportsLogic is an analytics platform — not a sportsbook. We analyze publicly available odds data and grade bets based on market pricing and expected value.",
+            },
+            {
+              q: "HOW ACCURATE IS THE GRADING?",
+              a: "Our grading is based on live odds, no-vig pricing models, and sharp-market comparisons. The goal isn't to predict guaranteed winners — it's to measure whether you're getting a good price before you bet.",
+            },
+            {
+              q: "WHAT SPORTSBOOKS DO YOU SUPPORT?",
+              a: "SportsLogic supports screenshots from major U.S. sportsbooks including DraftKings, FanDuel, BetMGM, Caesars, ESPN BET, Fanatics, and more. More books are added regularly.",
+            },
           ].map((faq, i) => (
             <div key={i} className={i > 0 ? "mt-8 pt-8 border-t border-border/20" : ""}>
               <h3 className="font-heading text-[14px] font-bold uppercase text-text-primary mb-3 tracking-[0.5px] text-center">{faq.q}</h3>
@@ -278,17 +338,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FINAL CTA ── */}
+      {/* ── FINAL CTA / WAITLIST ── */}
       <section id="waitlist" className="w-full max-w-[1080px] mx-auto px-6 py-24 sm:py-32 text-center relative">
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] pointer-events-none" style={{
-          background: "radial-gradient(ellipse, rgba(0,232,123,0.04) 0%, transparent 65%)",
-          filter: "blur(60px)",
-        }} />
+        <div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] pointer-events-none"
+          style={{ background: "radial-gradient(ellipse, rgba(0,232,123,0.04) 0%, transparent 65%)", filter: "blur(60px)" }}
+        />
         <h2 className="font-heading relative text-2xl sm:text-[40px] font-bold uppercase tracking-[-1px] mb-4">
           THE EDGE IS WAITING.
         </h2>
         <p className="relative text-sm text-text-secondary mb-10">
-          Join 500+ bettors on the waitlist
+          Join {WAITLIST_COUNT} bettors on the waitlist
         </p>
         <div className="relative max-w-[440px] mx-auto">
           <EmailForm />
@@ -299,15 +359,14 @@ export default function Home() {
       <footer className="w-full max-w-[1080px] mx-auto px-6 pt-10 pb-12 border-t border-border/30">
         <p className="text-[11px] text-text-tertiary text-center sm:text-left mb-6 leading-relaxed max-w-[640px]">
           SportsLogic is not a sportsbook. We provide analysis tools for
-          informational purposes only. 21+. Gambling problem? Call
-          1-800-GAMBLER.
+          informational purposes only. 21+. Gambling problem? Call 1-800-GAMBLER.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[11px] text-text-tertiary">&copy; 2026 SportsLogic</p>
           <div className="flex items-center gap-8">
-            <a href="#" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors">Terms</a>
-            <a href="#" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors">Privacy</a>
-            <a href="#" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors">Contact</a>
+            <Link href="/terms" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors">Terms</Link>
+            <Link href="/privacy" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors">Privacy</Link>
+            <Link href="/contact" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors">Contact</Link>
           </div>
         </div>
       </footer>

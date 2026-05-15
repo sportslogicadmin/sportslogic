@@ -76,15 +76,29 @@ export async function GET() {
   const cutoff = new Date(now + 24 * 60 * 60 * 1000).toISOString();
   const nowISO = new Date().toISOString();
 
-  // Find active sports
+  // Find active sports — track whether the Odds API responded at all
   const activeSports: { short: string; key: string; gameIds: string[] }[] = [];
+  let apiReachable = false;
+  let apiErrorMessage = "";
 
   for (const [short, key] of Object.entries(SPORT_MAP)) {
     try {
       const res = await fetch(
         `${ODDS_API_BASE}/sports/${key}/events/?apiKey=${ODDS_API_KEY}`,
       );
-      if (!res.ok) continue;
+      if (!res.ok) {
+        if (!apiReachable) {
+          // Capture the first error body to surface a real reason
+          try {
+            const errBody = await res.json();
+            apiErrorMessage = errBody?.message ?? errBody?.error ?? `HTTP ${res.status}`;
+          } catch {
+            apiErrorMessage = `HTTP ${res.status}`;
+          }
+        }
+        continue;
+      }
+      apiReachable = true;
       const events = await res.json();
       const upcoming = events.filter(
         (g: { commence_time: string }) => g.commence_time > nowISO && g.commence_time < cutoff
@@ -97,6 +111,14 @@ export async function GET() {
         });
       }
     } catch { /* skip */ }
+  }
+
+  // If every sport fetch failed, the API is down — don't return fake empty success
+  if (!apiReachable) {
+    return NextResponse.json(
+      { error: `Odds API unavailable: ${apiErrorMessage || "all requests failed"}` },
+      { status: 503 }
+    );
   }
 
   const allGrades: TopGrade[] = [];
