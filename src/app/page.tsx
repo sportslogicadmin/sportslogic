@@ -57,12 +57,20 @@ export default function Home() {
           <Image src="/logo.png" alt="SportsLogic" width={72} height={36} className="h-9 w-auto" priority />
           <span className="font-heading text-lg font-bold text-text-primary tracking-tight">SportsLogic</span>
         </div>
-        <Link
-          href="/grade"
-          className="hidden sm:block text-[11px] font-semibold uppercase tracking-[0.5px] text-text-secondary hover:text-text-primary transition-colors"
-        >
-          GRADE YOUR PARLAY
-        </Link>
+        <div className="hidden sm:flex items-center gap-6">
+          <Link
+            href="/grade"
+            className="text-[11px] font-semibold uppercase tracking-[0.5px] text-text-secondary hover:text-text-primary transition-colors"
+          >
+            GRADE YOUR PARLAY
+          </Link>
+          <Link
+            href="/dashboard"
+            className="text-[11px] font-semibold uppercase tracking-[0.5px] text-text-tertiary hover:text-text-secondary transition-colors"
+          >
+            MY GRADES
+          </Link>
+        </div>
         <a
           href="#waitlist"
           className="h-9 px-5 rounded-lg bg-accent text-bg text-[11px] font-semibold uppercase tracking-[0.5px] flex items-center hover:brightness-110 transition-all"
