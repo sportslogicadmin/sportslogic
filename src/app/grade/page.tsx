@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { bookName } from "@/lib/book-names";
@@ -68,6 +68,20 @@ function dotColor(grade: string): string {
   return "bg-red dot-glow-red";
 }
 
+function gradeGlow(grade: string): string {
+  const f = grade[0];
+  if (f === "A" || f === "B") return "0 0 60px rgba(0,232,123,0.08)";
+  if (f === "C") return "0 0 60px rgba(245,158,11,0.08)";
+  return "0 0 60px rgba(239,68,68,0.08)";
+}
+
+function gradeGradient(grade: string): string {
+  const f = grade[0];
+  if (f === "A" || f === "B") return "linear-gradient(180deg, rgba(0,232,123,0.04) 0%, transparent 100%)";
+  if (f === "C") return "linear-gradient(180deg, rgba(245,158,11,0.04) 0%, transparent 100%)";
+  return "linear-gradient(180deg, rgba(239,68,68,0.04) 0%, transparent 100%)";
+}
+
 function gradeContext(grade: string): string {
   const f = grade[0];
   if (f === "A") return "Strong edge. The math is in your favor.";
@@ -84,7 +98,21 @@ export default function GradePage() {
   const [error, setError] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [gradingBook, setGradingBook] = useState("DraftKings");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const BOOKS = ["DraftKings", "FanDuel", "BetMGM", "Caesars", "ESPN Bet", "Bet365", "Pinnacle", "Hard Rock", "WynnBET", "Fanatics"];
+
+  useEffect(() => {
+    if (step !== "grading") return;
+    let i = 0;
+    setGradingBook(BOOKS[0]);
+    const id = setInterval(() => {
+      i = (i + 1) % BOOKS.length;
+      setGradingBook(BOOKS[i]);
+    }, 500);
+    return () => clearInterval(id);
+  }, [step]);
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -111,12 +139,15 @@ export default function GradePage() {
         if (res.ok && data.legs?.length > 0) {
           setParsedLegs(data.legs);
           setStep("confirm");
+        } else if (res.status >= 500) {
+          setError("Our service is temporarily down. Check back soon.");
+          setStep("upload");
         } else {
-          setError(data.error || "Could not read bet slip. Try a clearer screenshot.");
+          setError(data.error || "Could not read your slip. Try a clearer screenshot.");
           setStep("upload");
         }
       } catch {
-        setError("Failed to process image. Try again.");
+        setError("Could not reach our servers. Check your connection and try again.");
         setStep("upload");
       }
     };
@@ -155,12 +186,15 @@ export default function GradePage() {
       if (res.ok && data.overallGrade) {
         setResult(data);
         setStep("result");
+      } else if (res.status >= 500) {
+        setError("Our grading service is temporarily down. Check back soon.");
+        setStep("confirm");
       } else {
         setError(data.error || "Grading failed. Try again.");
         setStep("confirm");
       }
     } catch {
-      setError("Grading failed. Try again.");
+      setError("Could not reach our servers. Check your connection and try again.");
       setStep("confirm");
     }
   };
@@ -299,7 +333,10 @@ export default function GradePage() {
           <div className="text-center py-16">
             <div className="w-10 h-10 border-3 border-accent/30 border-t-accent rounded-full animate-spin mx-auto mb-5" />
             <p className="font-heading text-sm font-bold text-text-primary uppercase tracking-wide">GRADING YOUR PARLAY...</p>
-            <p className="text-xs text-text-secondary mt-2">Comparing {parsedLegs.length} legs across 30+ books</p>
+            <p className="text-xs text-text-secondary mt-3">
+              Checking <span className="text-text-primary font-medium transition-all">{gradingBook}</span>
+            </p>
+            <p className="text-[10px] text-text-tertiary mt-1">{parsedLegs.length} legs · 30+ books</p>
           </div>
         )}
 
@@ -309,10 +346,10 @@ export default function GradePage() {
             {/* Overall grade card */}
             <div
               className={`rounded-2xl border overflow-hidden mb-6 ${gradeBg(result.overallGrade)}`}
-              style={{ boxShadow: "0 0 60px rgba(0,232,123,0.06)" }}
+              style={{ boxShadow: gradeGlow(result.overallGrade) }}
             >
               <div className="px-5 pt-6 pb-4 text-center"
-                style={{ background: "linear-gradient(180deg, rgba(0,232,123,0.03) 0%, transparent 100%)" }}>
+                style={{ background: gradeGradient(result.overallGrade) }}>
                 <p className="text-[11px] text-text-tertiary uppercase tracking-[2px] mb-2">
                   {result.legCount}-LEG PARLAY
                 </p>
