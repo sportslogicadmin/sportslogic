@@ -18,13 +18,11 @@ model User {
   tier        Tier     @default(FREE)
   scanCount   Int      @default(0)
   scanResetAt DateTime @default(now())
-  grades      Grade[]
 }
 
 model Grade {
   id             String   @id @default(cuid())
-  userId         String?
-  user           User?    @relation(fields: [userId], references: [id])
+  userId         String?  // Clerk user ID — no FK, stored directly
   createdAt      DateTime @default(now())
   overallGrade   String
   overallEV      Float
