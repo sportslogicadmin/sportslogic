@@ -461,7 +461,7 @@ export default function GradePage() {
                   This grade is saved at a permanent link. Create a free account to track all your grades in one place.
                 </p>
                 <Link
-                  href="/sign-up"
+                  href={`/sign-up?redirect_url=${encodeURIComponent(`/dashboard?claim=${result.shareSlug}`)}`}
                   className="inline-flex items-center justify-center h-10 px-6 rounded-xl bg-accent text-bg text-[11px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all"
                 >
                   CREATE FREE ACCOUNT

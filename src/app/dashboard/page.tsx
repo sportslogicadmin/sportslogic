@@ -14,9 +14,25 @@ function gradeColor(grade: string) {
   return "text-red";
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ claim?: string }>;
+}) {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
+
+  const { claim } = await searchParams;
+  if (claim) {
+    try {
+      await prisma.grade.updateMany({
+        where: { shareSlug: claim, userId: null },
+        data: { userId },
+      });
+    } catch {
+      // non-fatal — grade stays anonymous if this fails
+    }
+  }
 
   type GradeRow = {
     id: string;
