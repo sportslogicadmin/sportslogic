@@ -159,8 +159,10 @@ function findGame(games: Game[], team: string): Game | undefined {
 // ── Scoring ──
 
 function computeScore(evPct: number, userOdds: number, bestOdds: number, worstOdds: number) {
-  // EV scale: +3% = 100, 0% = 50, -3% = 0 (tighter scale surfaces smaller edges)
-  const evScore = Math.max(0, Math.min(100, 50 + (evPct / 3) * 50));
+  // EV scale: centres on real-world sportsbook juice.
+  // 0% EV = 70 (near fair value), -5% EV = 40 (typical -110 line),
+  // +5% EV = 100 (clear edge), < -11.7% EV = 0 (terrible line).
+  const evScore = Math.max(0, Math.min(100, 70 + (evPct / 5) * 30));
 
   const oddsRange = bestOdds - worstOdds;
   const lineScore = oddsRange > 0
@@ -638,7 +640,9 @@ export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
   let swapSuggestion: string | null = null;
   if (weakest && weakest.score < 50) {
     try {
-      const alts = await findAlternatives(weakest.team, legs[0]?.sport || "nba", weakest.score);
+      const weakestIndex = gradedLegs.indexOf(weakest);
+      const weakestSport = legs[weakestIndex]?.sport || legs[0]?.sport || "nba";
+      const alts = await findAlternatives(weakest.team, weakestSport, weakest.score);
       if (alts.length > 0) {
         const best = alts[0] as GradeResult & { label?: string };
         swapSuggestion = `Swap leg ${gradedLegs.indexOf(weakest) + 1}: ${best.label ?? weakest.team} grades ${best.grade} with ${best.ev >= 0 ? "+" : ""}${best.ev.toFixed(1)}% EV.`;
