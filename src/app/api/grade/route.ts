@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { gradeBet, gradeProp, gradeParlay, findAlternatives, type ParlayLeg } from "@/lib/grading-engine";
 import { prisma } from "@/lib/prisma";
 import { generateSlug } from "@/lib/slug";
@@ -28,7 +27,6 @@ function checkRate(ip: string): { allowed: boolean; remaining: number } {
 }
 
 export async function POST(request: Request) {
-  const { userId } = await auth();
   const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "unknown";
   const rate = checkRate(ip);
   if (!rate.allowed) {
@@ -61,7 +59,6 @@ export async function POST(request: Request) {
         const slug = generateSlug();
         await prisma.grade.create({
           data: {
-            userId: userId ?? null,
             overallGrade: result.overallGrade,
             overallEV: result.overallEv,
             totalLegs: result.legCount,

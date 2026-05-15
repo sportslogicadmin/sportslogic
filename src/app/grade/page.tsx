@@ -3,42 +3,8 @@
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useUser, useClerk } from "@clerk/nextjs";
 import { bookName } from "@/lib/book-names";
 import { ShareButton } from "@/components/share-button";
-
-function GradeNavAuth() {
-  const { isSignedIn, user } = useUser();
-  const { signOut } = useClerk();
-
-  if (isSignedIn) {
-    return (
-      <div className="flex items-center gap-3">
-        <Link
-          href="/dashboard"
-          className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors uppercase tracking-wide"
-        >
-          MY GRADES
-        </Link>
-        <button
-          onClick={() => signOut({ redirectUrl: "/" })}
-          className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors uppercase tracking-wide cursor-pointer"
-        >
-          SIGN OUT
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <Link
-      href="/sign-in"
-      className="text-[11px] text-accent hover:brightness-110 transition-all uppercase tracking-wide"
-    >
-      SIGN IN TO SAVE
-    </Link>
-  );
-}
 
 type ParsedLeg = {
   team: string;
@@ -112,7 +78,6 @@ function gradeContext(grade: string): string {
 }
 
 export default function GradePage() {
-  const { isSignedIn } = useUser();
   const [step, setStep] = useState<Step>("upload");
   const [parsedLegs, setParsedLegs] = useState<ParsedLeg[]>([]);
   const [result, setResult] = useState<ParlayResult | null>(null);
@@ -216,7 +181,9 @@ export default function GradePage() {
           <Image src="/logo.png" alt="SportsLogic" width={56} height={28} className="h-7 w-auto" />
           <span className="font-heading text-base font-bold text-text-primary tracking-tight">SportsLogic</span>
         </Link>
-        <GradeNavAuth />
+        <Link href="/" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors uppercase tracking-wide">
+          HOME
+        </Link>
       </nav>
 
       <div className="w-full max-w-[520px] mx-auto px-5 pb-16">
@@ -450,24 +417,6 @@ export default function GradePage() {
               stake: parsedLegs.find((l) => l.stake != null)?.stake ?? null,
               payout: parsedLegs.find((l) => l.potential_payout != null)?.potential_payout ?? null,
             }} />
-
-            {/* Sign-up nudge for anonymous users */}
-            {!isSignedIn && result.shareSlug && (
-              <div className="mt-6 bg-surface border border-border rounded-2xl p-5 text-center">
-                <p className="font-heading text-sm font-bold text-text-primary uppercase tracking-wide mb-1">
-                  SAVE YOUR GRADE HISTORY
-                </p>
-                <p className="text-xs text-text-secondary mb-4">
-                  This grade is saved at a permanent link. Create a free account to track all your grades in one place.
-                </p>
-                <Link
-                  href={`/sign-up?redirect_url=${encodeURIComponent(`/dashboard?claim=${result.shareSlug}`)}`}
-                  className="inline-flex items-center justify-center h-10 px-6 rounded-xl bg-accent text-bg text-[11px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all"
-                >
-                  CREATE FREE ACCOUNT
-                </Link>
-              </div>
-            )}
 
             {/* Actions */}
             <div className="space-y-3 mt-6">
