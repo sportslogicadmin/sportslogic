@@ -48,9 +48,10 @@ Build order is strict. A step does not start until the previous step is verified
 - [ ] OG image updated to match
 
 **Step E — Ops minimum (required before launch):**
-- [ ] /api/health endpoint that authenticates both API keys (not just checks existence)
-- [ ] Uptime monitor pinging it, alerting Griffin's phone
-- [ ] RUNBOOK.md: the five failure modes and their fixes (seed with the dead-key saga)
+- [ ] /api/health endpoint — real authenticated calls to Anthropic + Odds API + DB, not just key existence checks. Shape: `{ status, checks: { anthropic, oddsApi, db } }`. See RUNBOOK.md.
+- [ ] Uptime monitor pinging /api/health every 5 min, alerting Griffin's phone on non-200
+- [ ] RUNBOOK.md: five failure modes (entries #1 Anthropic, #2 Odds API written; #3–5 TBD)
+- [ ] Odds caching: replace in-memory Map with Next.js fetch `next: { revalidate: 300 }` on fetchOdds, fetchEvents, fetchPropOdds — shared across serverless instances via Vercel Data Cache. At 13 credits/grade for props, the current per-invocation fetch burns the free tier in ~38 grades; cross-invocation caching makes 100 grades/hour cost ~5 credits instead of 1300. This is a launch blocker.
 
 **Step F — Launch:**
 - [ ] Final verdict copy shipped
