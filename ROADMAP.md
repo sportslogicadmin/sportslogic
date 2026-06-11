@@ -73,6 +73,7 @@ Build order is strict. A step does not start until the previous step is verified
 - 2026-06-11 — Journal will track cumulative found money ("found you $412 this season") — rung 2 scope, noted now.
 - 2026-06-11 — Tout auditing → Parking Lot as rung-4 content/marketing idea. Not product. Public free picks only if ever.
 - 2026-06-11 — OCR parses slips as units (singles vs. priced groups). Group units abort with a named message until SGP pricing exists. Boosted slips store both baseOdds and paidOdds; sport check fires before SGP check.
+- 2026-06-11 — SportsLogic is a pre-game tool; in-play/settled slips get a specific "game already started" message, not a grade.
 
 ## Parking Lot (good ideas, not now)
 - Multi-book devig (beyond Pinnacle)

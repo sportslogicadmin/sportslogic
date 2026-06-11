@@ -122,13 +122,15 @@ async function fetchOdds(sport: string, market: string): Promise<Game[]> {
   const cached = oddsCache.get(cacheKey);
   if (cached && Date.now() < cached.expires) return cached.data;
 
-  const res = await fetch(
-    `${ODDS_API_BASE}/sports/${sportKey}/odds/?` +
-    `apiKey=${ODDS_API_KEY}&regions=us,us2,eu&markets=${marketKey}&oddsFormat=american`
-  );
-  if (!res.ok) return [];
+  const url = `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us,us2,eu&markets=${marketKey}&oddsFormat=american`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    console.error(`[odds-api] ${sportKey}/${marketKey} → HTTP ${res.status}`);
+    return [];
+  }
 
   const data: Game[] = await res.json();
+  console.log(`[odds-api] ${sportKey}/${marketKey} → ${data.length} games: ${data.slice(0, 4).map(g => `${g.away_team} @ ${g.home_team} (${new Date(g.commence_time).toISOString()})`).join(" | ")}`);
   oddsCache.set(cacheKey, { data, expires: Date.now() + ODDS_CACHE_TTL });
   return data;
 }
@@ -148,8 +150,30 @@ async function fetchPropOdds(sport: string, eventId: string, propType: string): 
 async function fetchEvents(sport: string): Promise<Game[]> {
   const sportKey = SPORT_MAP[sport] ?? sport;
   const res = await fetch(`${ODDS_API_BASE}/sports/${sportKey}/events/?apiKey=${ODDS_API_KEY}`);
-  if (!res.ok) return [];
-  return await res.json();
+  if (!res.ok) {
+    console.error(`[events-api] ${sportKey} → HTTP ${res.status}`);
+    return [];
+  }
+  const games: Game[] = await res.json();
+  console.log(`[events-api] ${sportKey} → ${games.length} upcoming: ${games.slice(0, 4).map(g => `${g.away_team} @ ${g.home_team} (${new Date(g.commence_time).toISOString()})`).join(" | ")}`);
+  return games;
+}
+
+async function hasGameStarted(team: string, sport: string): Promise<boolean> {
+  if (!team?.trim()) return false;
+  const sportKey = SPORT_MAP[sport] ?? sport;
+  try {
+    const res = await fetch(
+      `${ODDS_API_BASE}/sports/${sportKey}/scores/?apiKey=${ODDS_API_KEY}&daysFrom=1`,
+      { signal: AbortSignal.timeout(3000) }
+    );
+    if (!res.ok) return false;
+    const games: Array<{ home_team: string; away_team: string }> = await res.json();
+    console.log(`[scores-api] ${sportKey} → ${games.length} recent/live games`);
+    return games.some(g => teamMatch(team, g.home_team) || teamMatch(team, g.away_team));
+  } catch {
+    return false;
+  }
 }
 
 function teamMatch(query: string, candidate: string): boolean {
@@ -623,7 +647,16 @@ export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
 
     // Hard abort: any leg without resolved odds poisons the whole grade
     if (result.error) {
-      throw new Error(`We couldn't find live odds for leg ${i + 1} (${leg.player ?? leg.team}). Check that the game is active and try again.`);
+      const name = leg.player ?? leg.team;
+      const started = await hasGameStarted(leg.team, leg.sport);
+      if (started) {
+        throw new Error(
+          `This game has already started — SportsLogic grades slips before tip-off/first pitch.`
+        );
+      }
+      throw new Error(
+        `We couldn't find live odds for leg ${i + 1} (${name}). Check that the game is active and try again.`
+      );
     }
 
     gradedLegs.push({ ...result, team: leg.team, betType: leg.betType || "moneyline" });

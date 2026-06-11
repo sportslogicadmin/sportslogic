@@ -26,6 +26,7 @@ type ParsedUnit =
       side?: string | null;
       player?: string | null;
       prop_type?: string | null;
+      market?: string | null;
       sport: string;
     }
   | {
@@ -84,6 +85,10 @@ const PROP_LABELS: Record<string, string> = {
   goals: "Goals", shots: "Shots on Goal",
 };
 
+function propLabel(parsed: SingleUnit): string {
+  return PROP_LABELS[parsed.prop_type ?? ""] ?? parsed.market ?? parsed.prop_type ?? "Prop";
+}
+
 function legDesc(parsed: SingleUnit): string {
   const o = parsed.odds >= 0 ? `+${parsed.odds}` : `${parsed.odds}`;
   if (parsed.bet_type === "moneyline") return `ML · ${o}`;
@@ -94,7 +99,7 @@ function legDesc(parsed: SingleUnit): string {
     return `${parsed.side === "under" ? "U" : "O"}${parsed.line} · ${o}`;
   }
   if (parsed.bet_type === "prop") {
-    const label = PROP_LABELS[parsed.prop_type ?? ""] ?? parsed.prop_type ?? "Prop";
+    const label = propLabel(parsed);
     const sideStr = parsed.line != null ? ` (${parsed.side === "under" ? "u" : "o"}${parsed.line})` : "";
     return `${label}${sideStr} · ${o}`;
   }
@@ -360,7 +365,7 @@ export default function GradePage() {
               Works with DraftKings &bull; FanDuel &bull; BetMGM &bull; ESPN Bet &bull; Caesars
             </p>
             <p className="text-[11px] text-text-tertiary text-center mt-1 tracking-wide">
-              Supports NBA &bull; NFL &bull; MLB &bull; NHL &bull; NCAAB &bull; NCAAF
+              Supports NBA &bull; NFL &bull; MLB &bull; NHL &bull; NCAAB &bull; NCAAF &bull; Pre-game only
             </p>
           </div>
         )}
@@ -403,7 +408,7 @@ export default function GradePage() {
                           <p className="text-[11px] text-text-secondary">
                             {unit.bet_type === "spread" && unit.line != null ? `${unit.line >= 0 ? "+" : ""}${unit.line} ` : ""}
                             {unit.bet_type === "total" && unit.line != null ? `${unit.side ?? "over"} ${unit.line} ` : ""}
-                            {unit.bet_type === "prop" && unit.prop_type ? `${unit.side ?? "over"} ${unit.line} ${unit.prop_type} ` : ""}
+                            {unit.bet_type === "prop" ? `${propLabel(unit)}${unit.line != null ? ` (${unit.side === "under" ? "u" : "o"}${unit.line})` : ""} ` : ""}
                             {unit.bet_type === "moneyline" ? "ML " : ""}
                             ({unit.odds >= 0 ? "+" : ""}{unit.odds})
                             <span className="text-text-tertiary"> &bull; {unit.sport.toUpperCase()}</span>

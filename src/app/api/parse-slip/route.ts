@@ -96,11 +96,11 @@ Stake: $10  |  To Pay: $855
 Correct output:
 {
   "units": [
-    {"type":"single","team":"New York Yankees","player":"Aaron Judge","bet_type":"prop","line":0.5,"odds":300,"side":"over","prop_type":"hr","sport":"mlb","opponent":null},
-    {"type":"single","team":"New York Yankees","player":"Juan Soto","bet_type":"prop","line":1.5,"odds":140,"side":"over","prop_type":"hits","sport":"mlb","opponent":null},
-    {"type":"single","team":"New York Yankees","player":null,"bet_type":"moneyline","line":null,"odds":-130,"side":null,"prop_type":null,"sport":"mlb","opponent":null},
-    {"type":"single","team":"New York Mets","player":null,"bet_type":"spread","line":-1.5,"odds":110,"side":null,"prop_type":null,"sport":"mlb","opponent":null},
-    {"type":"single","team":"New York Yankees","player":null,"bet_type":"total","line":8.5,"odds":-110,"side":"over","prop_type":null,"sport":"mlb","opponent":null}
+    {"type":"single","team":"New York Yankees","player":"Aaron Judge","bet_type":"prop","line":0.5,"odds":300,"side":"over","prop_type":"hr","market":"To Hit a HR","sport":"mlb","opponent":null},
+    {"type":"single","team":"New York Yankees","player":"Juan Soto","bet_type":"prop","line":1.5,"odds":140,"side":"over","prop_type":"hits","market":"2+ Hits","sport":"mlb","opponent":null},
+    {"type":"single","team":"New York Yankees","player":null,"bet_type":"moneyline","line":null,"odds":-130,"side":null,"prop_type":null,"market":"Moneyline","sport":"mlb","opponent":null},
+    {"type":"single","team":"New York Mets","player":null,"bet_type":"spread","line":-1.5,"odds":110,"side":null,"prop_type":null,"market":"-1.5","sport":"mlb","opponent":null},
+    {"type":"single","team":"New York Yankees","player":null,"bet_type":"total","line":8.5,"odds":-110,"side":"over","prop_type":null,"market":"Over 8.5","sport":"mlb","opponent":null}
   ],
   "stake": 10,
   "toPay": 855,
@@ -125,10 +125,10 @@ Stake: $25  |  To Pay: $1965.25
 Correct output:
 {
   "units": [
-    {"type":"single","team":"","player":"Jordan Spieth","bet_type":"prop","line":null,"odds":550,"side":null,"prop_type":null,"sport":"golf","opponent":null},
-    {"type":"single","team":"","player":"Rory McIlroy","bet_type":"prop","line":null,"odds":300,"side":null,"prop_type":null,"sport":"golf","opponent":null},
-    {"type":"single","team":"","player":"Scottie Scheffler","bet_type":"prop","line":null,"odds":150,"side":null,"prop_type":null,"sport":"golf","opponent":null},
-    {"type":"single","team":"","player":"Jon Rahm","bet_type":"prop","line":null,"odds":100,"side":null,"prop_type":null,"sport":"golf","opponent":null},
+    {"type":"single","team":"","player":"Jordan Spieth","bet_type":"prop","line":null,"odds":550,"side":null,"prop_type":null,"market":"Top 5 Finish","sport":"golf","opponent":null},
+    {"type":"single","team":"","player":"Rory McIlroy","bet_type":"prop","line":null,"odds":300,"side":null,"prop_type":null,"market":"Top 5 Finish","sport":"golf","opponent":null},
+    {"type":"single","team":"","player":"Scottie Scheffler","bet_type":"prop","line":null,"odds":150,"side":null,"prop_type":null,"market":"To Win","sport":"golf","opponent":null},
+    {"type":"single","team":"","player":"Jon Rahm","bet_type":"prop","line":null,"odds":100,"side":null,"prop_type":null,"market":"Top 20 Finish","sport":"golf","opponent":null},
     {"type":"group","groupLabel":"2 PICK SGP","unitOdds":400,"sport":"mlb","children":[
       {"player":"Aaron Judge","team":"New York Yankees","market":"To Hit a HR","line":0.5,"side":"over","odds":null},
       {"player":"Juan Soto","team":"New York Yankees","market":"2+ Hits","line":1.5,"side":"over","odds":null}
@@ -154,6 +154,7 @@ Single unit:
   "side": "over" | "under" | null,
   "player": string or null,
   "prop_type": "hr"|"hits"|"strikeouts"|"rbis"|"points"|"rebounds"|"assists"|"threes"|"pra"|"goals"|"shots" or null,
+  "market": string — the raw bet description as shown on the slip (e.g. "To Hit a HR", "Top 40 Finish", "Anytime Touchdown Scorer", "Moneyline"). Always populate this field verbatim from the slip text. Never omit it.
   "sport": "nba"|"nfl"|"mlb"|"nhl"|"ncaab"|"ncaaf" — or the actual sport name in lowercase if unsupported. NEVER substitute a supported sport for an unsupported one (e.g. golf stays "golf", not "nfl")
 }
 
