@@ -51,7 +51,7 @@ Build order is strict. A step does not start until the previous step is verified
 - [ ] /api/health endpoint — real authenticated calls to Anthropic + Odds API + DB, not just key existence checks. Shape: `{ status, checks: { anthropic, oddsApi, db } }`. See RUNBOOK.md.
 - [ ] Uptime monitor pinging /api/health every 5 min, alerting Griffin's phone on non-200
 - [ ] RUNBOOK.md: five failure modes (entries #1 Anthropic, #2 Odds API written; #3–5 TBD)
-- [ ] Odds caching: replace in-memory Map with Next.js fetch `next: { revalidate: 300 }` on fetchOdds, fetchEvents, fetchPropOdds — shared across serverless instances via Vercel Data Cache. At 13 credits/grade for props, the current per-invocation fetch burns the free tier in ~38 grades; cross-invocation caching makes 100 grades/hour cost ~5 credits instead of 1300. This is a launch blocker.
+- [x] Odds caching: shipped ahead of Step E (2026-06-11). Next.js `next: { revalidate: 300 }` on fetchOdds, fetchEvents, fetchPropOdds — shared across serverless instances via Vercel Data Cache. Timing logged (ms) to distinguish cache hits (~0ms) from real fetches (~100-500ms).
 
 **Step F — Launch:**
 - [ ] Final verdict copy shipped
@@ -75,6 +75,7 @@ Build order is strict. A step does not start until the previous step is verified
 - 2026-06-11 — Tout auditing → Parking Lot as rung-4 content/marketing idea. Not product. Public free picks only if ever.
 - 2026-06-11 — OCR parses slips as units (singles vs. priced groups). Group units abort with a named message until SGP pricing exists. Boosted slips store both baseOdds and paidOdds; sport check fires before SGP check.
 - 2026-06-11 — SportsLogic is a pre-game tool; in-play/settled slips get a specific "game already started" message, not a grade.
+- 2026-06-11 — Odds caching pulled forward from Step E. fetch({ next: { revalidate: 300 } }) on all three Odds API fetch functions. Per-grade cost drops from 3–48 credits to near-zero marginal after first hit. Step E retains health endpoint + monitor.
 
 ## Parking Lot (good ideas, not now)
 - Multi-book devig (beyond Pinnacle)

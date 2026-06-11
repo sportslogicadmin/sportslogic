@@ -123,14 +123,16 @@ async function fetchOdds(sport: string, market: string): Promise<Game[]> {
   if (cached && Date.now() < cached.expires) return cached.data;
 
   const url = `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us,us2,eu&markets=${marketKey}&oddsFormat=american`;
-  const res = await fetch(url);
+  const t0 = Date.now();
+  const res = await fetch(url, { next: { revalidate: 300 } });
+  const ms = Date.now() - t0;
   if (!res.ok) {
-    console.error(`[odds-api] ${sportKey}/${marketKey} → HTTP ${res.status}`);
+    console.error(`[odds-api] ${sportKey}/${marketKey} → HTTP ${res.status} (${ms}ms)`);
     return [];
   }
 
   const data: Game[] = await res.json();
-  console.log(`[odds-api] ${sportKey}/${marketKey} → ${data.length} games: ${data.slice(0, 4).map(g => `${g.away_team} @ ${g.home_team} (${new Date(g.commence_time).toISOString()})`).join(" | ")}`);
+  console.log(`[odds-api] ${sportKey}/${marketKey} → ${data.length} games in ${ms}ms: ${data.slice(0, 4).map(g => `${g.away_team} @ ${g.home_team} (${new Date(g.commence_time).toISOString()})`).join(" | ")}`);
   oddsCache.set(cacheKey, { data, expires: Date.now() + ODDS_CACHE_TTL });
   return data;
 }
@@ -139,23 +141,27 @@ async function fetchPropOdds(sport: string, eventId: string, propType: string): 
   const sportKey = SPORT_MAP[sport] ?? sport;
   const marketKey = PROP_MAP[propType] ?? propType;
 
-  const res = await fetch(
-    `${ODDS_API_BASE}/sports/${sportKey}/events/${eventId}/odds/?` +
-    `apiKey=${ODDS_API_KEY}&regions=us,us2,eu&markets=${marketKey}&oddsFormat=american`
-  );
+  const url = `${ODDS_API_BASE}/sports/${sportKey}/events/${eventId}/odds/?apiKey=${ODDS_API_KEY}&regions=us,us2,eu&markets=${marketKey}&oddsFormat=american`;
+  const t0 = Date.now();
+  const res = await fetch(url, { next: { revalidate: 300 } });
+  const ms = Date.now() - t0;
+  console.log(`[prop-api] ${sportKey}/${eventId.slice(-6)}/${marketKey} → HTTP ${res.status} (${ms}ms)`);
   if (!res.ok) return null;
   return await res.json();
 }
 
 async function fetchEvents(sport: string): Promise<Game[]> {
   const sportKey = SPORT_MAP[sport] ?? sport;
-  const res = await fetch(`${ODDS_API_BASE}/sports/${sportKey}/events/?apiKey=${ODDS_API_KEY}`);
+  const url = `${ODDS_API_BASE}/sports/${sportKey}/events/?apiKey=${ODDS_API_KEY}`;
+  const t0 = Date.now();
+  const res = await fetch(url, { next: { revalidate: 300 } });
+  const ms = Date.now() - t0;
   if (!res.ok) {
-    console.error(`[events-api] ${sportKey} → HTTP ${res.status}`);
+    console.error(`[events-api] ${sportKey} → HTTP ${res.status} (${ms}ms)`);
     return [];
   }
   const games: Game[] = await res.json();
-  console.log(`[events-api] ${sportKey} → ${games.length} upcoming: ${games.slice(0, 4).map(g => `${g.away_team} @ ${g.home_team} (${new Date(g.commence_time).toISOString()})`).join(" | ")}`);
+  console.log(`[events-api] ${sportKey} → ${games.length} upcoming in ${ms}ms: ${games.slice(0, 4).map(g => `${g.away_team} @ ${g.home_team} (${new Date(g.commence_time).toISOString()})`).join(" | ")}`);
   return games;
 }
 
