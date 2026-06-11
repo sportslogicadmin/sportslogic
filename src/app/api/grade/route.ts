@@ -54,6 +54,16 @@ export async function POST(request: Request) {
     try {
       const result = await gradeParlay(parlayLegs);
 
+      // Safety net: gradeParlay should throw on junk legs, but catch anything that slips through
+      const junkIdx = result.legs.findIndex(l => l.grade === "?");
+      if (junkIdx >= 0) {
+        const bad = parlayLegs[junkIdx];
+        const name = bad?.player ?? bad?.team ?? "unknown";
+        return NextResponse.json({
+          error: `Couldn't find live odds for leg ${junkIdx + 1} (${name}). Check that the game is active and the sport is supported.`
+        }, { status: 422 });
+      }
+
       let shareSlug: string | undefined;
       try {
         const slug = generateSlug();
@@ -90,6 +100,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ ...result, shareSlug, remaining: rate.remaining });
     } catch (err) {
       console.error("[grade-parlay]", err);
+      const message = err instanceof Error ? err.message : null;
+      if (message) {
+        return NextResponse.json({ error: message }, { status: 422 });
+      }
       return NextResponse.json({ error: "Parlay grading failed. Try again." }, { status: 500 });
     }
   }

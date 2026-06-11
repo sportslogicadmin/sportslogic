@@ -26,14 +26,26 @@ const MARKET_MAP: Record<string, string> = {
 };
 
 const PROP_MAP: Record<string, string> = {
+  // NBA
   points: "player_points",
   rebounds: "player_rebounds",
   assists: "player_assists",
   threes: "player_threes",
   pra: "player_points_rebounds_assists",
+  // MLB
+  hr: "batter_home_runs",
+  hits: "batter_hits",
+  strikeouts: "pitcher_strikeouts",
+  rbis: "batter_rbis",
+  // NHL
+  goals: "player_goals",
+  shots: "player_shots_on_goal",
 };
 
 const SHARP_BOOKS = ["pinnacle", "betonlineag", "bookmaker", "betcris", "circa"];
+
+const SUPPORTED_SPORTS = new Set(Object.keys(SPORT_MAP));
+const SUPPORTED_SPORTS_LABEL = "NBA, NFL, MLB, NHL, college football, and college basketball";
 
 // US retail books — what the user can actually bet at. Line value compares against these only.
 const US_BOOKS = new Set([
@@ -141,19 +153,24 @@ async function fetchEvents(sport: string): Promise<Game[]> {
 }
 
 function teamMatch(query: string, candidate: string): boolean {
-  // Prefer exact substring match first
   if (candidate.toLowerCase().includes(query.toLowerCase())) return true;
-  // Then try last word (team nickname — "Yankees", "Celtics", etc.)
+  // Last-word fallback: min 6 chars to avoid common short words matching team names
   const words = query.toLowerCase().split(" ");
   const lastWord = words[words.length - 1];
-  if (lastWord.length >= 4 && candidate.toLowerCase().includes(lastWord)) return true;
+  if (lastWord.length >= 6 && candidate.toLowerCase().includes(lastWord)) return true;
   return false;
 }
 
+const GAME_WINDOW_MS = 3 * 24 * 60 * 60 * 1000; // ±3 days
+
 function findGame(games: Game[], team: string): Game | undefined {
-  return games.find((g) =>
-    teamMatch(team, g.home_team) || teamMatch(team, g.away_team)
-  );
+  const now = Date.now();
+  return games.find((g) => {
+    if (!teamMatch(team, g.home_team) && !teamMatch(team, g.away_team)) return false;
+    // Reject games outside the ±3-day window — stale/future games produce valid-looking but wrong odds
+    const gameTime = new Date(g.commence_time).getTime();
+    return Math.abs(gameTime - now) <= GAME_WINDOW_MS;
+  });
 }
 
 // ── Scoring ──
@@ -568,6 +585,7 @@ export type ParlayResult = {
   overallScore: number;
   overallEv: number;
   combinedTrueProb: number;
+  combinedImpliedProb: number;
   vigCost: number;
   legCount: number;
   legs: (GradeResult & { team: string; betType: string })[];
@@ -577,11 +595,23 @@ export type ParlayResult = {
 };
 
 export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
+  // Pre-flight: reject unsupported sports before hitting any API
+  for (let i = 0; i < legs.length; i++) {
+    const sport = (legs[i].sport ?? "").toLowerCase();
+    if (!SUPPORTED_SPORTS.has(sport)) {
+      const displaySport = legs[i].sport ? legs[i].sport.charAt(0).toUpperCase() + legs[i].sport.slice(1).toLowerCase() : "that sport";
+      throw new Error(
+        `We can't grade ${displaySport} yet — SportsLogic currently covers ${SUPPORTED_SPORTS_LABEL}.`
+      );
+    }
+  }
+
   const gradedLegs: (GradeResult & { team: string; betType: string })[] = [];
   let combinedTrueProb = 1;
   let combinedImpliedProb = 1;
 
-  for (const leg of legs) {
+  for (let i = 0; i < legs.length; i++) {
+    const leg = legs[i];
     const odds = typeof leg.odds === "string" ? parseInt(String(leg.odds).replace("+", ""), 10) : leg.odds;
     let result: GradeResult;
 
@@ -589,6 +619,11 @@ export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
       result = await gradeProp(leg.player, leg.betType || "points", leg.side || "over", leg.line || 0, odds, leg.sport, leg.team);
     } else {
       result = await gradeBet(leg.team, leg.betType || "moneyline", odds, leg.sport, leg.line, leg.side);
+    }
+
+    // Hard abort: any leg without resolved odds poisons the whole grade
+    if (result.error) {
+      throw new Error(`We couldn't find live odds for leg ${i + 1} (${leg.player ?? leg.team}). Check that the game is active and try again.`);
     }
 
     gradedLegs.push({ ...result, team: leg.team, betType: leg.betType || "moneyline" });
@@ -655,6 +690,7 @@ export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
     overallScore: Math.round(parlayScore * 10) / 10,
     overallEv: Math.round(parlayEv * 100) / 100,
     combinedTrueProb: Math.round(combinedTrueProb * 10000) / 10000,
+    combinedImpliedProb: Math.round(combinedImpliedProb * 10000) / 10000,
     vigCost: Math.round(vigCost * 100) / 100,
     legCount: gradedLegs.length,
     legs: gradedLegs,

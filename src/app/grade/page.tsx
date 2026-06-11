@@ -6,18 +6,44 @@ import Image from "next/image";
 import { bookName } from "@/lib/book-names";
 import { ShareButton } from "@/components/share-button";
 
-type ParsedLeg = {
+type ParsedChild = {
+  player: string | null;
   team: string;
-  opponent?: string | null;
-  bet_type: string;
-  line?: number | null;
-  odds: number;
-  side?: string | null;
-  player?: string | null;
-  prop_type?: string | null;
-  sport: string;
-  stake?: number | null;
-  potential_payout?: number | null;
+  market: string;
+  line: number | null;
+  side: string | null;
+  odds: null;
+};
+
+type ParsedUnit =
+  | {
+      type: "single";
+      team: string;
+      opponent?: string | null;
+      bet_type: string;
+      line?: number | null;
+      odds: number;
+      side?: string | null;
+      player?: string | null;
+      prop_type?: string | null;
+      sport: string;
+    }
+  | {
+      type: "group";
+      groupLabel: string;
+      unitOdds: number;
+      sport: string;
+      children: ParsedChild[];
+    };
+
+type SingleUnit = Extract<ParsedUnit, { type: "single" }>;
+
+type SlipMeta = {
+  stake: number | null;
+  toPay: number | null;
+  baseOdds: number | null;
+  paidOdds: number | null;
+  boostLabel: string | null;
 };
 
 type GradedLeg = {
@@ -29,6 +55,7 @@ type GradedLeg = {
   best_odds: number;
   best_book: string;
   true_prob: number;
+  fair_odds: number;
 };
 
 type ParlayResult = {
@@ -36,6 +63,7 @@ type ParlayResult = {
   overallScore: number;
   overallEv: number;
   combinedTrueProb: number;
+  combinedImpliedProb: number;
   vigCost: number;
   legCount: number;
   legs: GradedLeg[];
@@ -46,6 +74,32 @@ type ParlayResult = {
 };
 
 type Step = "upload" | "parsing" | "confirm" | "grading" | "result";
+
+const SUPPORTED_SPORTS = new Set(["nba", "nfl", "mlb", "nhl", "ncaab", "ncaaf"]);
+
+const PROP_LABELS: Record<string, string> = {
+  points: "Points", rebounds: "Rebounds", assists: "Assists",
+  threes: "3-Pointers", pra: "Pts+Reb+Ast",
+  hr: "To Hit a HR", hits: "To Get a Hit", strikeouts: "Strikeouts", rbis: "RBIs",
+  goals: "Goals", shots: "Shots on Goal",
+};
+
+function legDesc(parsed: SingleUnit): string {
+  const o = parsed.odds >= 0 ? `+${parsed.odds}` : `${parsed.odds}`;
+  if (parsed.bet_type === "moneyline") return `ML · ${o}`;
+  if (parsed.bet_type === "spread" && parsed.line != null) {
+    return `${parsed.line >= 0 ? "+" : ""}${parsed.line} · ${o}`;
+  }
+  if (parsed.bet_type === "total" && parsed.line != null) {
+    return `${parsed.side === "under" ? "U" : "O"}${parsed.line} · ${o}`;
+  }
+  if (parsed.bet_type === "prop") {
+    const label = PROP_LABELS[parsed.prop_type ?? ""] ?? parsed.prop_type ?? "Prop";
+    const sideStr = parsed.line != null ? ` (${parsed.side === "under" ? "u" : "o"}${parsed.line})` : "";
+    return `${label}${sideStr} · ${o}`;
+  }
+  return o;
+}
 
 function gradeColor(grade: string): string {
   const f = grade[0];
@@ -91,9 +145,12 @@ function gradeContext(grade: string): string {
   return "Bad value. The books love this parlay.";
 }
 
+const EMPTY_SLIP_META: SlipMeta = { stake: null, toPay: null, baseOdds: null, paidOdds: null, boostLabel: null };
+
 export default function GradePage() {
   const [step, setStep] = useState<Step>("upload");
-  const [parsedLegs, setParsedLegs] = useState<ParsedLeg[]>([]);
+  const [parsedUnits, setParsedUnits] = useState<ParsedUnit[]>([]);
+  const [slipMeta, setSlipMeta] = useState<SlipMeta>(EMPTY_SLIP_META);
   const [result, setResult] = useState<ParlayResult | null>(null);
   const [error, setError] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -136,8 +193,15 @@ export default function GradePage() {
         });
 
         const data = await res.json();
-        if (res.ok && data.legs?.length > 0) {
-          setParsedLegs(data.legs);
+        if (res.ok && data.units?.length > 0) {
+          setParsedUnits(data.units);
+          setSlipMeta({
+            stake: data.stake ?? null,
+            toPay: data.toPay ?? null,
+            baseOdds: data.baseOdds ?? null,
+            paidOdds: data.paidOdds ?? null,
+            boostLabel: data.boostLabel ?? null,
+          });
           setStep("confirm");
         } else if (res.status >= 500) {
           setError("Our service is temporarily down. Check back soon.");
@@ -161,19 +225,51 @@ export default function GradePage() {
   }, [handleFile]);
 
   const handleGrade = async () => {
-    setStep("grading");
     setError("");
 
+    const singleUnits = parsedUnits.filter((u): u is SingleUnit => u.type === "single");
+
+    // Sport check fires first
+    for (const unit of singleUnits) {
+      if (!SUPPORTED_SPORTS.has(unit.sport?.toLowerCase())) {
+        const sportName = unit.sport ?? "this sport";
+        setError(
+          `We can't grade ${sportName} yet — SportsLogic currently covers NBA, NFL, MLB, NHL, college football, and college basketball.`
+        );
+        return;
+      }
+    }
+
+    // Group unit (SGP) check
+    const hasGroup = parsedUnits.some((u) => u.type === "group");
+    if (hasGroup) {
+      setError(
+        "This slip includes a Same Game Parlay priced as one unit — we can't grade SGP pricing yet. We can grade the individual legs if you screenshot them separately."
+      );
+      return;
+    }
+
+    // Basic field validation
+    for (let i = 0; i < singleUnits.length; i++) {
+      const unit = singleUnits[i];
+      if (!unit.odds || !unit.sport || (!unit.team && !unit.player)) {
+        setError(`We couldn't read leg ${i + 1} clearly — try re-uploading with a sharper screenshot.`);
+        return;
+      }
+    }
+
+    setStep("grading");
+
     try {
-      const parlayLegs = parsedLegs.map((leg) => ({
-        team: leg.team,
-        betType: leg.bet_type,
-        odds: leg.odds,
-        sport: leg.sport,
-        line: leg.line ?? undefined,
-        side: leg.side ?? undefined,
-        player: leg.player ?? undefined,
-        isProp: leg.bet_type === "prop",
+      const parlayLegs = singleUnits.map((unit) => ({
+        team: unit.team,
+        betType: unit.bet_type,
+        odds: unit.odds,
+        sport: unit.sport,
+        line: unit.line ?? undefined,
+        side: unit.side ?? undefined,
+        player: unit.player ?? undefined,
+        isProp: unit.bet_type === "prop",
       }));
 
       const res = await fetch("/api/grade", {
@@ -201,11 +297,14 @@ export default function GradePage() {
 
   const reset = () => {
     setStep("upload");
-    setParsedLegs([]);
+    setParsedUnits([]);
+    setSlipMeta(EMPTY_SLIP_META);
     setResult(null);
     setError("");
     setImagePreview(null);
   };
+
+  const singleUnits = parsedUnits.filter((u): u is SingleUnit => u.type === "single");
 
   return (
     <div className="w-full min-h-screen">
@@ -260,6 +359,9 @@ export default function GradePage() {
             <p className="text-[11px] text-text-tertiary text-center mt-4 tracking-wide">
               Works with DraftKings &bull; FanDuel &bull; BetMGM &bull; ESPN Bet &bull; Caesars
             </p>
+            <p className="text-[11px] text-text-tertiary text-center mt-1 tracking-wide">
+              Supports NBA &bull; NFL &bull; MLB &bull; NHL &bull; NCAAB &bull; NCAAF
+            </p>
           </div>
         )}
 
@@ -286,27 +388,56 @@ export default function GradePage() {
             )}
             <div className="bg-surface border border-border rounded-2xl p-5 mb-5">
               <p className="font-heading text-[11px] font-bold text-text-tertiary uppercase tracking-[2px] mb-4">
-                WE FOUND {parsedLegs.length} LEG{parsedLegs.length !== 1 ? "S" : ""}
+                WE FOUND {parsedUnits.length} LEG{parsedUnits.length !== 1 ? "S" : ""}
               </p>
               <div className="space-y-3">
-                {parsedLegs.map((leg, i) => (
-                  <div key={i} className="flex items-center gap-3 py-2 border-b border-border/30 last:border-0">
-                    <span className="text-[10px] font-mono text-text-tertiary w-5 shrink-0">{i + 1}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-text-primary font-medium truncate">
-                        {leg.player ?? leg.team}
-                      </p>
-                      <p className="text-[11px] text-text-secondary">
-                        {leg.bet_type === "spread" && leg.line != null ? `${leg.line >= 0 ? "+" : ""}${leg.line} ` : ""}
-                        {leg.bet_type === "total" && leg.line != null ? `${leg.side ?? "over"} ${leg.line} ` : ""}
-                        {leg.bet_type === "prop" && leg.prop_type ? `${leg.side ?? "over"} ${leg.line} ${leg.prop_type} ` : ""}
-                        {leg.bet_type === "moneyline" ? "ML " : ""}
-                        ({leg.odds >= 0 ? "+" : ""}{leg.odds})
-                        <span className="text-text-tertiary"> &bull; {leg.sport.toUpperCase()}</span>
-                      </p>
+                {parsedUnits.map((unit, i) => {
+                  if (unit.type === "single") {
+                    return (
+                      <div key={i} className="flex items-center gap-3 py-2 border-b border-border/30 last:border-0">
+                        <span className="text-[10px] font-mono text-text-tertiary w-5 shrink-0">{i + 1}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-text-primary font-medium truncate">
+                            {unit.player ?? unit.team}
+                          </p>
+                          <p className="text-[11px] text-text-secondary">
+                            {unit.bet_type === "spread" && unit.line != null ? `${unit.line >= 0 ? "+" : ""}${unit.line} ` : ""}
+                            {unit.bet_type === "total" && unit.line != null ? `${unit.side ?? "over"} ${unit.line} ` : ""}
+                            {unit.bet_type === "prop" && unit.prop_type ? `${unit.side ?? "over"} ${unit.line} ${unit.prop_type} ` : ""}
+                            {unit.bet_type === "moneyline" ? "ML " : ""}
+                            ({unit.odds >= 0 ? "+" : ""}{unit.odds})
+                            <span className="text-text-tertiary"> &bull; {unit.sport.toUpperCase()}</span>
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  }
+                  // Group unit
+                  return (
+                    <div key={i} className="py-2 border-b border-border/30 last:border-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-[10px] font-mono text-text-tertiary w-5 shrink-0">{i + 1}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-text-primary font-medium">
+                            {unit.groupLabel}
+                            <span className="text-text-secondary font-normal ml-2">
+                              ({unit.unitOdds >= 0 ? "+" : ""}{unit.unitOdds})
+                            </span>
+                          </p>
+                          <p className="text-[10px] text-text-tertiary uppercase tracking-wide">Same Game Parlay &bull; {unit.sport.toUpperCase()}</p>
+                        </div>
+                      </div>
+                      <div className="pl-8 space-y-1">
+                        {unit.children.map((child, j) => (
+                          <p key={j} className="text-[11px] text-text-secondary truncate">
+                            &bull; {child.player ?? child.team} — {child.market}
+                            {child.line != null ? ` (${child.side === "under" ? "u" : "o"}${child.line})` : ""}
+                          </p>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -336,7 +467,7 @@ export default function GradePage() {
             <p className="text-xs text-text-secondary mt-3">
               Checking <span className="text-text-primary font-medium transition-all">{gradingBook}</span>
             </p>
-            <p className="text-[10px] text-text-tertiary mt-1">{parsedLegs.length} legs · 30+ books</p>
+            <p className="text-[10px] text-text-tertiary mt-1">{singleUnits.length} legs · 30+ books</p>
           </div>
         )}
 
@@ -369,13 +500,21 @@ export default function GradePage() {
                   </p>
                 </div>
                 <div className="px-3 py-3 text-center border-r border-border/30">
-                  <p className="text-[10px] text-text-tertiary uppercase">WIN PROB</p>
+                  <p className="text-[10px] text-text-tertiary uppercase">TO HIT</p>
                   <p className="text-sm font-bold text-text-primary">{(result.combinedTrueProb * 100).toFixed(1)}%</p>
                 </div>
                 <div className="px-3 py-3 text-center">
-                  <p className="text-[10px] text-text-tertiary uppercase">VIG COST</p>
-                  <p className="text-sm font-bold text-red">{result.vigCost.toFixed(1)}%</p>
+                  <p className="text-[10px] text-text-tertiary uppercase">TAX</p>
+                  <p className="text-sm font-bold text-red">
+                    {((result.combinedImpliedProb - result.combinedTrueProb) * 100).toFixed(1)}pp
+                  </p>
                 </div>
+              </div>
+              {/* Tax explanation */}
+              <div className="px-5 pb-3 pt-2 text-center border-t border-border/20">
+                <p className="text-[11px] text-text-tertiary leading-relaxed">
+                  Paying like it&apos;s {(result.combinedImpliedProb * 100).toFixed(1)}% — we price it at {(result.combinedTrueProb * 100).toFixed(1)}%
+                </p>
               </div>
             </div>
 
@@ -385,19 +524,24 @@ export default function GradePage() {
                 <p className="font-heading text-[11px] font-bold text-text-tertiary uppercase tracking-[2px]">LEG-BY-LEG BREAKDOWN</p>
               </div>
               <div className="divide-y divide-border/30">
-                {result.legs.map((leg, i) => (
-                  <div key={i} className="px-5 py-3.5 flex items-center gap-3">
-                    <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor(leg.grade)}`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-text-primary font-medium truncate">{leg.team}</p>
-                      <p className="text-[10px] text-text-tertiary">{leg.betType} &bull; Best: {bookName(leg.best_book)}</p>
+                {result.legs.map((leg, i) => {
+                  const parsed = singleUnits[i];
+                  const primaryName = parsed?.player ?? parsed?.team ?? leg.team;
+                  const desc = parsed ? legDesc(parsed) : leg.betType;
+                  return (
+                    <div key={i} className="px-5 py-3.5 flex items-center gap-3">
+                      <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor(leg.grade)}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-text-primary font-medium truncate">{primaryName}</p>
+                        <p className="text-[10px] text-text-tertiary truncate">{desc} &bull; Best: {bookName(leg.best_book)}</p>
+                      </div>
+                      <span className={`font-heading text-base font-bold shrink-0 ${gradeColor(leg.grade)}`}>{leg.grade}</span>
+                      <span className={`text-xs font-mono shrink-0 ${leg.ev >= 0 ? "text-accent" : "text-text-tertiary"}`}>
+                        {leg.ev >= 0 ? "+" : ""}{leg.ev.toFixed(1)}%
+                      </span>
                     </div>
-                    <span className={`font-heading text-base font-bold ${gradeColor(leg.grade)}`}>{leg.grade}</span>
-                    <span className={`text-xs font-mono ${leg.ev >= 0 ? "text-accent" : "text-text-tertiary"}`}>
-                      {leg.ev >= 0 ? "+" : ""}{leg.ev.toFixed(1)}%
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -420,11 +564,19 @@ export default function GradePage() {
             )}
 
             {/* Weakest leg callout */}
-            {result.weakestLeg && (
-              <p className="text-[11px] text-text-tertiary text-center mb-6">
-                Weakest leg: {result.weakestLeg}
-              </p>
-            )}
+            {result.legs.length > 0 && (() => {
+              const worst = result.legs.reduce((a, b) => a.score < b.score ? a : b);
+              const fairFmt = worst.fair_odds >= 0 ? `+${worst.fair_odds}` : `${worst.fair_odds}`;
+              const payingFmt = worst.best_odds >= 0 ? `+${worst.best_odds}` : `${worst.best_odds}`;
+              return (
+                <div className="bg-red/5 border border-red/20 rounded-xl p-4 mb-4">
+                  <p className="text-[11px] font-bold text-red uppercase tracking-wide mb-1">HURTING YOU MOST</p>
+                  <p className="text-xs text-text-secondary">
+                    {worst.team} — fair price {fairFmt}, you&apos;re paying {payingFmt}
+                  </p>
+                </div>
+              );
+            })()}
 
             {/* Copy link */}
             {result.shareSlug && (
@@ -451,8 +603,8 @@ export default function GradePage() {
                 grade: leg.grade,
                 ev: leg.ev,
               })),
-              stake: parsedLegs.find((l) => l.stake != null)?.stake ?? null,
-              payout: parsedLegs.find((l) => l.potential_payout != null)?.potential_payout ?? null,
+              stake: slipMeta.stake,
+              payout: slipMeta.toPay,
             }} />
 
             {/* Actions */}
