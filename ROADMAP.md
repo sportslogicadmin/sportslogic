@@ -78,6 +78,7 @@ Build order is strict. A step does not start until the previous step is verified
 - 2026-06-11 — SportsLogic is a pre-game tool; in-play/settled slips get a specific "game already started" message, not a grade.
 - 2026-06-11 — Odds caching pulled forward from Step E. fetch({ next: { revalidate: 300 } }) on all three Odds API fetch functions. Per-grade cost drops from 3–48 credits to near-zero marginal after first hit. Step E retains health endpoint + monitor.
 - 2026-06-11 — Step A golf abort verified on preview; ROADMAP not updated at the time, retroactively recorded 2026-06-15.
+- 2026-06-15 — Homepage copy v2 (Found Money positioning, lies stripped) promoted to production.
 
 ## Parking Lot (good ideas, not now)
 - Multi-book devig (beyond Pinnacle)
