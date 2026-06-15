@@ -336,6 +336,9 @@ export default function GradePage() {
         {/* ── UPLOAD STEP ── */}
         {step === "upload" && (
           <div>
+            <p className="text-[12px] text-text-secondary text-center mb-4 tracking-wide">
+              Currently supports NBA · NFL · MLB · NHL · NCAAF · NCAAB
+            </p>
             <div
               className="bg-surface border-2 border-dashed border-border rounded-2xl p-10 sm:p-14 text-center cursor-pointer hover:border-accent/40 transition-all"
               onClick={() => fileRef.current?.click()}

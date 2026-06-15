@@ -4,23 +4,11 @@ import { EmailForm } from "./email-form";
 import { MarketInsights } from "./market-insights";
 
 // ── Centralised marketing numbers ─────────────────────────────────────────────
-const BETS_GRADED = "500+";
 const BOOKS_COMPARED = "30+";
-const WAITLIST_COUNT = "500+";
 
 // ── Static data ────────────────────────────────────────────────────────────────
-const legs = [
-  { name: "Chiefs ML (-145)", grade: "A", ev: "+6.1% EV", color: "bg-accent", glow: "dot-glow-green" },
-  { name: "Celtics -4.5 (-110)", grade: "B+", ev: "+2.8% EV", color: "bg-accent", glow: "dot-glow-green" },
-  { name: "Yankees Over 8.5 (-105)", grade: "C", ev: "-1.2% EV", color: "bg-amber", glow: "dot-glow-amber" },
-  { name: "Mahomes O275.5 pass yds (-120)", grade: "D+", ev: "-4.1% EV", color: "bg-red", glow: "dot-glow-red" },
-];
-
-const betTypes = ["PARLAYS", "STRAIGHT BETS", "PLAYER PROPS", "SAME-GAME PARLAYS", "TEASERS", "FUTURES"];
+const betTypes = ["PARLAYS", "STRAIGHT BETS", "PLAYER PROPS"];
 const sports = ["NFL", "NBA", "MLB", "NHL", "NCAAF", "NCAAB"];
-
-const freeFeatures = ["2 scans per day", "Basic grade (A–F)", "Line comparison", "Community access (read-only)"];
-const proFeatures = ["Unlimited scans", "Full reports + EV breakdown", "AI swap suggestions", "Bet history + ROI tracking", "All courses + simulators", "Real-time alerts"];
 
 // ── Shared primitives ──────────────────────────────────────────────────────────
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -31,21 +19,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Check() {
-  return (
-    <svg className="w-4 h-4 text-text-tertiary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-  );
-}
-
-function CheckGreen() {
-  return (
-    <svg className="w-4 h-4 text-accent shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-  );
-}
 
 export default function Home() {
   return (
@@ -79,11 +52,10 @@ export default function Home() {
           BUILT FOR SMARTER BETTORS
         </p>
         <h1 className="font-heading relative text-[38px] sm:text-[52px] md:text-[64px] font-bold tracking-[-1.5px] leading-[1.02] max-w-[760px] mx-auto mb-8">
-          Every parlay has weak spots.
+          Find the money your sportsbook is hiding.
         </h1>
         <p className="relative text-[15px] sm:text-[17px] text-text-secondary max-w-[480px] mx-auto leading-[1.75] mb-10">
-          Drop in a screenshot from any sportsbook and get an instant breakdown
-          of what&apos;s overpriced, what&apos;s sharp, and what should probably come out.
+          Drop in a parlay. We compare every leg across the market and show you what your bet should actually pay — and the dollars you&apos;re leaving on the table.
         </p>
 
         <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
@@ -102,7 +74,7 @@ export default function Home() {
         </div>
 
         <p className="relative text-[12px] text-text-secondary mb-8">
-          {BETS_GRADED} bets graded &bull; Free to start &bull; No credit card required
+          Free to use · No signup required · Currently supports NBA · NFL · MLB · NHL · NCAAF · NCAAB
         </p>
         <p className="relative text-[11px] text-text-tertiary tracking-wide">
           Works with DraftKings &bull; FanDuel &bull; BetMGM &bull; ESPN Bet &bull; Caesars
@@ -117,17 +89,17 @@ export default function Home() {
             {
               n: "01",
               title: "UPLOAD YOUR SLIP",
-              desc: `Screenshot any parlay from DraftKings, FanDuel, BetMGM, and more.`,
+              desc: "Screenshot any parlay from your sportsbook. We read every leg automatically.",
             },
             {
               n: "02",
-              title: "WE GRADE THE MARKET",
-              desc: "SportsLogic reads every leg, compares live odds across the market, and calculates the real expected value behind your bet.",
+              title: "WE FIND THE BEST PRICE",
+              desc: "SportsLogic checks the market for the same parlay and finds the highest payout available across major books.",
             },
             {
               n: "03",
-              title: "IMPROVE THE BET",
-              desc: "Find the overpriced legs, see what's dragging your grade down, and get smarter swap suggestions in seconds.",
+              title: "SEE THE GAP",
+              desc: "We show you the dollar difference between what your book pays and what your bet is actually worth — leg by leg.",
             },
           ].map((step) => (
             <div key={step.n} className="flex items-start gap-6 sm:gap-10">
@@ -155,13 +127,13 @@ export default function Home() {
             },
             {
               n: "02",
-              title: "EVERY GRADE HAS RECEIPTS",
-              desc: "Every score is backed by real odds data, EV calculations, and market comparison — not opinions.",
+              title: "EVERY NUMBER HAS RECEIPTS.",
+              desc: "Every grade is backed by live odds data and sharp-market comparison — not opinions, not vibes, not pick-of-the-day energy.",
             },
             {
               n: "03",
-              title: "SEE WHAT THE BOOKS SEE",
-              desc: "SportsLogic was built for bettors who want to think sharper, spot value faster, and stop donating juice to the books.",
+              title: "SHARP FRIEND. NOT SALESMAN.",
+              desc: "We don't sell locks, charge for picks, or run a Discord. We just tell you what your bet should actually pay.",
             },
           ].map((card) => (
             <div key={card.n} className="bg-surface border border-border rounded-2xl p-7">
@@ -175,62 +147,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── GRADE CARD (mock) ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-4 sm:px-6 py-24 sm:py-32 relative">
-        <SectionLabel>SEE IT IN ACTION</SectionLabel>
-
-        <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(0,232,123,0.04) 0%, transparent 60%)", filter: "blur(60px)" }}
-        />
-
-        <div
-          className="card-float max-w-[520px] mx-auto bg-surface border border-border rounded-2xl overflow-hidden relative"
-          style={{ boxShadow: "0 0 100px rgba(0, 232, 123, 0.07), 0 20px 60px rgba(0,0,0,0.3)" }}
-        >
-          <div className="p-6 sm:p-7 pb-0" style={{ background: "linear-gradient(180deg, rgba(0, 232, 123, 0.04) 0%, transparent 100%)" }}>
-            <div className="flex items-start justify-between mb-1">
-              <div>
-                <span className="font-heading text-[11px] font-bold uppercase tracking-[1.5px] text-text-secondary">4-LEG PARLAY</span>
-                <p className="text-[11px] text-accent mt-1.5 uppercase tracking-[1px] font-medium">OVERALL EXPECTED VALUE: +3.2%</p>
-              </div>
-              <span className="font-heading text-[68px] font-bold text-accent leading-none -mt-2">B+</span>
-            </div>
-          </div>
-
-          <div className="px-6 sm:px-7 pb-6 sm:pb-7">
-            <div className="h-px bg-border mb-5" />
-            <div className="space-y-4 mb-5">
-              {legs.map((leg, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className={`w-2.5 h-2.5 rounded-full ${leg.color} shrink-0 ${leg.glow}`} />
-                  <span className="text-sm text-text-primary flex-1 min-w-0 truncate">{leg.name}</span>
-                  <span className="font-heading text-xs font-bold text-text-secondary whitespace-nowrap">{leg.grade}</span>
-                  <span className={`text-xs font-mono whitespace-nowrap ${leg.ev.startsWith("+") ? "text-accent" : "text-text-tertiary"}`}>{leg.ev}</span>
-                </div>
-              ))}
-            </div>
-            <div className="h-px bg-border mb-5" />
-            <div className="bg-bg/40 border border-accent/10 rounded-xl p-4 mb-5">
-              <p className="text-xs text-text-secondary leading-relaxed">
-                <span className="text-accent font-semibold">AI suggestion:</span>{" "}
-                Swap leg 4 — Mahomes rushing yards O29.5 has +3.8% EV and correlates positively with Chiefs ML. This would raise your parlay to an A-.
-              </p>
-            </div>
-            <p className="text-[10px] text-text-tertiary text-center uppercase tracking-[1.5px]">POWERED BY SPORTSLOGIC</p>
-          </div>
-        </div>
-
-        <div className="text-center mt-10">
-          <Link
-            href="/grade"
-            className="inline-flex items-center h-13 sm:h-12 w-full sm:w-auto px-10 rounded-xl bg-accent text-bg text-[12px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all justify-center"
-          >
-            GRADE YOUR PARLAY FREE
-          </Link>
-        </div>
-      </section>
-
       {/* ── MARKET INSIGHTS (live data) ── */}
       <MarketInsights booksCompared={BOOKS_COMPARED} />
 
@@ -239,11 +155,7 @@ export default function Home() {
         <SectionLabel>OUR STORY</SectionLabel>
         <div className="max-w-[520px] mx-auto text-center">
           <p className="text-[15px] text-text-secondary leading-[1.85]">
-            Most bettors lose the same way — not because they&apos;re unlucky, but
-            because the price was bad from the start. We built SportsLogic to
-            make that visible. Every parlay is graded against real market data
-            so you can see where the value is, where it disappears, and how to
-            improve the bet before it&apos;s placed. Less guessing. Better numbers.
+            Most bettors lose the same way — not because they&apos;re unlucky, but because the price was bad from the start. Sportsbooks count on you not noticing the gap between what your slip pays and what it&apos;s actually worth. We built SportsLogic to make that gap visible — in dollars, every time, before you bet. Less guessing. Better numbers. Fewer dollars left on the table.
           </p>
         </div>
       </section>
@@ -264,51 +176,21 @@ export default function Home() {
       </section>
 
       {/* ── PRICING ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 py-24 sm:py-32">
+      <section className="w-full max-w-[1080px] mx-auto px-6 py-24 sm:py-32 text-center">
         <SectionLabel>PRICING</SectionLabel>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[640px] mx-auto">
-          {/* PRO */}
-          <div
-            className="bg-surface border border-accent/30 rounded-2xl p-7 flex flex-col order-first sm:order-last"
-            style={{ boxShadow: "0 0 40px rgba(0,232,123,0.04)" }}
+        <div className="max-w-[480px] mx-auto bg-surface border border-border rounded-2xl p-10">
+          <p className="font-heading text-[11px] font-bold uppercase tracking-[2px] text-accent mb-6">FREE WHILE IN BETA</p>
+          <p className="text-[15px] text-text-primary font-medium mb-2">Every grade. Every leg. Every dollar found.</p>
+          <p className="text-sm text-text-secondary mb-8">No payment, no signup wall, no tricks.</p>
+          <p className="text-sm text-text-secondary leading-relaxed mb-8">
+            Pro features — bet journal, found-money tracking,<br />and calibration receipts — coming soon.
+          </p>
+          <Link
+            href="/grade"
+            className="inline-flex items-center justify-center h-12 px-10 rounded-xl bg-accent text-bg text-[12px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all"
           >
-            <p className="font-heading text-[11px] font-bold uppercase tracking-[1.5px] text-accent mb-5">PRO</p>
-            <div className="mb-6">
-              <span className="font-heading text-4xl font-bold text-text-primary">$15</span>
-              <span className="text-sm text-text-secondary ml-2">/month</span>
-            </div>
-            <ul className="space-y-3.5 flex-1">
-              {proFeatures.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm text-text-secondary"><CheckGreen />{f}</li>
-              ))}
-            </ul>
-            <a
-              href="#waitlist"
-              className="w-full h-11 rounded-xl bg-accent text-bg text-[11px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all mt-7 flex items-center justify-center"
-            >
-              JOIN WAITLIST
-            </a>
-          </div>
-
-          {/* FREE */}
-          <div className="bg-surface border border-border rounded-2xl p-7 flex flex-col order-last sm:order-first">
-            <p className="font-heading text-[11px] font-bold uppercase tracking-[1.5px] text-text-tertiary mb-5">FREE</p>
-            <div className="mb-6">
-              <span className="font-heading text-4xl font-bold text-text-primary">$0</span>
-              <span className="text-sm text-text-secondary ml-2">forever</span>
-            </div>
-            <ul className="space-y-3.5 flex-1">
-              {freeFeatures.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm text-text-secondary"><Check />{f}</li>
-              ))}
-            </ul>
-            <Link
-              href="/grade"
-              className="w-full h-11 rounded-xl bg-transparent border border-text-tertiary text-text-secondary text-[11px] font-bold uppercase tracking-[0.5px] hover:border-text-secondary transition-all mt-7 flex items-center justify-center"
-            >
-              START FREE
-            </Link>
-          </div>
+            GRADE YOUR PARLAY
+          </Link>
         </div>
       </section>
 
@@ -327,7 +209,7 @@ export default function Home() {
             },
             {
               q: "WHAT SPORTSBOOKS DO YOU SUPPORT?",
-              a: "SportsLogic supports screenshots from major U.S. sportsbooks including DraftKings, FanDuel, BetMGM, Caesars, ESPN BET, Fanatics, and more. More books are added regularly.",
+              a: "SportsLogic reads screenshots from DraftKings, FanDuel, BetMGM, Caesars, ESPN BET, and Fanatics. We currently grade NBA, NFL, MLB, NHL, college football, and college basketball — more sports coming as we expand.",
             },
           ].map((faq, i) => (
             <div key={i} className={i > 0 ? "mt-8 pt-8 border-t border-border/20" : ""}>
@@ -348,7 +230,7 @@ export default function Home() {
           THE EDGE IS WAITING.
         </h2>
         <p className="relative text-sm text-text-secondary mb-10">
-          Join {WAITLIST_COUNT} bettors on the waitlist
+          Find the money your sportsbook isn&apos;t telling you about.
         </p>
         <div className="relative max-w-[440px] mx-auto">
           <EmailForm />
