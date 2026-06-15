@@ -49,7 +49,7 @@ Build order is strict. A step does not start until the previous step is verified
 - [ ] OG image updated to match
 
 **Step E — Ops minimum (required before launch):**
-- [ ] /api/health endpoint — real authenticated calls to Anthropic + Odds API + DB, not just key existence checks. Shape: `{ status, checks: { anthropic, oddsApi, db } }`. See RUNBOOK.md.
+- [x] /api/health endpoint — real authenticated calls to Anthropic + Odds API + DB, not just key existence checks. Shape: `{ status, checks: { anthropic, oddsApi, db } }`. See RUNBOOK.md. Shipped 2026-06-15.
 - [ ] Uptime monitor pinging /api/health every 5 min, alerting Griffin's phone on non-200
 - [ ] RUNBOOK.md: five failure modes (entries #1 Anthropic, #2 Odds API written; #3–5 TBD)
 - [x] Odds caching: shipped ahead of Step E (2026-06-11). Next.js `next: { revalidate: 300 }` on fetchOdds, fetchEvents, fetchPropOdds — shared across serverless instances via Vercel Data Cache. Timing logged (ms) to distinguish cache hits (~0ms) from real fetches (~100-500ms).
@@ -79,6 +79,7 @@ Build order is strict. A step does not start until the previous step is verified
 - 2026-06-11 — Odds caching pulled forward from Step E. fetch({ next: { revalidate: 300 } }) on all three Odds API fetch functions. Per-grade cost drops from 3–48 credits to near-zero marginal after first hit. Step E retains health endpoint + monitor.
 - 2026-06-11 — Step A golf abort verified on preview; ROADMAP not updated at the time, retroactively recorded 2026-06-15.
 - 2026-06-15 — Homepage copy v2 (Found Money positioning, lies stripped) promoted to production.
+- 2026-06-15 — /api/health pulled forward from Step E (operational diagnostic value justifies it now). Real authenticated pings: Anthropic 1-token message, Odds API /v4/sports, Prisma SELECT 1. 60s in-memory + CDN cache.
 
 ## Parking Lot (good ideas, not now)
 - Multi-book devig (beyond Pinnacle)
