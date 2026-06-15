@@ -27,7 +27,8 @@ A rung does not begin until the previous rung's Definition of Done is met.
 Build order is strict. A step does not start until the previous step is verified.
 
 **Step A — Trust the abort (in flight):**
-- [ ] Golf-slip silent failure root-caused and fixed (OCR unknown-sport escape + odds abort)
+- [x] Golf-slip silent failure root-caused and fixed (OCR unknown-sport escape + odds abort)
+- [ ] Odds API key status confirmed at the-odds-api.com (active + sufficient quota), or rotated, before any further grade attempts.
 - [ ] Verified: golf slip → named abort message; MLB/NBA slip → clean grade, sane numbers
 
 **Step B — Found Money core:**
@@ -76,6 +77,7 @@ Build order is strict. A step does not start until the previous step is verified
 - 2026-06-11 — OCR parses slips as units (singles vs. priced groups). Group units abort with a named message until SGP pricing exists. Boosted slips store both baseOdds and paidOdds; sport check fires before SGP check.
 - 2026-06-11 — SportsLogic is a pre-game tool; in-play/settled slips get a specific "game already started" message, not a grade.
 - 2026-06-11 — Odds caching pulled forward from Step E. fetch({ next: { revalidate: 300 } }) on all three Odds API fetch functions. Per-grade cost drops from 3–48 credits to near-zero marginal after first hit. Step E retains health endpoint + monitor.
+- 2026-06-11 — Step A golf abort verified on preview; ROADMAP not updated at the time, retroactively recorded 2026-06-15.
 
 ## Parking Lot (good ideas, not now)
 - Multi-book devig (beyond Pinnacle)
