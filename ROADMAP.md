@@ -90,6 +90,7 @@ Build order is strict. A step does not start until the previous step is verified
 - 2026-06-10 — Verification standard: "compiles" ≠ "done." Done = works end-to-end on a deploy.
 - 2026-06-10 — No grade renders without resolved odds for every leg. Missing data = loud, specific abort.
 - 2026-06-10 — Every failure state gets a specific honest message.
+- 2026-06-16 — Share card uses variable height, no leg-count cap. Fixed-height + slice(0,5) was clipping 4+ leg parlays; cards now grow to fit content. Verified by screenshotting the actual rendered card at 3/5/7/10 legs via a temporary headless-browser harness (not a project dependency, removed after use).
 - 2026-06-10 — Supported sports at launch: NBA, NFL, MLB, NHL, NCAAB, NCAAF. Golf parked.
 - 2026-06-11 — Found Money (dollar gap vs. best available price) is the hero metric. Grade remains as voice. Approved after overnight consideration.
 - 2026-06-11 — Journal will track cumulative found money ("found you $412 this season") — rung 2 scope, noted now.
