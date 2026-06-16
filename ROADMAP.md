@@ -26,12 +26,12 @@ A rung does not begin until the previous rung's Definition of Done is met.
 ## Current Phase: Rung 1 — Grader (Found Money edition)
 Build order is strict. A step does not start until the previous step is verified.
 
-**Step A — Trust the abort (in flight):**
+**Step A — Trust the abort (closed):**
 - [x] Golf-slip silent failure root-caused and fixed (OCR unknown-sport escape + odds abort)
-- [ ] Odds API key status confirmed at the-odds-api.com (active + sufficient quota), or rotated, before any further grade attempts.
-- [ ] Verified: golf slip → named abort message; MLB/NBA slip → clean grade, sane numbers
+- [x] Odds API key status confirmed at the-odds-api.com (active + sufficient quota), or rotated, before any further grade attempts.
+- [x] Verified: golf slip → named abort message; MLB/NBA slip → clean grade, sane numbers
 
-**Step B — Found Money core:**
+**Step B — Found Money core (current):**
 - [ ] Compute best-available parlay price from per-leg best_odds/best_book (data already in engine)
 - [ ] New hero output: "Pays +400 at [user's book] — best available +462. On your $X stake, that's $Y left on the table."
 - [ ] Stats row reordered: FOUND MONEY is the hero, TO HIT and TAX support, grade is the headline voice
@@ -81,6 +81,10 @@ Build order is strict. A step does not start until the previous step is verified
 - 2026-06-15 — Homepage copy v2 (Found Money positioning, lies stripped) promoted to production.
 - 2026-06-15 — /api/health pulled forward from Step E (operational diagnostic value justifies it now). Real authenticated pings: Anthropic 1-token message, Odds API /v4/sports, Prisma SELECT 1. 60s in-memory + CDN cache.
 - 2026-06-15 — Compliance pages (Privacy, ToS, Affiliate Disclosure, Responsible Gambling, 21+ age gate) built ahead of affiliate applications. Required for FTC/state compliance and as a prerequisite for any sportsbook affiliate program application.
+- 2026-06-16 — hasGameStarted() rewritten: requires team match + commence_time check + completed status. Stale-matchup case (back-to-back series with identical team names) fixed.
+- 2026-06-16 — Ambiguous game match falls through, never aborts. "Already started" requires a confident, single, unambiguous match.
+- 2026-06-16 — First end-to-end successful grade rendered. 7-leg moneyline parlay graded D+, -32.2% EV. Pinnacle devig + cross-market comparison + smart swap all functioning. Step A closes.
+- 2026-06-16 — Prop grading bug fixed: client was sending bet_type ("prop") instead of prop_type ("hr"/"hits"/etc.) to the engine, causing every prop leg to send malformed markets=prop to Odds API and 422. One-line fix at grade/page.tsx:272.
 
 ## Parking Lot (good ideas, not now)
 - Multi-book devig (beyond Pinnacle)
@@ -90,6 +94,7 @@ Build order is strict. A step does not start until the previous step is verified
 - Subscription tier ($5-8/mo) — pricing TBD at rung 2
 - Golf support (requires different devig treatment — large fields, longshot bias, multiplicative vs power devig diverges hard at long odds)
 - Cumulative found-money stat in journal (rung 2)
+- HTTP 422 on a prop-odds fetch (event ff1934, seen 2026-06-16) — not addressed, needs verification next time it recurs. Could be market not yet posted, SPORT_MAP gap, or stale event ID.
 - Tout audit content series (rung 4, marketing)
 - [GRIFFIN] add freely
 

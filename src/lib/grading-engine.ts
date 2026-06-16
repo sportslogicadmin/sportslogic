@@ -165,20 +165,78 @@ async function fetchEvents(sport: string): Promise<Game[]> {
   return games;
 }
 
-async function hasGameStarted(team: string, sport: string): Promise<boolean> {
-  if (!team?.trim()) return false;
+type ScoreGame = {
+  home_team: string;
+  away_team: string;
+  commence_time: string;
+  completed: boolean;
+};
+
+type GameStartDecision = "started" | "not_started" | "ambiguous" | "no_match";
+
+// daysFrom=0 (not 1): daysFrom=1 was pulling in the *previous* day's completed
+// slate, which collides with back-to-back series (e.g. the same two teams
+// playing on consecutive nights) — the matcher couldn't tell yesterday's
+// finished game from tonight's game that hasn't started. daysFrom=0 keeps the
+// pool to today/live only; the ambiguity handling below is a second layer of
+// protection for same-day cases (doubleheaders) it doesn't fully eliminate.
+async function hasGameStarted(team: string, sport: string): Promise<GameStartDecision> {
+  if (!team?.trim()) return "no_match";
   const sportKey = SPORT_MAP[sport] ?? sport;
   try {
     const res = await fetch(
-      `${ODDS_API_BASE}/sports/${sportKey}/scores/?apiKey=${ODDS_API_KEY}&daysFrom=1`,
+      `${ODDS_API_BASE}/sports/${sportKey}/scores/?apiKey=${ODDS_API_KEY}&daysFrom=0`,
       { signal: AbortSignal.timeout(3000) }
     );
-    if (!res.ok) return false;
-    const games: Array<{ home_team: string; away_team: string }> = await res.json();
-    console.log(`[scores-api] ${sportKey} → ${games.length} recent/live games`);
-    return games.some(g => teamMatch(team, g.home_team) || teamMatch(team, g.away_team));
-  } catch {
-    return false;
+    if (!res.ok) {
+      console.log(`[scores-api] ${sportKey} team="${team}" → HTTP ${res.status}, decision=no_match`);
+      return "no_match";
+    }
+    const games: ScoreGame[] = await res.json();
+    const now = Date.now();
+
+    const matches = games
+      .filter(g => teamMatch(team, g.home_team) || teamMatch(team, g.away_team))
+      .map(g => ({
+        home_team: g.home_team,
+        away_team: g.away_team,
+        commence_time: g.commence_time,
+        completed: g.completed,
+        commence_ms: new Date(g.commence_time).getTime(),
+      }));
+
+    console.log(
+      `[scores-api] ${sportKey} team="${team}" → ${games.length} games fetched, ${matches.length} matched: ` +
+      matches.map(m => `${m.away_team}@${m.home_team} commence=${new Date(m.commence_ms).toISOString()} completed=${m.completed} pastStart=${m.commence_ms <= now}`).join(" | ")
+    );
+
+    if (matches.length === 0) {
+      console.log(`[scores-api] team="${team}" → decision=no_match`);
+      return "no_match";
+    }
+
+    // A future-commence match means there's a real upcoming game for this
+    // team — that governs, regardless of any stale completed entry also
+    // matching the same team name (the back-to-back-series case).
+    const upcoming = matches.filter(m => m.commence_ms > now);
+    if (upcoming.length > 0) {
+      console.log(`[scores-api] team="${team}" → decision=not_started (upcoming match found)`);
+      return "not_started";
+    }
+
+    const started = matches.filter(m => m.commence_ms <= now);
+    if (started.length === 1) {
+      console.log(`[scores-api] team="${team}" → decision=started (single confident match, completed=${started[0].completed})`);
+      return "started";
+    }
+
+    // Multiple past-commence matches (e.g. doubleheader) with no upcoming
+    // entry to disambiguate — not confident enough to abort.
+    console.log(`[scores-api] team="${team}" → decision=ambiguous (${started.length} past-commence matches, no upcoming match)`);
+    return "ambiguous";
+  } catch (e) {
+    console.log(`[scores-api] team="${team}" → fetch error, decision=no_match: ${e instanceof Error ? e.message : e}`);
+    return "no_match";
   }
 }
 
@@ -654,8 +712,11 @@ export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
     // Hard abort: any leg without resolved odds poisons the whole grade
     if (result.error) {
       const name = leg.player ?? leg.team;
-      const started = await hasGameStarted(leg.team, leg.sport);
-      if (started) {
+      const startDecision = await hasGameStarted(leg.team, leg.sport);
+      // "Already started" requires a confident, single, unambiguous match —
+      // ambiguous/no-match cases fall through to the generic message instead
+      // of a false-confidence abort (see decision log 2026-06-16).
+      if (startDecision === "started") {
         throw new Error(
           `This game has already started — SportsLogic grades slips before tip-off/first pitch.`
         );
