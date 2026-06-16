@@ -18,8 +18,8 @@ export type ShareCardData = {
 
 function tierColor(grade: string) {
   const f = grade[0];
-  if (f === "A") return "#00E87B";
-  if (f === "B") return "#6EE7B7";
+  if (f === "A") return "#00B362";  // desaturated data-green — pure brand green reserved for wordmarks
+  if (f === "B") return "#58B992";  // muted teal-green, distinct from A-tier
   if (f === "C") return "#EAB308";
   if (f === "D") return "#F87171";
   return "#EF4444";
