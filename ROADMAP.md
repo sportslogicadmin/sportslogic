@@ -108,6 +108,7 @@ Build order is strict. A step does not start until the previous step is verified
 - 2026-06-16 — Tonight's Trap and Sportsbook Report Card removed from homepage. Reason: publicly grading named sportsbooks by letter grade conflicts with affiliate program eligibility — those operators' programs reject affiliates who publish negative comparative content. Removing preserves the affiliate path planned for fall 2026.
 - 2026-06-16 — JOURNAL.md and ROADMAP.md reconciled. ROADMAP is now the sole source of truth going forward. Pre-ROADMAP features cataloged. JOURNAL.md archived (read-only historical record, no new entries).
 - 2026-06-16 — Discovered during reconciliation: share-card and persistence infrastructure (shareSlug, grade/leg DB writes, share route) is already live and functional, despite ROADMAP Step C/D listing it as not-started. ROADMAP updated to reflect actual state. Step C/D scope re-evaluation pending — the journal build is closer than we thought.
+- 2026-06-16 — Discovered new failure mode: OCR returned prop_type: null for a clear HR prop leg, client passed null forward, Odds API 422'd, generic error rendered. Three fixes shipped: client-side validation gates broken units before API call, parse-slip prompt audited for HR-prop phrasings, structured logging added to parse-slip route.
 
 ## Parking Lot (good ideas, not now)
 - Multi-book devig (beyond Pinnacle)

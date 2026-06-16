@@ -141,6 +141,13 @@ Correct output:
   "boostLabel": "+20% Odds Boost"
 }
 
+━━━ EXAMPLE C — HR prop, spelled-out wording ━━━
+Slip shows: "James Wood · To Hit a Home Run · +270"
+This is the same bet as "To Hit a HR" — wording differs, prop_type does not.
+
+Correct output for this unit:
+{"type":"single","team":"Washington Nationals","player":"James Wood","bet_type":"prop","line":0.5,"odds":270,"side":"over","prop_type":"hr","market":"To Hit a Home Run","sport":"mlb","opponent":null}
+
 ━━━ UNIT SHAPES (reference) ━━━
 
 Single unit:
@@ -155,6 +162,11 @@ Single unit:
   "player": string or null,
   "prop_type": "hr"|"hits"|"strikeouts"|"rbis"|"points"|"rebounds"|"assists"|"threes"|"pra"|"goals"|"shots" or null,
   "market": string — the raw bet description as shown on the slip (e.g. "To Hit a HR", "Top 40 Finish", "Anytime Touchdown Scorer", "Moneyline"). Always populate this field verbatim from the slip text. Never omit it.
+
+  PROP_TYPE MATCHING — match by meaning, not exact wording. All of these phrasings map to prop_type "hr":
+  "To Hit a HR", "To Hit a Home Run", "Home Run", "Hits a Home Run", "1+ Home Run", "HR", "To Go Yard".
+  A prop leg (bet_type "prop") must always resolve to one of the listed prop_type codes — never leave
+  prop_type null for a real player prop just because the slip's wording differs from these examples.
   "sport": "nba"|"nfl"|"mlb"|"nhl"|"ncaab"|"ncaaf" — or the actual sport name in lowercase if unsupported. NEVER substitute a supported sport for an unsupported one (e.g. golf stays "golf", not "nfl")
 }
 
@@ -211,8 +223,23 @@ Return ONLY the JSON object.`,
     }
 
     if (!parsed.units || !Array.isArray(parsed.units) || parsed.units.length === 0) {
+      console.log("[parse-slip] 0 units parsed");
       return NextResponse.json({ error: "No betting units found. Try a clearer screenshot.", raw: text }, { status: 422 });
     }
+
+    const unitSummary = parsed.units.map((u, i) => {
+      const unit = u as { type?: string; bet_type?: string; prop_type?: string | null; player?: string | null; team?: string };
+      return unit.type === "group"
+        ? `#${i + 1} group`
+        : `#${i + 1} bet_type=${unit.bet_type ?? "null"} prop_type=${unit.prop_type ?? "null"} player=${unit.player ?? "null"} team=${unit.team ?? "null"}`;
+    });
+    const nullPropTypeCount = parsed.units.filter((u) => {
+      const unit = u as { bet_type?: string; prop_type?: string | null };
+      return unit.bet_type === "prop" && !unit.prop_type;
+    }).length;
+    console.log(
+      `[parse-slip] ${parsed.units.length} units parsed${nullPropTypeCount > 0 ? `, ${nullPropTypeCount} prop unit(s) with null prop_type` : ""}: ${unitSummary.join(" | ")}`
+    );
 
     return NextResponse.json({
       units: parsed.units,

@@ -264,6 +264,20 @@ export default function GradePage() {
       }
     }
 
+    // Prop-type gate — a prop leg with no prop_type sends a garbage market
+    // key to the Odds API (422), which previously surfaced as a misleading
+    // "game not active" error. Block it here instead.
+    for (let i = 0; i < singleUnits.length; i++) {
+      const unit = singleUnits[i];
+      if (unit.bet_type === "prop" && !unit.prop_type) {
+        const name = unit.player ?? unit.team ?? `leg ${i + 1}`;
+        setError(
+          `We couldn't read the bet type for leg ${i + 1} (${name}). Try a clearer screenshot, or upload one leg at a time.`
+        );
+        return;
+      }
+    }
+
     setStep("grading");
 
     try {
