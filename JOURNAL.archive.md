@@ -1,5 +1,7 @@
 # SportsLogic Build Journal
 
+Historical build log, March–June 2026. Superseded by ROADMAP.md as of 2026-06-16.
+
 ---
 
 ## March 31, 2026 — Day 2

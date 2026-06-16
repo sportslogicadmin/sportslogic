@@ -1,5 +1,24 @@
 # SPORTSLOGIC.AI — ROADMAP
 
+## Pre-existing features (built before ROADMAP, retroactively documented)
+ROADMAP.md started 2026-06-10. Everything below shipped earlier (Day 1–2,
+March 2026) and was tracked only in JOURNAL.archive.md, which this section
+now absorbs. Cataloged 2026-06-16 as part of the JOURNAL/ROADMAP reconciliation.
+- Email waitlist integration (Formspree) — `src/app/email-form.tsx` posts to a Formspree endpoint; live on the homepage waitlist CTA.
+- Domain/infra — sportslogic.ai purchased via Namecheap, DNS + SSL configured, Vercel auto-deploy from GitHub `main`, www redirect.
+- Brand identity — logo, dark premium design system (#0C0E14 bg / #00E87B accent, Inter + Satoshi headings, dot-grid texture), social accounts @sportslogicai (Instagram/TikTok/X).
+- Video content pipeline (`tools/quick_video.py`, `tools/make_video.py`) — ElevenLabs TTS + FFmpeg rendering for short-form social video. Standalone tooling, not part of the deployed web app.
+- Legacy Python grading engine (`tools/grading_engine.py`) — superseded by the TypeScript rewrite (`src/lib/grading-engine.ts`); file still present in repo but unused/undeployed.
+- `/grade` page core UX — live game/odds picker, manual "different odds on my book" override, player props tab, EdgeScore composite-score branding, BUY/HOLD/SELL labels, info tooltips, "Better Options" alternative-bet suggestions, dev/production rate limiting.
+- Grading calibration constants — EV-scale curve, factor weighting (EV/line/market-sharpness/situational), grade thresholds — live in `grading-engine.ts`, not restated in the methodology section above.
+- SEO + social sharing — OpenGraph + Twitter card metadata, branded OG image, favicon set, in `src/app/layout.tsx`.
+- Shared book-name formatting module (`src/lib/book-names.ts`) — used by `/grade` and `/grade/[slug]`.
+- Share-card / persistence infrastructure — `shareSlug` generation, Grade + Leg DB writes on every `/api/grade` call, public `/grade/[slug]` read route. Already shipped, currently working in production.
+
+## Removed features
+- **Tonight's Trap + Sportsbook Report Card** (removed 2026-06-16) — publicly graded ESPN Bet, FanDuel, DraftKings, and BetMGM by letter grade on the homepage. Reason: publicly grading named sportsbooks by letter grade conflicts with affiliate program eligibility — those operators' programs reject affiliates who publish negative comparative content. Removing preserves the affiliate path planned for fall 2026. Was built 2026-03-31, predates ROADMAP.
+- **Clerk auth + /dashboard system** (built 2026-05-15, commit `b03fad3`; removed 2026-05-15, commit `1d52355`) — signed-in users, sign-in/up pages, grade history dashboard. Reason: site was down on production.
+
 ## North Star
 Scan your slip before you bet it — we tell you what it should pay.
 The hero metric is FOUND MONEY: the dollar gap between the user's book price
@@ -39,9 +58,10 @@ Build order is strict. A step does not start until the previous step is verified
 - [ ] Edge case: stake not parsed from slip → show percentage gap, prompt user to enter a stake
 
 **Step C — Persistence (the old Phase 2, updated):**
-- [ ] Prisma migration: Leg gets trueProb, impliedProb; Grade gets combinedTrueProb, combinedImpliedProb, bestParlayOdds, foundMoney, stake, settled, won
-- [ ] Manual "mark won/lost" by grade owner
-- [ ] Verdict template system wired (placeholder strings; final copy from Claude/Griffin)
+- [x] Core infrastructure already shipped pre-ROADMAP (2026-05-15, commit `b03fad3`): Grade + Leg models, DB writes on every `/api/grade` call, `shareSlug` generation, `/grade/[slug]` public read route. See Pre-existing features.
+- [ ] Prisma migration: Leg gets trueProb, impliedProb; Grade gets combinedTrueProb, combinedImpliedProb, bestParlayOdds, foundMoney, stake, settled, won — current schema has neither set of fields
+- [ ] Manual "mark won/lost" by grade owner — no settled/won field exists yet to set
+- [ ] Verdict template system wired (placeholder strings; final copy from Claude/Griffin) — no verdict-related code in repo yet
 
 **Step D — Share card (the old Phase 3, re-aimed):**
 - [ ] Standard card hero = found money ("sportslogic found me $31"), grade + TO HIT supporting
@@ -85,6 +105,9 @@ Build order is strict. A step does not start until the previous step is verified
 - 2026-06-16 — Ambiguous game match falls through, never aborts. "Already started" requires a confident, single, unambiguous match.
 - 2026-06-16 — First end-to-end successful grade rendered. 7-leg moneyline parlay graded D+, -32.2% EV. Pinnacle devig + cross-market comparison + smart swap all functioning. Step A closes.
 - 2026-06-16 — Prop grading bug fixed: client was sending bet_type ("prop") instead of prop_type ("hr"/"hits"/etc.) to the engine, causing every prop leg to send malformed markets=prop to Odds API and 422. One-line fix at grade/page.tsx:272.
+- 2026-06-16 — Tonight's Trap and Sportsbook Report Card removed from homepage. Reason: publicly grading named sportsbooks by letter grade conflicts with affiliate program eligibility — those operators' programs reject affiliates who publish negative comparative content. Removing preserves the affiliate path planned for fall 2026.
+- 2026-06-16 — JOURNAL.md and ROADMAP.md reconciled. ROADMAP is now the sole source of truth going forward. Pre-ROADMAP features cataloged. JOURNAL.md archived (read-only historical record, no new entries).
+- 2026-06-16 — Discovered during reconciliation: share-card and persistence infrastructure (shareSlug, grade/leg DB writes, share route) is already live and functional, despite ROADMAP Step C/D listing it as not-started. ROADMAP updated to reflect actual state. Step C/D scope re-evaluation pending — the journal build is closer than we thought.
 
 ## Parking Lot (good ideas, not now)
 - Multi-book devig (beyond Pinnacle)
@@ -104,3 +127,4 @@ Build order is strict. A step does not start until the previous step is verified
 3. Migrations and new dependencies: flag before executing.
 4. Auth and share-slug system: do not touch without explicit instruction.
 5. After each work session: report what changed, how verified, what's blocked.
+6. Any new feature, page, route, or integration requires a ROADMAP entry before code is written. No exceptions, regardless of how small.

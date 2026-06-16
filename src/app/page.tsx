@@ -1,11 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { EmailForm } from "./email-form";
-import { MarketInsights } from "./market-insights";
 import { SiteFooter } from "@/components/site-footer";
-
-// ── Centralised marketing numbers ─────────────────────────────────────────────
-const BOOKS_COMPARED = "30+";
 
 // ── Static data ────────────────────────────────────────────────────────────────
 const betTypes = ["PARLAYS", "STRAIGHT BETS", "PLAYER PROPS"];
@@ -147,9 +143,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      {/* ── MARKET INSIGHTS (live data) ── */}
-      <MarketInsights booksCompared={BOOKS_COMPARED} />
 
       {/* ── OUR STORY ── */}
       <section className="w-full max-w-[1080px] mx-auto px-6 py-24 sm:py-32">
