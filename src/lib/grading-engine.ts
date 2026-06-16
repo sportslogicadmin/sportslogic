@@ -6,6 +6,8 @@
  * Kelly criterion, and composite scoring.
  */
 
+import { PROP_LABELS } from "./prop-labels";
+
 const ODDS_API_KEY = process.env.ODDS_API_KEY ?? "";
 const ODDS_API_BASE = "https://api.the-odds-api.com/v4";
 
@@ -776,11 +778,39 @@ export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
   if (weakest && weakest.score < 50) {
     try {
       const weakestIndex = gradedLegs.indexOf(weakest);
-      const weakestSport = legs[weakestIndex]?.sport || legs[0]?.sport || "nba";
-      const alts = await findAlternatives(weakest.team, weakestSport, weakest.score);
-      if (alts.length > 0) {
-        const best = alts[0] as GradeResult & { label?: string };
-        swapSuggestion = `Swap leg ${gradedLegs.indexOf(weakest) + 1}: ${best.label ?? weakest.team} grades ${best.grade} with ${best.ev >= 0 ? "+" : ""}${best.ev.toFixed(1)}% EV.`;
+      const weakestLeg = legs[weakestIndex];
+      const weakestSport = weakestLeg?.sport || legs[0]?.sport || "nba";
+
+      if (weakestLeg?.isProp && weakestLeg.player) {
+        // Prop legs only get same-player, same-market alternatives (e.g. an
+        // alternate HR line for the same player) — never a cross-market swap
+        // like a team run line for a player prop.
+        const side = (weakestLeg.side ?? "over").toLowerCase();
+        const candidateLines = [...new Map(
+          (weakest.all_lines ?? [])
+            .filter((l) => l.side === side && Math.abs(l.line - (weakestLeg.line ?? 0)) > 0.1)
+            .map((l) => [l.line, l] as const)
+        ).values()].sort((a, b) => b.odds - a.odds);
+
+        for (const candidate of candidateLines) {
+          const alt = await gradeProp(
+            weakestLeg.player, weakestLeg.betType, side, candidate.line, candidate.odds, weakestSport, weakestLeg.team
+          );
+          if (!alt.error && alt.score > weakest.score) {
+            const propName = PROP_LABELS[weakestLeg.betType] ?? weakestLeg.betType;
+            const sideAbbr = side === "under" ? "u" : "o";
+            swapSuggestion = `Swap leg ${weakestIndex + 1}: ${weakestLeg.player} ${propName} (${sideAbbr}${candidate.line}) grades ${alt.grade} with ${alt.ev >= 0 ? "+" : ""}${alt.ev.toFixed(1)}% EV.`;
+            break;
+          }
+        }
+        // No same-category alternative beats the original line — leave swapSuggestion null
+        // rather than falling back to an unrelated team-level bet.
+      } else {
+        const alts = await findAlternatives(weakest.team, weakestSport, weakest.score);
+        if (alts.length > 0) {
+          const best = alts[0] as GradeResult & { label?: string };
+          swapSuggestion = `Swap leg ${weakestIndex + 1}: ${best.label ?? weakest.team} grades ${best.grade} with ${best.ev >= 0 ? "+" : ""}${best.ev.toFixed(1)}% EV.`;
+        }
       }
     } catch { /* skip */ }
   }

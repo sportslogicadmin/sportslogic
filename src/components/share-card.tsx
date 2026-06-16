@@ -4,6 +4,8 @@ export type ShareCardData = {
   overallGrade: string;
   ev: number;
   legCount: number;
+  impliedProb?: number;
+  trueProb?: number;
   swapSuggestion?: string | null;
   legs: {
     label: string;
@@ -42,6 +44,7 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
     const evPositive = data.ev >= 0;
     const evColor = evPositive ? "#00E87B" : "#EF4444";
     const evStr = `${evPositive ? "+" : ""}${data.ev.toFixed(1)}%`;
+    const heroColor = gradeLetter(data.overallGrade);
     const specialLabel = gradeLabel(data.overallGrade);
 
     return (
@@ -49,61 +52,61 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
         ref={ref}
         style={{
           width: 360,
-          height: 450,
-          background: "#0C0E14",
+          height: 495,
+          background: "linear-gradient(135deg, #18181B 0%, #000000 100%)",
           borderRadius: 20,
-          padding: "24px 24px 20px",
+          padding: "26px 28px 22px",
           display: "flex",
           flexDirection: "column",
           fontFamily: INTER,
           overflow: "hidden",
           position: "relative",
           boxSizing: "border-box",
-          border: "1px solid #252A37",
+          border: "1px solid #3F3F46",
+          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
         }}
       >
-        {/* Subtle glow behind EV */}
+        {/* Subtle glow behind grade hero */}
         <div style={{
           position: "absolute",
           left: "50%",
-          top: "38%",
+          top: "30%",
           transform: "translate(-50%, -50%)",
           width: 280,
-          height: 160,
-          background: `radial-gradient(ellipse, ${evPositive ? "rgba(0,232,123,0.07)" : "rgba(239,68,68,0.06)"} 0%, transparent 70%)`,
-          filter: "blur(24px)",
+          height: 180,
+          background: `radial-gradient(ellipse, ${heroColor}26 0%, transparent 70%)`,
+          filter: "blur(28px)",
           pointerEvents: "none",
         }} />
 
-        {/* Row 1 — wordmark + grade */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            <span style={{
-              fontFamily: SATOSHI,
-              fontSize: 10,
-              fontWeight: 700,
-              color: "#4F5468",
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
-            }}>
-              SPORTSLOGIC
-            </span>
-            <span style={{ fontSize: 9, color: "#4F5468", letterSpacing: "0.12em", textTransform: "uppercase" }}>
-              {data.legCount}-LEG PARLAY
-            </span>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
-            <span style={{
-              fontFamily: SATOSHI,
-              fontSize: 64,
-              fontWeight: 900,
-              color: gradeLetter(data.overallGrade),
-              lineHeight: 1,
-              letterSpacing: "-2px",
-            }}>
-              {data.overallGrade}
-            </span>
-            {specialLabel && (
+        {/* Row 1 — wordmark */}
+        <div style={{ marginBottom: 14 }}>
+          <span style={{
+            fontFamily: SATOSHI,
+            fontSize: 10,
+            fontWeight: 700,
+            color: "#00E87B",
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+          }}>
+            SPORTSLOGIC
+          </span>
+        </div>
+
+        {/* Grade hero */}
+        <div style={{ textAlign: "center", marginBottom: 6 }}>
+          <span style={{
+            fontFamily: SATOSHI,
+            fontSize: 96,
+            fontWeight: 900,
+            color: heroColor,
+            lineHeight: 1,
+            letterSpacing: "-4px",
+          }}>
+            {data.overallGrade}
+          </span>
+          {specialLabel && (
+            <div style={{ marginTop: 4 }}>
               <span style={{
                 fontSize: 9,
                 fontWeight: 700,
@@ -116,39 +119,29 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
               }}>
                 {specialLabel}
               </span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Row 2 — EV hero */}
-        <div style={{ textAlign: "center", marginBottom: 16, marginTop: 4 }}>
-          <span style={{
-            fontFamily: SATOSHI,
-            fontSize: 48,
-            fontWeight: 900,
-            color: evColor,
-            lineHeight: 1,
-            letterSpacing: "-1px",
-          }}>
-            {evStr}
-          </span>
-          <span style={{
-            fontFamily: SATOSHI,
-            fontSize: 18,
-            fontWeight: 700,
-            color: evColor,
-            opacity: 0.7,
-            marginLeft: 4,
-          }}>
+        {/* EV — subordinate to the grade */}
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "baseline", gap: 6, marginBottom: 8 }}>
+          <span style={{ fontFamily: SATOSHI, fontSize: 18, fontWeight: 700, color: evColor }}>{evStr}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: evColor, opacity: 0.65, textTransform: "uppercase", letterSpacing: "0.08em" }}>
             EV
           </span>
-          <div style={{ fontSize: 9, color: "#4F5468", marginTop: 4, letterSpacing: "0.05em" }}>
-            Based on Pinnacle fair odds
-          </div>
         </div>
 
+        {/* Verdict — the Found Money framing, in neutral body text */}
+        {data.impliedProb != null && data.trueProb != null && (
+          <div style={{ textAlign: "center", marginBottom: 14, padding: "0 10px" }}>
+            <span style={{ fontSize: 11.5, color: "#71717A", lineHeight: 1.4 }}>
+              You&apos;re paying like it&apos;s {(data.impliedProb * 100).toFixed(1)}%. We price it at {(data.trueProb * 100).toFixed(1)}%.
+            </span>
+          </div>
+        )}
+
         {/* Divider */}
-        <div style={{ height: 1, background: "#252A37", marginBottom: 8 }} />
+        <div style={{ height: 1, background: "#252A37", marginBottom: 10 }} />
 
         {/* Row 3 — parlay summary */}
         <div style={{
@@ -157,7 +150,7 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
           alignItems: "center",
           marginBottom: 8,
           fontSize: 10,
-          color: "#8A8FA3",
+          color: "#A1A1AA",
           letterSpacing: "0.08em",
           textTransform: "uppercase",
         }}>
@@ -168,14 +161,21 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
         </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: "#252A37", marginBottom: 10 }} />
+        <div style={{ height: 1, background: "#252A37", marginBottom: 12 }} />
 
         {/* Legs */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7, overflow: "hidden" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           {data.legs.slice(0, 5).map((leg, i) => {
             const legEvStr = `${leg.ev >= 0 ? "+" : ""}${leg.ev.toFixed(1)}%`;
             return (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div key={i} style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 9,
+                paddingTop: i === 0 ? 0 : 10,
+                marginTop: i === 0 ? 0 : 1,
+                borderTop: i === 0 ? "none" : "1px solid #27272A",
+              }}>
                 <div style={{
                   width: 7,
                   height: 7,
@@ -187,11 +187,11 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
                 <span style={{
                   flex: 1,
                   fontSize: 11,
-                  color: "#E2E4EA",
+                  color: "#F4F4F5",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
-                  maxWidth: 168,
+                  maxWidth: 195,
                 }}>
                   {leg.label}
                 </span>
@@ -209,7 +209,7 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
                 <span style={{
                   fontSize: 10,
                   fontFamily: "monospace",
-                  color: leg.ev >= 0 ? "#00E87B" : "#4F5468",
+                  color: leg.ev >= 0 ? "#00E87B" : "#71717A",
                   width: 44,
                   textAlign: "right",
                   flexShrink: 0,
@@ -224,11 +224,11 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
         {/* Swap suggestion */}
         {data.swapSuggestion && (
           <div style={{
-            marginTop: 10,
+            marginTop: 12,
             background: "rgba(0,232,123,0.06)",
             border: "1px solid rgba(0,232,123,0.15)",
             borderRadius: 10,
-            padding: "8px 10px",
+            padding: "9px 11px",
           }}>
             <div style={{
               fontSize: 8,
@@ -242,7 +242,7 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
             </div>
             <div style={{
               fontSize: 10,
-              color: "#8A8FA3",
+              color: "#71717A",
               lineHeight: 1.4,
               overflow: "hidden",
               display: "-webkit-box",
@@ -254,16 +254,20 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
           </div>
         )}
 
-        {/* Watermark */}
-        <div style={{
-          marginTop: 12,
-          textAlign: "center",
-          fontSize: 9,
-          color: "#4F5468",
-          letterSpacing: "0.2em",
-          textTransform: "uppercase",
-        }}>
-          sportslogic.ai
+        {/* Divider above wordmark */}
+        <div style={{ height: 1, background: "#252A37", marginTop: 14, marginBottom: 10 }} />
+
+        {/* Wordmark */}
+        <div style={{ textAlign: "center" }}>
+          <span style={{
+            fontFamily: SATOSHI,
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: "0.22em",
+          }}>
+            <span style={{ color: "#00E87B" }}>SPORTSLOGIC</span>
+            <span style={{ color: "#71717A" }}>.AI</span>
+          </span>
         </div>
       </div>
     );

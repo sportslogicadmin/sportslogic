@@ -5,7 +5,7 @@ interface SiteFooterProps {
 }
 
 export function SiteFooter({ narrow = false }: SiteFooterProps) {
-  const maxW = narrow ? "max-w-[640px]" : "max-w-[1080px]";
+  const maxW = narrow ? "max-w-[720px]" : "max-w-[1080px]";
 
   return (
     <footer className={`w-full ${maxW} mx-auto px-6 pt-10 pb-12 border-t border-border/30`}>

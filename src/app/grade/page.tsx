@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { bookName } from "@/lib/book-names";
+import { PROP_LABELS } from "@/lib/prop-labels";
 import { ShareButton } from "@/components/share-button";
 import { SiteFooter } from "@/components/site-footer";
 
@@ -79,32 +80,39 @@ type Step = "upload" | "parsing" | "confirm" | "grading" | "result";
 
 const SUPPORTED_SPORTS = new Set(["nba", "nfl", "mlb", "nhl", "ncaab", "ncaaf"]);
 
-const PROP_LABELS: Record<string, string> = {
-  points: "Points", rebounds: "Rebounds", assists: "Assists",
-  threes: "3-Pointers", pra: "Pts+Reb+Ast",
-  hr: "To Hit a HR", hits: "To Get a Hit", strikeouts: "Strikeouts", rbis: "RBIs",
-  goals: "Goals", shots: "Shots on Goal",
-};
-
 function propLabel(parsed: SingleUnit): string {
   return PROP_LABELS[parsed.prop_type ?? ""] ?? parsed.market ?? parsed.prop_type ?? "Prop";
 }
 
-function legDesc(parsed: SingleUnit): string {
-  const o = parsed.odds >= 0 ? `+${parsed.odds}` : `${parsed.odds}`;
-  if (parsed.bet_type === "moneyline") return `ML · ${o}`;
+// Market descriptor without the odds suffix — used anywhere odds are shown separately (e.g. share card).
+function legMarketDesc(parsed: SingleUnit): string {
+  if (parsed.bet_type === "moneyline") return "ML";
   if (parsed.bet_type === "spread" && parsed.line != null) {
-    return `${parsed.line >= 0 ? "+" : ""}${parsed.line} · ${o}`;
+    return `${parsed.line >= 0 ? "+" : ""}${parsed.line}`;
   }
   if (parsed.bet_type === "total" && parsed.line != null) {
-    return `${parsed.side === "under" ? "U" : "O"}${parsed.line} · ${o}`;
+    return `${parsed.side === "under" ? "U" : "O"}${parsed.line}`;
   }
   if (parsed.bet_type === "prop") {
     const label = propLabel(parsed);
     const sideStr = parsed.line != null ? ` (${parsed.side === "under" ? "u" : "o"}${parsed.line})` : "";
-    return `${label}${sideStr} · ${o}`;
+    return `${label}${sideStr}`;
   }
-  return o;
+  return "";
+}
+
+function legDesc(parsed: SingleUnit): string {
+  const o = parsed.odds >= 0 ? `+${parsed.odds}` : `${parsed.odds}`;
+  const market = legMarketDesc(parsed);
+  return market ? `${market} · ${o}` : o;
+}
+
+// Compact market descriptor for tight spaces (share card) — drops the prop
+// side/line suffix since "To Hit a HR" already implies o0.5; that room is
+// needed for longer player names.
+function legMarketDescCompact(parsed: SingleUnit): string {
+  if (parsed.bet_type === "prop") return propLabel(parsed);
+  return legMarketDesc(parsed);
 }
 
 function gradeColor(grade: string): string {
@@ -116,9 +124,9 @@ function gradeColor(grade: string): string {
 
 function gradeBg(grade: string): string {
   const f = grade[0];
-  if (f === "A" || f === "B") return "border-accent/30 bg-accent/5";
-  if (f === "C") return "border-amber/30 bg-amber/5";
-  return "border-red/30 bg-red/5";
+  if (f === "A" || f === "B") return "border-accent/50 bg-accent/5";
+  if (f === "C") return "border-amber/50 bg-amber/5";
+  return "border-[#7F1D1D]/60 bg-red/5";
 }
 
 function dotColor(grade: string): string {
@@ -130,9 +138,16 @@ function dotColor(grade: string): string {
 
 function gradeGlow(grade: string): string {
   const f = grade[0];
-  if (f === "A" || f === "B") return "0 0 60px rgba(0,232,123,0.08)";
-  if (f === "C") return "0 0 60px rgba(245,158,11,0.08)";
-  return "0 0 60px rgba(239,68,68,0.08)";
+  if (f === "A" || f === "B") return "0 0 60px rgba(0,232,123,0.08), inset 0 0 40px rgba(0,232,123,0.05)";
+  if (f === "C") return "0 0 60px rgba(245,158,11,0.08), inset 0 0 40px rgba(245,158,11,0.05)";
+  return "0 0 60px rgba(239,68,68,0.08), inset 0 0 40px rgba(239,68,68,0.05)";
+}
+
+function gradeRadial(grade: string): string {
+  const f = grade[0];
+  if (f === "A" || f === "B") return "radial-gradient(circle at center, rgba(0,232,123,0.15) 0%, transparent 70%)";
+  if (f === "C") return "radial-gradient(circle at center, rgba(234,179,8,0.12) 0%, transparent 70%)";
+  return "radial-gradient(circle at center, rgba(239,68,68,0.15) 0%, transparent 70%)";
 }
 
 function gradeGradient(grade: string): string {
@@ -144,11 +159,11 @@ function gradeGradient(grade: string): string {
 
 function gradeContext(grade: string): string {
   const f = grade[0];
-  if (f === "A") return "Strong edge. The math is in your favor.";
-  if (f === "B") return "Solid parlay. Better than most.";
-  if (f === "C") return "Average. Standard vig on most legs.";
-  if (f === "D") return "Below average. Weak legs dragging you down.";
-  return "Bad value. The books love this parlay.";
+  if (f === "A") return "Strong price. You're getting paid more than the math says you should.";
+  if (f === "B") return "Fair price. Within a couple percent of true.";
+  if (f === "C") return "Standard vig. You're paying the books' usual cut.";
+  if (f === "D") return "Overpriced. The books are taking more than the math justifies.";
+  return "Heavy overpay. The books love this one.";
 }
 
 const EMPTY_SLIP_META: SlipMeta = { stake: null, toPay: null, baseOdds: null, paidOdds: null, boostLabel: null };
@@ -329,7 +344,7 @@ export default function GradePage() {
   return (
     <div className="w-full min-h-screen">
       {/* Nav */}
-      <nav className="w-full max-w-[640px] mx-auto flex items-center justify-between px-6 py-5">
+      <nav className="w-full max-w-[720px] mx-auto flex items-center justify-between px-6 py-5">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.png" alt="SportsLogic" width={56} height={28} className="h-7 w-auto" />
           <span className="font-heading text-base font-bold text-text-primary tracking-tight">SportsLogic</span>
@@ -339,13 +354,13 @@ export default function GradePage() {
         </Link>
       </nav>
 
-      <div className="w-full max-w-[520px] mx-auto px-5 pb-16">
+      <div className="w-full max-w-[720px] mx-auto px-5 pb-16">
         {/* Header */}
         <div className="text-center pt-8 pb-8">
           <h1 className="font-heading text-[28px] sm:text-[36px] font-bold uppercase tracking-[-0.5px] leading-tight">
             DROP YOUR <span className="text-accent">PARLAY</span>
           </h1>
-          <p className="text-sm text-text-secondary mt-2">Screenshot your bet slip. We grade every leg.</p>
+          <p className="text-sm text-text-secondary mt-2">Find the money your sportsbook is hiding. We grade every leg.</p>
         </div>
 
         {/* ── UPLOAD STEP ── */}
@@ -504,12 +519,19 @@ export default function GradePage() {
             >
               <div className="px-5 pt-6 pb-4 text-center"
                 style={{ background: gradeGradient(result.overallGrade) }}>
-                <p className="text-[11px] text-text-tertiary uppercase tracking-[2px] mb-2">
+                <p className="text-[11px] text-zinc-400 uppercase tracking-[2px] mb-2">
                   {result.legCount}-LEG PARLAY
                 </p>
-                <p className={`font-heading text-[72px] font-bold leading-none ${gradeColor(result.overallGrade)}`}>
-                  {result.overallGrade}
-                </p>
+                <div className="relative inline-block">
+                  <div
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                    style={{ width: 200, height: 160, background: gradeRadial(result.overallGrade), filter: "blur(16px)" }}
+                  />
+                  <p className="relative text-[10px] text-zinc-500 uppercase tracking-[3px] mb-1">GRADE</p>
+                  <p className={`relative font-heading text-[72px] font-bold leading-none tracking-[-2px] ${gradeColor(result.overallGrade)}`}>
+                    {result.overallGrade}
+                  </p>
+                </div>
                 <p className="text-sm text-text-secondary mt-2">{gradeContext(result.overallGrade)}</p>
                 <p className="text-[11px] text-text-tertiary mt-1">EdgeScore: {result.overallScore} / 100</p>
               </div>
@@ -517,17 +539,17 @@ export default function GradePage() {
               {/* Stats row */}
               <div className="grid grid-cols-3 border-t border-border/30">
                 <div className="px-3 py-3 text-center border-r border-border/30">
-                  <p className="text-[10px] text-text-tertiary uppercase">EV</p>
+                  <p className="text-[10px] text-zinc-400 uppercase">EV</p>
                   <p className={`text-sm font-bold ${result.overallEv >= 0 ? "text-accent" : "text-red"}`}>
                     {result.overallEv >= 0 ? "+" : ""}{result.overallEv.toFixed(1)}%
                   </p>
                 </div>
                 <div className="px-3 py-3 text-center border-r border-border/30">
-                  <p className="text-[10px] text-text-tertiary uppercase">TO HIT</p>
-                  <p className="text-sm font-bold text-text-primary">{(result.combinedTrueProb * 100).toFixed(1)}%</p>
+                  <p className="text-[10px] text-zinc-400 uppercase">TO HIT</p>
+                  <p className="text-sm font-bold text-white">{(result.combinedTrueProb * 100).toFixed(1)}%</p>
                 </div>
                 <div className="px-3 py-3 text-center">
-                  <p className="text-[10px] text-text-tertiary uppercase">TAX</p>
+                  <p className="text-[10px] text-zinc-400 uppercase">TAX</p>
                   <p className="text-sm font-bold text-red">
                     {((result.combinedImpliedProb - result.combinedTrueProb) * 100).toFixed(1)}pp
                   </p>
@@ -542,9 +564,9 @@ export default function GradePage() {
             </div>
 
             {/* Individual legs */}
-            <div className="bg-surface border border-border rounded-2xl overflow-hidden mb-6">
+            <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl overflow-hidden mb-6">
               <div className="px-5 pt-4 pb-2">
-                <p className="font-heading text-[11px] font-bold text-text-tertiary uppercase tracking-[2px]">LEG-BY-LEG BREAKDOWN</p>
+                <p className="font-heading text-[11px] font-bold text-zinc-400 uppercase tracking-[2px]">LEG-BY-LEG BREAKDOWN</p>
               </div>
               <div className="divide-y divide-border/30">
                 {result.legs.map((leg, i) => {
@@ -555,8 +577,8 @@ export default function GradePage() {
                     <div key={i} className="px-5 py-3.5 flex items-center gap-3">
                       <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor(leg.grade)}`} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-text-primary font-medium truncate">{primaryName}</p>
-                        <p className="text-[10px] text-text-tertiary truncate">{desc} &bull; Best: {bookName(leg.best_book)}</p>
+                        <p className="text-sm text-zinc-100 font-medium truncate">{primaryName}</p>
+                        <p className="text-[10px] text-zinc-400 truncate">{desc} &bull; Best: {bookName(leg.best_book)}</p>
                       </div>
                       <span className={`font-heading text-base font-bold shrink-0 ${gradeColor(leg.grade)}`}>{leg.grade}</span>
                       <span className={`text-xs font-mono shrink-0 ${leg.ev >= 0 ? "text-accent" : "text-text-tertiary"}`}>
@@ -588,14 +610,22 @@ export default function GradePage() {
 
             {/* Weakest leg callout */}
             {result.legs.length > 0 && (() => {
-              const worst = result.legs.reduce((a, b) => a.score < b.score ? a : b);
+              let worstIndex = 0;
+              for (let i = 1; i < result.legs.length; i++) {
+                if (result.legs[i].score < result.legs[worstIndex].score) worstIndex = i;
+              }
+              const worst = result.legs[worstIndex];
+              const parsed = singleUnits[worstIndex];
+              const name = parsed?.player ?? parsed?.team ?? worst.team;
               const fairFmt = worst.fair_odds >= 0 ? `+${worst.fair_odds}` : `${worst.fair_odds}`;
               const payingFmt = worst.best_odds >= 0 ? `+${worst.best_odds}` : `${worst.best_odds}`;
               return (
-                <div className="bg-red/5 border border-red/20 rounded-xl p-4 mb-4">
+                <div className="bg-red/5 border border-red-500/30 rounded-xl p-4 mb-4">
                   <p className="text-[11px] font-bold text-red uppercase tracking-wide mb-1">HURTING YOU MOST</p>
                   <p className="text-xs text-text-secondary">
-                    {worst.team} — fair price {fairFmt}, you&apos;re paying {payingFmt}
+                    <span className="text-zinc-100 font-medium">{name}</span> — fair price{" "}
+                    <span className="text-zinc-100 font-medium">{fairFmt}</span>, you&apos;re paying{" "}
+                    <span className="text-zinc-100 font-medium">{payingFmt}</span>
                   </p>
                 </div>
               );
@@ -620,12 +650,19 @@ export default function GradePage() {
               overallGrade: result.overallGrade,
               ev: result.overallEv,
               legCount: result.legCount,
+              impliedProb: result.combinedImpliedProb,
+              trueProb: result.combinedTrueProb,
               swapSuggestion: result.swapSuggestion,
-              legs: result.legs.map((leg) => ({
-                label: `${leg.team} ${leg.betType}`,
-                grade: leg.grade,
-                ev: leg.ev,
-              })),
+              legs: result.legs.map((leg, i) => {
+                const parsed = singleUnits[i];
+                const name = parsed?.player ?? parsed?.team ?? leg.team;
+                const desc = parsed ? legMarketDescCompact(parsed) : leg.betType;
+                return {
+                  label: desc ? `${name} · ${desc}` : name,
+                  grade: leg.grade,
+                  ev: leg.ev,
+                };
+              }),
               stake: slipMeta.stake,
               payout: slipMeta.toPay,
             }} />

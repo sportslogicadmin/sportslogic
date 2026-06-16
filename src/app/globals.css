@@ -5,9 +5,9 @@
   --color-surface: #161923;
   --color-border: #252A37;
   --color-accent: #00E87B;
-  --color-text-primary: #E2E4EA;
-  --color-text-secondary: #8A8FA3;
-  --color-text-tertiary: #4F5468;
+  --color-text-primary: #F4F4F5;
+  --color-text-secondary: #A1A1AA;
+  --color-text-tertiary: #71717A;
   --color-amber: #EAB308;
   --color-red: #EF4444;
   --font-sans: var(--font-inter);
@@ -27,7 +27,7 @@ body {
   color: var(--color-text-primary);
   font-family: var(--font-sans), system-ui, sans-serif;
   /* Subtle dot grid — barely visible texture */
-  background-image: radial-gradient(circle, rgba(26, 31, 43, 0.6) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(26, 31, 43, 0.3) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
