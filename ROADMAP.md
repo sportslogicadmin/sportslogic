@@ -80,6 +80,7 @@ Build order is strict. A step does not start until the previous step is verified
 - 2026-06-11 — Step A golf abort verified on preview; ROADMAP not updated at the time, retroactively recorded 2026-06-15.
 - 2026-06-15 — Homepage copy v2 (Found Money positioning, lies stripped) promoted to production.
 - 2026-06-15 — /api/health pulled forward from Step E (operational diagnostic value justifies it now). Real authenticated pings: Anthropic 1-token message, Odds API /v4/sports, Prisma SELECT 1. 60s in-memory + CDN cache.
+- 2026-06-15 — Compliance pages (Privacy, ToS, Affiliate Disclosure, Responsible Gambling, 21+ age gate) built ahead of affiliate applications. Required for FTC/state compliance and as a prerequisite for any sportsbook affiliate program application.
 
 ## Parking Lot (good ideas, not now)
 - Multi-book devig (beyond Pinnacle)

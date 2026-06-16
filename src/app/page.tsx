@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { EmailForm } from "./email-form";
 import { MarketInsights } from "./market-insights";
+import { SiteFooter } from "@/components/site-footer";
 
 // ── Centralised marketing numbers ─────────────────────────────────────────────
 const BOOKS_COMPARED = "30+";
@@ -238,20 +239,7 @@ export default function Home() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="w-full max-w-[1080px] mx-auto px-6 pt-10 pb-12 border-t border-border/30">
-        <p className="text-[11px] text-text-tertiary text-center sm:text-left mb-6 leading-relaxed max-w-[640px]">
-          SportsLogic is not a sportsbook. We provide analysis tools for
-          informational purposes only. 21+. Gambling problem? Call 1-800-GAMBLER.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-[11px] text-text-tertiary">&copy; 2026 SportsLogic</p>
-          <div className="flex items-center gap-8">
-            <Link href="/terms" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors">Terms</Link>
-            <Link href="/privacy" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors">Privacy</Link>
-            <Link href="/contact" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors">Contact</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

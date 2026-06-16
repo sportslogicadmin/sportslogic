@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { bookName } from "@/lib/book-names";
 import { ShareButton } from "@/components/share-button";
+import { SiteFooter } from "@/components/site-footer";
 
 type Params = { slug: string };
 
@@ -234,11 +235,7 @@ export default async function SharedGradePage({ params }: { params: Promise<Para
         </div>
       </div>
 
-      <footer className="w-full max-w-[640px] mx-auto px-6 pt-8 pb-10 border-t border-border/30">
-        <p className="text-[11px] text-text-tertiary text-center leading-relaxed">
-          SportsLogic is not a sportsbook. Analysis tools for informational purposes only. 21+.
-        </p>
-      </footer>
+      <SiteFooter narrow />
     </div>
   );
 }

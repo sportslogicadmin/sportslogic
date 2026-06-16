@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { bookName } from "@/lib/book-names";
 import { ShareButton } from "@/components/share-button";
+import { SiteFooter } from "@/components/site-footer";
 
 type ParsedChild = {
   player: string | null;
@@ -638,11 +639,7 @@ export default function GradePage() {
       </div>
 
       {/* Footer */}
-      <footer className="w-full max-w-[640px] mx-auto px-6 pt-8 pb-10 border-t border-border/30">
-        <p className="text-[11px] text-text-tertiary text-center leading-relaxed">
-          SportsLogic is not a sportsbook. Analysis tools for informational purposes only. 21+.
-        </p>
-      </footer>
+      <SiteFooter narrow />
     </div>
   );
 }
