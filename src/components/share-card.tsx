@@ -52,7 +52,6 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
         ref={ref}
         style={{
           width: 360,
-          height: 495,
           background: "linear-gradient(135deg, #18181B 0%, #000000 100%)",
           borderRadius: 20,
           padding: "26px 28px 22px",
@@ -164,8 +163,8 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
         <div style={{ height: 1, background: "#252A37", marginBottom: 12 }} />
 
         {/* Legs */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          {data.legs.slice(0, 5).map((leg, i) => {
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {data.legs.map((leg, i) => {
             const legEvStr = `${leg.ev >= 0 ? "+" : ""}${leg.ev.toFixed(1)}%`;
             return (
               <div key={i} style={{
