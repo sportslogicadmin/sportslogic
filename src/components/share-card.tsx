@@ -16,18 +16,12 @@ export type ShareCardData = {
   payout?: number | null;
 };
 
-function gradeLetter(grade: string) {
+function tierColor(grade: string) {
   const f = grade[0];
   if (f === "A") return "#00E87B";
-  if (f === "B") return "#00E87B";
+  if (f === "B") return "#6EE7B7";
   if (f === "C") return "#EAB308";
-  return "#EF4444";
-}
-
-function dotHex(grade: string) {
-  const f = grade[0];
-  if (f === "A" || f === "B") return "#00E87B";
-  if (f === "C") return "#EAB308";
+  if (f === "D") return "#F87171";
   return "#EF4444";
 }
 
@@ -42,9 +36,9 @@ const SATOSHI = "'Satoshi', 'Inter', system-ui, sans-serif";
 export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
   function ShareCard({ data }, ref) {
     const evPositive = data.ev >= 0;
-    const evColor = evPositive ? "#00E87B" : "#EF4444";
     const evStr = `${evPositive ? "+" : ""}${data.ev.toFixed(1)}%`;
-    const heroColor = gradeLetter(data.overallGrade);
+    const heroColor = tierColor(data.overallGrade);
+    const evColor = heroColor;
     const specialLabel = gradeLabel(data.overallGrade);
 
     return (
@@ -179,9 +173,9 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
                   width: 7,
                   height: 7,
                   borderRadius: "50%",
-                  background: dotHex(leg.grade),
+                  background: tierColor(leg.grade),
                   flexShrink: 0,
-                  boxShadow: `0 0 5px ${dotHex(leg.grade)}80`,
+                  boxShadow: `0 0 5px ${tierColor(leg.grade)}80`,
                 }} />
                 <span style={{
                   flex: 1,
@@ -198,7 +192,8 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
                   fontFamily: SATOSHI,
                   fontSize: 11,
                   fontWeight: 700,
-                  color: gradeLetter(leg.grade),
+                  color: tierColor(leg.grade),
+                  opacity: 0.7,
                   width: 24,
                   textAlign: "right",
                   flexShrink: 0,
@@ -208,7 +203,7 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
                 <span style={{
                   fontSize: 10,
                   fontFamily: "monospace",
-                  color: leg.ev >= 0 ? "#00E87B" : "#71717A",
+                  color: "#71717A",
                   width: 44,
                   textAlign: "right",
                   flexShrink: 0,
