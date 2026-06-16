@@ -4,8 +4,6 @@ import { EmailForm } from "./email-form";
 import { SiteFooter } from "@/components/site-footer";
 
 // ── Static data ────────────────────────────────────────────────────────────────
-const betTypes = ["PARLAYS", "STRAIGHT BETS", "PLAYER PROPS"];
-const sports = ["NFL", "NBA", "MLB", "NHL", "NCAAF", "NCAAB"];
 
 // ── Shared primitives ──────────────────────────────────────────────────────────
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -118,25 +116,19 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-[920px] mx-auto">
           {[
             {
-              n: "01",
               title: "NOT PICKS. JUST PRICING.",
               desc: "We're not here to sell locks. We show you whether the number you're betting is actually worth taking.",
             },
             {
-              n: "02",
               title: "EVERY NUMBER HAS RECEIPTS.",
               desc: "Every grade is backed by live odds data and sharp-market comparison — not opinions, not vibes, not pick-of-the-day energy.",
             },
             {
-              n: "03",
               title: "SHARP FRIEND. NOT SALESMAN.",
               desc: "We don't sell locks, charge for picks, or run a Discord. We just tell you what your bet should actually pay.",
             },
           ].map((card) => (
-            <div key={card.n} className="bg-surface border border-border rounded-2xl p-7">
-              <div className="w-9 h-9 rounded-xl bg-accent/8 flex items-center justify-center mb-5">
-                <span className="font-heading text-accent text-sm font-bold">{card.n}</span>
-              </div>
+            <div key={card.title} className="bg-surface border border-border rounded-2xl p-7">
               <h3 className="font-heading text-[13px] font-bold uppercase text-text-primary mb-3 tracking-[0.5px]">{card.title}</h3>
               <p className="text-sm text-text-secondary leading-relaxed">{card.desc}</p>
             </div>
@@ -151,21 +143,6 @@ export default function Home() {
           <p className="text-[15px] text-text-secondary leading-[1.85]">
             Most bettors lose the same way — not because they&apos;re unlucky, but because the price was bad from the start. Sportsbooks count on you not noticing the gap between what your slip pays and what it&apos;s actually worth. We built SportsLogic to make that gap visible — in dollars, every time, before you bet. Less guessing. Better numbers. Fewer dollars left on the table.
           </p>
-        </div>
-      </section>
-
-      {/* ── WHAT WE GRADE ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 py-24 sm:py-32">
-        <SectionLabel>WHAT WE GRADE</SectionLabel>
-        <div className="flex flex-wrap justify-center gap-2.5 mb-5 max-w-[640px] mx-auto">
-          {betTypes.map((t) => (
-            <span key={t} className="px-5 py-2.5 rounded-full bg-surface border border-border text-[13px] font-medium text-text-primary">{t}</span>
-          ))}
-        </div>
-        <div className="flex flex-wrap justify-center gap-2.5 max-w-[640px] mx-auto">
-          {sports.map((s) => (
-            <span key={s} className="px-5 py-2.5 rounded-full bg-surface border border-accent/15 text-xs font-medium text-text-primary">{s}</span>
-          ))}
         </div>
       </section>
 
