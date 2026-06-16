@@ -269,7 +269,7 @@ export default function GradePage() {
     try {
       const parlayLegs = singleUnits.map((unit) => ({
         team: unit.team,
-        betType: unit.bet_type,
+        betType: unit.bet_type === "prop" ? (unit.prop_type ?? unit.bet_type) : unit.bet_type,
         odds: unit.odds,
         sport: unit.sport,
         line: unit.line ?? undefined,
