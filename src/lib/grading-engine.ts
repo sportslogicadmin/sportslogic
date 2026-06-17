@@ -68,6 +68,17 @@ function americanToImplied(odds: number): number {
   return odds > 0 ? 100 / (odds + 100) : Math.abs(odds) / (Math.abs(odds) + 100);
 }
 
+function americanToDecimal(odds: number): number {
+  return odds > 0 ? (odds / 100) + 1 : (100 / Math.abs(odds)) + 1;
+}
+
+function decimalToAmerican(dec: number): number {
+  if (dec <= 1) return 0;
+  return dec >= 2
+    ? Math.round((dec - 1) * 100)
+    : Math.round(-100 / (dec - 1));
+}
+
 function impliedToAmerican(prob: number): number {
   if (prob <= 0 || prob >= 1) return 0;
   return prob >= 0.5
@@ -683,6 +694,12 @@ export type ParlayResult = {
   weakestLeg: string | null;
   correlationWarnings: string[];
   swapSuggestion: string | null;
+  bestParlayDecimal: number;
+  userParlayDecimal: number;
+  bestParlayOdds: number;
+  userBookPrice: number;
+  foundMoneyPercent: number;
+  bestBook: string;
 };
 
 export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
@@ -700,6 +717,7 @@ export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
   const gradedLegs: (GradeResult & { team: string; betType: string })[] = [];
   let combinedTrueProb = 1;
   let combinedImpliedProb = 1;
+  let bestParlayDecimal = 1;
 
   for (let i = 0; i < legs.length; i++) {
     const leg = legs[i];
@@ -735,6 +753,7 @@ export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
       combinedTrueProb *= result.true_prob;
       combinedImpliedProb *= americanToImplied(odds);
     }
+    bestParlayDecimal *= americanToDecimal(result.best_odds || odds);
   }
 
   // Parlay EV
@@ -745,6 +764,21 @@ export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
     parlayEv = (combinedTrueProb * (parlayDecimal - 1) - (1 - combinedTrueProb)) * 100;
     vigCost = ((combinedImpliedProb - combinedTrueProb) / combinedTrueProb) * 100;
   }
+
+  // Found Money: best available parlay vs. what user is paying
+  const userParlayDecimal = combinedImpliedProb > 0 ? 1 / combinedImpliedProb : 1;
+  const bestParlayOdds = decimalToAmerican(bestParlayDecimal);
+  const userBookPrice = decimalToAmerican(userParlayDecimal);
+  const foundMoneyPercent = userParlayDecimal > 0
+    ? Math.round((bestParlayDecimal / userParlayDecimal - 1) * 10000) / 100
+    : 0;
+  const bookCounts = new Map<string, number>();
+  for (const gl of gradedLegs) {
+    if (gl.best_book) bookCounts.set(gl.best_book, (bookCounts.get(gl.best_book) ?? 0) + 1);
+  }
+  const bestBook = bookCounts.size > 0
+    ? [...bookCounts.entries()].reduce((a, b) => b[1] > a[1] ? b : a)[0]
+    : "";
 
   // Correlation detection — same-game legs
   const warnings: string[] = [];
@@ -828,6 +862,12 @@ export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
     weakestLeg: weakest ? `${weakest.team} (${weakest.grade})` : null,
     correlationWarnings: warnings,
     swapSuggestion,
+    bestParlayDecimal: Math.round(bestParlayDecimal * 10000) / 10000,
+    userParlayDecimal: Math.round(userParlayDecimal * 10000) / 10000,
+    bestParlayOdds,
+    userBookPrice,
+    foundMoneyPercent,
+    bestBook,
   };
 }
 

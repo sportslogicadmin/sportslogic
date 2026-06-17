@@ -75,6 +75,12 @@ type ParlayResult = {
   correlationWarnings: string[];
   swapSuggestion: string | null;
   shareSlug?: string;
+  bestParlayDecimal: number;
+  userParlayDecimal: number;
+  bestParlayOdds: number;
+  userBookPrice: number;
+  foundMoneyPercent: number;
+  bestBook: string;
 };
 
 type Step = "upload" | "parsing" | "confirm" | "grading" | "result";
@@ -168,6 +174,75 @@ function gradeContext(grade: string): string {
 }
 
 const EMPTY_SLIP_META: SlipMeta = { stake: null, toPay: null, baseOdds: null, paidOdds: null, boostLabel: null };
+
+function FoundMoneyCallout({ result, stake }: { result: ParlayResult; stake: number | null }) {
+  const [stakeInput, setStakeInput] = useState("");
+
+  const effectiveStake = stake ?? (stakeInput !== "" ? parseFloat(stakeInput) : null);
+  const foundMoney =
+    effectiveStake != null && !isNaN(effectiveStake) && effectiveStake > 0
+      ? effectiveStake * (result.bestParlayDecimal - result.userParlayDecimal)
+      : null;
+
+  const fmtOdds = (o: number) => (o >= 0 ? `+${o}` : `${o}`);
+  const bestBookLabel = bookName(result.bestBook);
+
+  if (foundMoney !== null && foundMoney > 0) {
+    return (
+      <div className="rounded-2xl border border-[#00B362]/30 bg-[#00B362]/5 p-5 mb-6">
+        <p className="text-[10px] font-bold uppercase tracking-[2px] mb-3" style={{ color: "#00B362" }}>
+          FOUND MONEY
+        </p>
+        <p className="font-heading text-[56px] font-bold leading-none" style={{ color: "#00B362" }}>
+          ${foundMoney < 1 ? foundMoney.toFixed(2) : Math.round(foundMoney)}
+        </p>
+        <p className="text-xs text-zinc-400 mt-3 leading-relaxed">
+          Your book prices this parlay at {fmtOdds(result.userBookPrice)}.{" "}
+          {bestBookLabel ? `${bestBookLabel} has it` : "Best available"} at {fmtOdds(result.bestParlayOdds)}.{" "}
+          You could win ${foundMoney < 1 ? foundMoney.toFixed(2) : Math.round(foundMoney)} more on a ${Math.round(effectiveStake!)} bet.
+        </p>
+      </div>
+    );
+  }
+
+  if (foundMoney !== null && foundMoney <= 0) {
+    return (
+      <div className="rounded-2xl border border-[#00E87B]/20 bg-[#00E87B]/5 px-5 py-4 mb-6">
+        <p className="text-sm font-bold" style={{ color: "#00E87B" }}>
+          Best price available. Nothing left on the table.
+        </p>
+      </div>
+    );
+  }
+
+  // No stake — show pct gap + inline stake input
+  const pctGap = result.foundMoneyPercent;
+  return (
+    <div className="rounded-2xl border border-zinc-700/50 bg-zinc-900/40 p-5 mb-6">
+      <p className="text-[10px] font-bold uppercase tracking-[2px] text-zinc-400 mb-2">FOUND MONEY</p>
+      {pctGap > 0 ? (
+        <p className="text-sm text-zinc-300 mb-3 leading-relaxed">
+          You&apos;re paying {fmtOdds(result.userBookPrice)} —{" "}
+          {bestBookLabel || "the market"} has it at {fmtOdds(result.bestParlayOdds)} ({pctGap.toFixed(1)}% better payout).
+        </p>
+      ) : (
+        <p className="text-sm text-zinc-300 mb-3">You have the best available price.</p>
+      )}
+      <div className="flex items-center gap-2">
+        <span className="text-zinc-400 text-sm font-medium">$</span>
+        <input
+          type="number"
+          min="1"
+          placeholder="Stake"
+          value={stakeInput}
+          onChange={(e) => setStakeInput(e.target.value)}
+          className="w-28 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500"
+        />
+        <span className="text-xs text-zinc-500">to see dollar gap</span>
+      </div>
+    </div>
+  );
+}
 
 export default function GradePage() {
   const [step, setStep] = useState<Step>("upload");
@@ -513,6 +588,7 @@ export default function GradePage() {
         {/* ── RESULT STEP ── */}
         {step === "result" && result && (
           <div>
+            <FoundMoneyCallout result={result} stake={slipMeta.stake} />
             {/* Overall grade card */}
             <div
               className={`rounded-2xl border overflow-hidden mb-6 ${gradeBg(result.overallGrade)}`}
