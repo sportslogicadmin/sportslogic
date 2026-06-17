@@ -3,18 +3,22 @@ export const BOOK_NAMES: Record<string, string> = {
   draftkings: "DraftKings",
   betmgm: "BetMGM",
   caesars: "Caesars",
-  espnbet: "ESPN Bet",
+  espnbet: "ESPN BET",
   betrivers: "BetRivers",
   fanatics: "Fanatics",
   bovada: "Bovada",
-  hardrockbet: "Hard Rock",
-  hardrockbet_az: "Hard Rock",
+  hardrockbet: "Hard Rock Bet",
+  hardrockbet_az: "Hard Rock Bet",
   betparx: "BetParx",
-  wynnbet: "WynnBet",
+  wynnbet: "WynnBET",
   ballybet: "Bally Bet",
   fliff: "Fliff",
   pinnacle: "Pinnacle",
   betonlineag: "BetOnline",
+  bookmaker: "Bookmaker",
+  betcris: "BetCRIS",
+  pointsbetus: "PointsBet",
+  circa: "Circa",
   williamhill_us: "Caesars",
   lowvig: "LowVig",
   rebet: "Rebet",
@@ -27,5 +31,11 @@ export const BOOK_NAMES: Record<string, string> = {
 };
 
 export function bookName(key: string): string {
-  return BOOK_NAMES[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
+  if (!key) return "";
+  if (BOOK_NAMES[key]) return BOOK_NAMES[key];
+  // Fallback: split on _ or - or camelCase boundary, title-case each word
+  return key
+    .split(/[_\-]/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 }

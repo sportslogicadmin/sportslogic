@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { bookName } from "@/lib/book-names";
+import { sportName } from "@/lib/sport-names";
 import { ShareButton } from "@/components/share-button";
 import { SiteFooter } from "@/components/site-footer";
 
@@ -185,7 +186,7 @@ export default async function SharedGradePage({ params }: { params: Promise<Para
                   <p className="text-[10px] text-text-tertiary">
                     {leg.market}
                     {leg.line != null ? ` ${leg.line >= 0 ? "+" : ""}${leg.line}` : ""} &bull;{" "}
-                    {leg.odds >= 0 ? "+" : ""}{leg.odds} &bull; {leg.sport.toUpperCase()}
+                    {leg.odds >= 0 ? "+" : ""}{leg.odds} &bull; {sportName(leg.sport)}
                   </p>
                 </div>
                 <span className={`font-heading text-base font-bold ${gradeColor(leg.grade)}`}>{leg.grade}</span>

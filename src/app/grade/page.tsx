@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { bookName } from "@/lib/book-names";
+import { sportName } from "@/lib/sport-names";
 import { PROP_LABELS } from "@/lib/prop-labels";
 import { ShareButton } from "@/components/share-button";
 import { SiteFooter } from "@/components/site-footer";
@@ -444,7 +445,7 @@ export default function GradePage() {
                             {unit.bet_type === "prop" ? `${propLabel(unit)}${unit.line != null ? ` (${unit.side === "under" ? "u" : "o"}${unit.line})` : ""} ` : ""}
                             {unit.bet_type === "moneyline" ? "ML " : ""}
                             ({unit.odds >= 0 ? "+" : ""}{unit.odds})
-                            <span className="text-text-tertiary"> &bull; {unit.sport.toUpperCase()}</span>
+                            <span className="text-text-tertiary"> &bull; {sportName(unit.sport)}</span>
                           </p>
                         </div>
                       </div>
@@ -462,7 +463,7 @@ export default function GradePage() {
                               ({unit.unitOdds >= 0 ? "+" : ""}{unit.unitOdds})
                             </span>
                           </p>
-                          <p className="text-[10px] text-text-tertiary uppercase tracking-wide">Same Game Parlay &bull; {unit.sport.toUpperCase()}</p>
+                          <p className="text-[10px] text-text-tertiary uppercase tracking-wide">Same Game Parlay &bull; {sportName(unit.sport)}</p>
                         </div>
                       </div>
                       <div className="pl-8 space-y-1">
