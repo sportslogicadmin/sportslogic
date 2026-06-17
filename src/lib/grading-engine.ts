@@ -129,7 +129,8 @@ async function fetchOdds(sport: string, market: string): Promise<Game[]> {
   const res = await fetch(url, { next: { revalidate: 300 } });
   const ms = Date.now() - t0;
   if (!res.ok) {
-    console.error(`[odds-api] ${sportKey}/${marketKey} → HTTP ${res.status} (${ms}ms)`);
+    const body = await res.text().catch(() => "(unreadable)");
+    console.error(`[odds-api] ${sportKey}/${marketKey} → HTTP ${res.status} (${ms}ms) body=${body.slice(0, 300)}`);
     return [];
   }
 
