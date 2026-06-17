@@ -117,14 +117,14 @@ const oddsCache = new Map<string, { data: Game[]; expires: number }>();
 const ODDS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 async function fetchOdds(sport: string, market: string): Promise<Game[]> {
-  const sportKey = SPORT_MAP[sport] ?? sport;
+  const sportKey = SPORT_MAP[sport.toLowerCase()] ?? sport.toLowerCase();
   const marketKey = MARKET_MAP[market] ?? market;
   const cacheKey = `${sportKey}:${marketKey}`;
 
   const cached = oddsCache.get(cacheKey);
   if (cached && Date.now() < cached.expires) return cached.data;
 
-  const url = `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=${marketKey}&oddsFormat=american&bookmakers=fanduel,draftkings,betmgm,caesars,espnbet,betrivers,betonlineag`;
+  const url = `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us,us2,eu&markets=${marketKey}&oddsFormat=american`;
   const t0 = Date.now();
   const res = await fetch(url, { next: { revalidate: 300 } });
   const ms = Date.now() - t0;
@@ -141,7 +141,7 @@ async function fetchOdds(sport: string, market: string): Promise<Game[]> {
 }
 
 async function fetchPropOdds(sport: string, eventId: string, propType: string): Promise<Game | null> {
-  const sportKey = SPORT_MAP[sport] ?? sport;
+  const sportKey = SPORT_MAP[sport.toLowerCase()] ?? sport.toLowerCase();
   const marketKey = PROP_MAP[propType] ?? propType;
 
   const url = `${ODDS_API_BASE}/sports/${sportKey}/events/${eventId}/odds/?apiKey=${ODDS_API_KEY}&regions=us,us2,eu&markets=${marketKey}&oddsFormat=american`;
@@ -154,7 +154,7 @@ async function fetchPropOdds(sport: string, eventId: string, propType: string): 
 }
 
 async function fetchEvents(sport: string): Promise<Game[]> {
-  const sportKey = SPORT_MAP[sport] ?? sport;
+  const sportKey = SPORT_MAP[sport.toLowerCase()] ?? sport.toLowerCase();
   const url = `${ODDS_API_BASE}/sports/${sportKey}/events/?apiKey=${ODDS_API_KEY}`;
   const t0 = Date.now();
   const res = await fetch(url, { next: { revalidate: 300 } });
@@ -185,7 +185,7 @@ type GameStartDecision = "started" | "not_started" | "ambiguous" | "no_match";
 // protection for same-day cases (doubleheaders) it doesn't fully eliminate.
 async function hasGameStarted(team: string, sport: string): Promise<GameStartDecision> {
   if (!team?.trim()) return "no_match";
-  const sportKey = SPORT_MAP[sport] ?? sport;
+  const sportKey = SPORT_MAP[sport.toLowerCase()] ?? sport.toLowerCase();
   try {
     const res = await fetch(
       `${ODDS_API_BASE}/sports/${sportKey}/scores/?apiKey=${ODDS_API_KEY}&daysFrom=0`,
