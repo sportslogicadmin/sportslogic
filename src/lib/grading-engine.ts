@@ -124,7 +124,7 @@ async function fetchOdds(sport: string, market: string): Promise<Game[]> {
   const cached = oddsCache.get(cacheKey);
   if (cached && Date.now() < cached.expires) return cached.data;
 
-  const url = `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&bookmakers=fanduel,draftkings,betmgm,caesars,espnbet,betrivers,betonlineag,bookmaker,pinnacle&markets=${marketKey}&oddsFormat=american`;
+  const url = `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=${marketKey}&oddsFormat=american&bookmakers=fanduel,draftkings,betmgm,caesars,espnbet,betrivers,betonlineag`;
   const t0 = Date.now();
   const res = await fetch(url, { next: { revalidate: 300 } });
   const ms = Date.now() - t0;
