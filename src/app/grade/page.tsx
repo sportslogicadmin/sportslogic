@@ -655,7 +655,9 @@ export default function GradePage() {
                       <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor(leg.grade)}`} />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-zinc-100 font-medium truncate">{primaryName}</p>
-                        <p className="text-[10px] text-zinc-400 truncate">{desc} &bull; Best: {bookName(leg.best_book)}</p>
+                        <p className="text-[10px] text-zinc-400 truncate">
+                          {desc}{parsed?.odds != null && leg.best_odds > parsed.odds ? ` • Best: ${bookName(leg.best_book)}` : ""}
+                        </p>
                       </div>
                       <span className={`font-heading text-base font-bold shrink-0 ${gradeColor(leg.grade)}`}>{leg.grade}</span>
                       <span className={`text-xs font-mono shrink-0 ${leg.ev >= 0 ? "text-accent" : "text-text-tertiary"}`}>
@@ -695,7 +697,10 @@ export default function GradePage() {
               const parsed = singleUnits[worstIndex];
               const name = parsed?.player ?? parsed?.team ?? worst.team;
               const fairFmt = worst.fair_odds >= 0 ? `+${worst.fair_odds}` : `${worst.fair_odds}`;
-              const payingFmt = worst.best_odds >= 0 ? `+${worst.best_odds}` : `${worst.best_odds}`;
+              const worstUserOdds = singleUnits[worstIndex]?.odds;
+              const payingFmt = worstUserOdds != null
+                ? (worstUserOdds >= 0 ? `+${worstUserOdds}` : `${worstUserOdds}`)
+                : (worst.best_odds >= 0 ? `+${worst.best_odds}` : `${worst.best_odds}`);
               return (
                 <div className="bg-red/5 border border-red-500/30 rounded-xl p-4 mb-4">
                   <p className="text-[11px] font-bold text-red uppercase tracking-wide mb-1">HURTING YOU MOST</p>
