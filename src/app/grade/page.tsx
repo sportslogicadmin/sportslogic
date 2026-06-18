@@ -102,7 +102,7 @@ function legMarketDesc(parsed: SingleUnit): string {
   }
   if (parsed.bet_type === "prop") {
     const label = propLabel(parsed);
-    const sideStr = parsed.line != null ? ` (${parsed.side === "under" ? "u" : "o"}${parsed.line})` : "";
+    const sideStr = parsed.line != null ? ` (${parsed.side === "under" ? "U" : "O"}${parsed.line})` : "";
     return `${label}${sideStr}`;
   }
   return "";
@@ -516,8 +516,8 @@ export default function GradePage() {
                           </p>
                           <p className="text-[11px] text-text-secondary">
                             {unit.bet_type === "spread" && unit.line != null ? `${unit.line >= 0 ? "+" : ""}${unit.line} ` : ""}
-                            {unit.bet_type === "total" && unit.line != null ? `${unit.side ?? "over"} ${unit.line} ` : ""}
-                            {unit.bet_type === "prop" ? `${propLabel(unit)}${unit.line != null ? ` (${unit.side === "under" ? "u" : "o"}${unit.line})` : ""} ` : ""}
+                            {unit.bet_type === "total" && unit.line != null ? `${unit.side === "under" ? "Under" : "Over"} ${unit.line} ` : ""}
+                            {unit.bet_type === "prop" ? `${propLabel(unit)}${unit.line != null ? ` (${unit.side === "under" ? "U" : "O"}${unit.line})` : ""} ` : ""}
                             {unit.bet_type === "moneyline" ? "ML " : ""}
                             ({unit.odds >= 0 ? "+" : ""}{unit.odds})
                             <span className="text-text-tertiary"> &bull; {sportName(unit.sport)}</span>
@@ -545,7 +545,7 @@ export default function GradePage() {
                         {unit.children.map((child, j) => (
                           <p key={j} className="text-[11px] text-text-secondary truncate">
                             &bull; {child.player ?? child.team} — {child.market}
-                            {child.line != null ? ` (${child.side === "under" ? "u" : "o"}${child.line})` : ""}
+                            {child.line != null ? ` (${child.side === "under" ? "U" : "O"}${child.line})` : ""}
                           </p>
                         ))}
                       </div>
