@@ -78,7 +78,7 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
             fontFamily: SATOSHI,
             fontSize: 10,
             fontWeight: 700,
-            color: "#00E87B",
+            color: "#10B981",
             letterSpacing: "0.18em",
             textTransform: "uppercase",
           }}>
@@ -219,15 +219,15 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
         {data.swapSuggestion && (
           <div style={{
             marginTop: 12,
-            background: "rgba(0,232,123,0.06)",
-            border: "1px solid rgba(0,232,123,0.15)",
+            background: "rgba(16,185,129,0.06)",
+            border: "1px solid rgba(16,185,129,0.15)",
             borderRadius: 10,
             padding: "9px 11px",
           }}>
             <div style={{
               fontSize: 8,
               fontWeight: 700,
-              color: "#00E87B",
+              color: "#10B981",
               letterSpacing: "0.18em",
               textTransform: "uppercase",
               marginBottom: 3,
@@ -259,7 +259,7 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
             fontWeight: 700,
             letterSpacing: "0.22em",
           }}>
-            <span style={{ color: "#00E87B" }}>SPORTSLOGIC</span>
+            <span style={{ color: "#10B981" }}>SPORTSLOGIC</span>
             <span style={{ color: "#71717A" }}>.AI</span>
           </span>
         </div>
