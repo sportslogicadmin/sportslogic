@@ -182,6 +182,13 @@ Correct output (pitcher names stripped, full team names used):
   "boostLabel": null
 }
 
+━━━ EXAMPLE E — pitcher prop (strikeouts) ━━━
+Slip shows: "Gerrit Cole - Over 5.5 Strikeouts -120"
+For pitcher props: team = pitcher's MLB team, player = pitcher's full name. Same pattern as batter props.
+
+Correct output for this unit:
+{"type":"single","team":"New York Yankees","player":"Gerrit Cole","bet_type":"prop","line":5.5,"odds":-120,"side":"over","prop_type":"strikeouts","market":"Over 5.5 Strikeouts","sport":"mlb","opponent":null}
+
 ━━━ UNIT SHAPES (reference) ━━━
 
 Single unit:
@@ -201,6 +208,7 @@ Single unit:
   "To Hit a HR", "To Hit a Home Run", "Home Run", "Hits a Home Run", "1+ Home Run", "HR", "To Go Yard".
   A prop leg (bet_type "prop") must always resolve to one of the listed prop_type codes — never leave
   prop_type null for a real player prop just because the slip's wording differs from these examples.
+  "strikeouts" is a pitcher prop — use the pitcher's MLB team for the team field, pitcher's full name in player. Same structure as batter HR/hits/RBIs.
   "sport": "nba"|"nfl"|"mlb"|"nhl"|"ncaab"|"ncaaf" — or the actual sport name in lowercase if unsupported. NEVER substitute a supported sport for an unsupported one (e.g. golf stays "golf", not "nfl")
 }
 
