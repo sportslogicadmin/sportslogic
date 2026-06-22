@@ -184,7 +184,11 @@ Group unit (sub-parlay priced as one — see Rule 3):
 ━━━ BOOST / STAKE / PAYOUT ━━━
 baseOdds: struck-through original parlay odds, or null
 paidOdds: boosted parlay odds actually paid, or null (if no boost, both null)
-stake: wager amount, or null
+stake: wager amount, or null. Look for: "Stake: $X", "Wager: $X", "Bet Amount: $X",
+  "$X to win $Y", "Total Wager: $X", or a bare dollar amount near "to win" or "payout".
+  Sportsbooks vary in label format (FanDuel uses "Wager", DraftKings uses "Stake",
+  BetMGM uses "Bet Amount"). Match any of these. If multiple amounts visible, the one
+  labeled stake/wager/bet (not "to win" or "to pay") is the stake.
 toPay: total potential payout (not just profit), or null
 
 Return ONLY the JSON object.`,

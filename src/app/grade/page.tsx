@@ -177,7 +177,7 @@ function gradeContext(grade: string): string {
 const EMPTY_SLIP_META: SlipMeta = { stake: null, toPay: null, baseOdds: null, paidOdds: null, boostLabel: null };
 
 function FoundMoneyCallout({ result, stake }: { result: ParlayResult; stake: number | null }) {
-  const [stakeInput, setStakeInput] = useState("");
+  const [stakeInput, setStakeInput] = useState(stake == null ? "50" : "");
 
   const effectiveStake = stake ?? (stakeInput !== "" ? parseFloat(stakeInput) : null);
   const foundMoney =
@@ -188,25 +188,25 @@ function FoundMoneyCallout({ result, stake }: { result: ParlayResult; stake: num
   const fmtOdds = (o: number) => (o >= 0 ? `+${o}` : `${o}`);
   const bestBookLabel = bookName(result.bestBook);
 
-  if (foundMoney !== null && foundMoney > 0) {
-    return (
-      <div className="rounded-2xl border border-[#00B362]/30 bg-[#00B362]/5 p-5 mb-6">
-        <p className="text-[10px] font-bold mb-3" style={{ color: "#00B362" }}>
-          Found money
-        </p>
-        <p className="font-heading text-[56px] font-bold leading-none" style={{ color: "#00B362" }}>
-          ${foundMoney < 1 ? foundMoney.toFixed(2) : Math.round(foundMoney)}
-        </p>
-        <p className="text-xs text-zinc-400 mt-3 leading-relaxed">
-          Your book prices this parlay at {fmtOdds(result.userBookPrice)}.{" "}
-          {bestBookLabel ? `${bestBookLabel} has it` : "Best available"} at {fmtOdds(result.bestParlayOdds)}.{" "}
-          You could win ${foundMoney < 1 ? foundMoney.toFixed(2) : Math.round(foundMoney)} more on a ${Math.round(effectiveStake!)} bet.
-        </p>
-      </div>
-    );
-  }
-
-  if (foundMoney !== null && foundMoney <= 0) {
+  // Stake parsed from slip — dollar hero or best-price pill (no input)
+  if (stake !== null) {
+    if (foundMoney !== null && foundMoney > 0) {
+      return (
+        <div className="rounded-2xl border border-[#00B362]/30 bg-[#00B362]/5 p-5 mb-6">
+          <p className="text-[10px] font-bold mb-3" style={{ color: "#00B362" }}>
+            Found money
+          </p>
+          <p className="font-heading text-[56px] font-bold leading-none" style={{ color: "#00B362" }}>
+            ${foundMoney < 1 ? foundMoney.toFixed(2) : Math.round(foundMoney)}
+          </p>
+          <p className="text-xs text-zinc-400 mt-3 leading-relaxed">
+            Your book prices this parlay at {fmtOdds(result.userBookPrice)}.{" "}
+            {bestBookLabel ? `${bestBookLabel} has it` : "Best available"} at {fmtOdds(result.bestParlayOdds)}.{" "}
+            You could win ${foundMoney < 1 ? foundMoney.toFixed(2) : Math.round(foundMoney)} more on a ${Math.round(stake)} bet.
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="rounded-2xl border border-[#10B981]/20 bg-[#10B981]/5 px-5 py-4 mb-6">
         <p className="text-sm font-bold" style={{ color: "#10B981" }}>
@@ -216,30 +216,46 @@ function FoundMoneyCallout({ result, stake }: { result: ParlayResult; stake: num
     );
   }
 
-  // No stake — show pct gap + inline stake input
+  // Stake not parsed — show result (pre-filled $50) + editable input
   const pctGap = result.foundMoneyPercent;
   return (
     <div className="rounded-2xl border border-zinc-700/50 bg-zinc-900/40 p-5 mb-6">
-      <p className="text-[10px] font-bold text-zinc-400 mb-2">Found money</p>
-      {pctGap > 0 ? (
-        <p className="text-sm text-zinc-300 mb-3 leading-relaxed">
-          You&apos;re paying {fmtOdds(result.userBookPrice)} —{" "}
-          {bestBookLabel || "the market"} has it at {fmtOdds(result.bestParlayOdds)} ({pctGap.toFixed(1)}% better payout).
-        </p>
+      {foundMoney !== null && foundMoney > 0 ? (
+        <>
+          <p className="text-[10px] font-bold mb-3" style={{ color: "#00B362" }}>Found money</p>
+          <p className="font-heading text-[56px] font-bold leading-none" style={{ color: "#00B362" }}>
+            ${foundMoney < 1 ? foundMoney.toFixed(2) : Math.round(foundMoney)}
+          </p>
+          <p className="text-xs text-zinc-400 mt-2 mb-5 leading-relaxed">
+            Your book has it at {fmtOdds(result.userBookPrice)}.{" "}
+            {bestBookLabel ? `${bestBookLabel} offers` : "Best available"} {fmtOdds(result.bestParlayOdds)}.
+          </p>
+        </>
       ) : (
-        <p className="text-sm text-zinc-300 mb-3">You have the best available price.</p>
+        <>
+          <p className="text-[10px] font-bold text-zinc-400 mb-2">Found money</p>
+          {pctGap > 0 ? (
+            <p className="text-sm text-zinc-300 mb-5 leading-relaxed">
+              You&apos;re paying {fmtOdds(result.userBookPrice)} —{" "}
+              {bestBookLabel || "the market"} has it at {fmtOdds(result.bestParlayOdds)} ({pctGap.toFixed(1)}% better payout).
+            </p>
+          ) : (
+            <p className="text-sm text-zinc-300 mb-5">You have the best available price.</p>
+          )}
+        </>
       )}
+      <p className="text-xs text-zinc-400 mb-2">Set your stake to see the dollar amount</p>
       <div className="flex items-center gap-2">
-        <span className="text-zinc-400 text-sm font-medium">$</span>
+        <span className="text-zinc-400 text-sm font-semibold">$</span>
         <input
           type="number"
           min="1"
-          placeholder="Stake"
+          // eslint-disable-next-line jsx-a11y/no-autofocus
+          autoFocus
           value={stakeInput}
           onChange={(e) => setStakeInput(e.target.value)}
-          className="w-28 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500"
+          className="w-28 bg-zinc-800 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent/60 transition-colors"
         />
-        <span className="text-xs text-zinc-500">to see dollar gap</span>
       </div>
     </div>
   );
@@ -471,6 +487,9 @@ export default function GradePage() {
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
               />
             </div>
+            <p className="text-xs text-zinc-400 text-center mt-4 leading-relaxed max-w-[340px] mx-auto">
+              Screenshot your full slip — including the wager amount at the bottom — for exact Found Money in dollars. Just legs? You&apos;ll still get a grade and the percent gap.
+            </p>
             <p className="text-[11px] text-text-tertiary text-center mt-4 tracking-wide">
               Works with DraftKings &bull; FanDuel &bull; BetMGM &bull; ESPN Bet &bull; Caesars
             </p>
