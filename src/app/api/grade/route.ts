@@ -67,6 +67,9 @@ export async function POST(request: Request) {
       let shareSlug: string | undefined;
       try {
         const slug = generateSlug();
+        const toImplied = (o: number) =>
+          o > 0 ? 100 / (o + 100) : Math.abs(o) / (Math.abs(o) + 100);
+
         await prisma.grade.create({
           data: {
             overallGrade: result.overallGrade,
@@ -75,18 +78,28 @@ export async function POST(request: Request) {
             swapSuggestion: result.swapSuggestion,
             shareSlug: slug,
             isPublic: true,
+            userParlayDecimal: result.userParlayDecimal,
+            bestParlayDecimal: result.bestParlayDecimal,
+            bestParlayOdds: result.bestParlayOdds,
+            foundMoneyPercent: result.foundMoneyPercent,
             legs: {
               create: result.legs.map((leg, i) => {
                 const input = parlayLegs[i];
+                const userOdds = input?.odds ?? leg.best_odds;
                 return {
                   team: leg.team,
                   market: leg.betType,
                   line: input?.line ?? null,
-                  odds: input?.odds ?? leg.best_odds,
+                  odds: userOdds,
                   ev: leg.ev,
                   grade: leg.grade,
                   sport: input?.sport ?? "unknown",
                   isWeak: leg.grade[0] === "D" || leg.grade[0] === "F",
+                  bestOdds: leg.best_odds,
+                  fairOdds: leg.fair_odds,
+                  bestBook: leg.best_book,
+                  trueProb: leg.true_prob,
+                  impliedProb: toImplied(userOdds),
                 };
               }),
             },

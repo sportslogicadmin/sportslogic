@@ -21,28 +21,41 @@ model User {
 }
 
 model Grade {
-  id             String   @id @default(cuid())
-  userId         String?  // Clerk user ID — no FK, stored directly
-  createdAt      DateTime @default(now())
-  overallGrade   String
-  overallEV      Float
-  totalLegs      Int
-  swapSuggestion String?
-  shareSlug      String   @unique
-  isPublic       Boolean  @default(false)
-  legs           Leg[]
+  id                String   @id @default(cuid())
+  userId            String?  // Clerk user ID — no FK, stored directly
+  createdAt         DateTime @default(now())
+  overallGrade      String
+  overallEV         Float
+  totalLegs         Int
+  swapSuggestion    String?
+  shareSlug         String   @unique
+  isPublic          Boolean  @default(false)
+  legs              Leg[]
+  userParlayDecimal Float?
+  bestParlayDecimal Float?
+  bestParlayOdds    Int?
+  foundMoney        Float?
+  foundMoneyPercent Float?
+  stake             Float?
+  settled           Boolean  @default(false)
+  won               Boolean?
 }
 
 model Leg {
-  id      String  @id @default(cuid())
-  gradeId String
-  result  Grade   @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-  team    String
-  market  String
-  line    Float?
-  odds    Int
-  ev      Float
-  grade   String
-  sport   String
-  isWeak  Boolean @default(false)
+  id          String  @id @default(cuid())
+  gradeId     String
+  result      Grade   @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  team        String
+  market      String
+  line        Float?
+  odds        Int
+  ev          Float
+  grade       String
+  sport       String
+  isWeak      Boolean @default(false)
+  bestOdds    Int?
+  fairOdds    Int?
+  bestBook    String?
+  trueProb    Float?
+  impliedProb Float?
 }
