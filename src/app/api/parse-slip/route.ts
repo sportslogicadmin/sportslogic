@@ -84,6 +84,16 @@ A group unit exists ONLY when a labeled sub-bundle inside the slip shows ONE com
 for the whole bundle AND its member picks display NO individual odds.
 Examples: "2 PICK SGP +400", "SGP Boost", an SGPx sub-section labeled with its own price.
 
+RULE 4 — MLB TEAM NAMES: IGNORE PITCHER PARENTHETICALS.
+FanDuel and other books show starting pitcher context next to MLB team names, e.g.:
+  "New York Yankees (G Cole) MONEYLINE -132"
+  "Detroit Tigers (T Skubal) @ Texas Rangers (M Scherzer)"
+The bet is ALWAYS on the TEAM, not the pitcher. Extract only the team name.
+NEVER use the pitcher's name (e.g., "G Cole", "M Scherzer", "T Skubal") as the team value.
+The parenthetical pitcher name is display context only — strip it entirely.
+✓ Correct: {"team": "New York Yankees", "bet_type": "moneyline", "odds": -132}
+✗ Wrong:   {"team": "G Cole", ...}
+
 ━━━ EXAMPLE A — flat 5-leg parlay (5 singles, no groups) ━━━
 Slip shows: "5 PICK PARLAY +8450"
   Aaron Judge · To Hit a HR · +300      ← has own odds → single
@@ -148,12 +158,36 @@ This is the same bet as "To Hit a HR" — wording differs, prop_type does not.
 Correct output for this unit:
 {"type":"single","team":"Washington Nationals","player":"James Wood","bet_type":"prop","line":0.5,"odds":270,"side":"over","prop_type":"hr","market":"To Hit a Home Run","sport":"mlb","opponent":null}
 
+━━━ EXAMPLE D — MLB moneyline legs with pitcher parentheticals ━━━
+Slip shows: "5 PICK PARLAY +4616"
+  Philadelphia Phillies (Z Wheeler) MONEYLINE  -174
+  Kansas City Royals (M Wacha) @ Washington Nationals (P Corbin)  TOTAL RUNS Over 8.5  -122
+  Boston Red Sox (T Houck) @ Toronto Blue Jays (TBD)  MONEYLINE  +102
+  New York Yankees (D Martin) @ Chicago White Sox  MONEYLINE  -144
+  New York Mets (K Senga) @ Cincinnati Reds  MONEYLINE  -122
+
+Correct output (pitcher names stripped, full team names used):
+{
+  "units": [
+    {"type":"single","team":"Philadelphia Phillies","player":null,"bet_type":"moneyline","line":null,"odds":-174,"side":null,"prop_type":null,"market":"Moneyline","sport":"mlb","opponent":null},
+    {"type":"single","team":"Kansas City Royals","player":null,"bet_type":"total","line":8.5,"odds":-122,"side":"over","prop_type":null,"market":"Over 8.5","sport":"mlb","opponent":null},
+    {"type":"single","team":"Boston Red Sox","player":null,"bet_type":"moneyline","line":null,"odds":102,"side":null,"prop_type":null,"market":"Moneyline","sport":"mlb","opponent":null},
+    {"type":"single","team":"New York Yankees","player":null,"bet_type":"moneyline","line":null,"odds":-144,"side":null,"prop_type":null,"market":"Moneyline","sport":"mlb","opponent":null},
+    {"type":"single","team":"New York Mets","player":null,"bet_type":"moneyline","line":null,"odds":-122,"side":null,"prop_type":null,"market":"Moneyline","sport":"mlb","opponent":null}
+  ],
+  "stake": null,
+  "toPay": null,
+  "baseOdds": 4616,
+  "paidOdds": null,
+  "boostLabel": null
+}
+
 ━━━ UNIT SHAPES (reference) ━━━
 
 Single unit:
 {
   "type": "single",
-  "team": string (team name, or "" if individual sport like golf/tennis),
+  "team": string (full team name, or "" if individual sport like golf/tennis — for MLB, never a pitcher's name; see Rule 4),
   "opponent": string or null,
   "bet_type": "moneyline" | "spread" | "total" | "prop",
   "line": number or null,
@@ -184,7 +218,11 @@ Group unit (sub-parlay priced as one — see Rule 3):
 ━━━ BOOST / STAKE / PAYOUT ━━━
 baseOdds: struck-through original parlay odds, or null
 paidOdds: boosted parlay odds actually paid, or null (if no boost, both null)
-stake: wager amount, or null
+stake: wager amount, or null. Look for: "Stake: $X", "Wager: $X", "Bet Amount: $X",
+  "$X to win $Y", "Total Wager: $X", or a bare dollar amount near "to win" or "payout".
+  Sportsbooks vary in label format (FanDuel uses "Wager", DraftKings uses "Stake",
+  BetMGM uses "Bet Amount"). Match any of these. If multiple amounts visible, the one
+  labeled stake/wager/bet (not "to win" or "to pay") is the stake.
 toPay: total potential payout (not just profit), or null
 
 Return ONLY the JSON object.`,
