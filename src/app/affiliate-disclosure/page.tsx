@@ -33,7 +33,7 @@ export default function AffiliateDisclosurePage() {
         <p className="font-heading text-[11px] font-bold tracking-[3px] text-text-tertiary uppercase mb-6">
           LEGAL
         </p>
-        <h1 className="font-heading text-[28px] sm:text-[36px] font-bold uppercase text-text-primary mb-3 tracking-tight">
+        <h1 className="font-display text-[28px] sm:text-[36px] font-bold text-text-primary mb-3 tracking-tight">
           Affiliate Disclosure
         </h1>
         <p className="text-[12px] text-text-tertiary">Last updated: June 15, 2026</p>

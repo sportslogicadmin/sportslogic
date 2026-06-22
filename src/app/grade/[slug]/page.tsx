@@ -137,20 +137,20 @@ export default async function SharedGradePage({ params }: { params: Promise<Para
 
       <div className="w-full max-w-[520px] mx-auto px-5 pb-16">
         <div className="text-center pt-8 pb-8">
-          <p className="text-[11px] text-text-tertiary uppercase tracking-[2px]">SHARED PARLAY GRADE</p>
+          <p className="text-[11px] text-text-tertiary">Shared parlay grade</p>
         </div>
 
         {/* Overall grade card */}
         <div
           className={`rounded-2xl border overflow-hidden mb-6 ${gradeBg(raw.overallGrade)}`}
-          style={{ boxShadow: "0 0 60px rgba(0,232,123,0.06)" }}
+          style={{ boxShadow: "0 0 60px rgba(16,185,129,0.06)" }}
         >
           <div
             className="px-5 pt-6 pb-4 text-center"
-            style={{ background: "linear-gradient(180deg, rgba(0,232,123,0.03) 0%, transparent 100%)" }}
+            style={{ background: "linear-gradient(180deg, rgba(16,185,129,0.03) 0%, transparent 100%)" }}
           >
-            <p className="text-[11px] text-text-tertiary uppercase tracking-[2px] mb-2">
-              {raw.totalLegs}-LEG PARLAY
+            <p className="text-[11px] text-text-tertiary mb-2">
+              {raw.totalLegs}-leg parlay
             </p>
             <p className={`font-heading text-[72px] font-bold leading-none ${gradeColor(raw.overallGrade)}`}>
               {raw.overallGrade}
@@ -175,7 +175,7 @@ export default async function SharedGradePage({ params }: { params: Promise<Para
         {/* Leg breakdown */}
         <div className="bg-surface border border-border rounded-2xl overflow-hidden mb-6">
           <div className="px-5 pt-4 pb-2">
-            <p className="font-heading text-[11px] font-bold text-text-tertiary uppercase tracking-[2px]">LEG-BY-LEG BREAKDOWN</p>
+            <p className="font-heading text-[11px] font-bold text-text-tertiary">Leg-by-leg breakdown</p>
           </div>
           <div className="divide-y divide-border/30">
             {raw.legs.map((leg, i) => (
@@ -201,7 +201,7 @@ export default async function SharedGradePage({ params }: { params: Promise<Para
         {/* Swap suggestion */}
         {raw.swapSuggestion && (
           <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 mb-6">
-            <p className="text-[11px] font-bold text-accent uppercase tracking-wide mb-2">AI SUGGESTION</p>
+            <p className="text-[11px] font-bold text-accent mb-2">AI suggestion</p>
             <p className="text-xs text-text-secondary leading-relaxed">{raw.swapSuggestion}</p>
           </div>
         )}
@@ -221,8 +221,8 @@ export default async function SharedGradePage({ params }: { params: Promise<Para
 
         {/* CTA */}
         <div className="bg-surface border border-border rounded-2xl p-6 text-center">
-          <p className="font-heading text-sm font-bold text-text-primary uppercase tracking-wide mb-2">
-            KNOW YOUR EDGE
+          <p className="font-heading text-sm font-bold text-text-primary mb-2">
+            Know your edge
           </p>
           <p className="text-xs text-text-secondary mb-5">
             Upload your bet slip and get a grade like this in seconds.

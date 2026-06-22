@@ -71,7 +71,7 @@ export default function PrivacyPage() {
           <p className="font-heading text-[10px] font-bold tracking-[4px] text-text-tertiary uppercase mb-5">
             Legal
           </p>
-          <h1 className="font-heading text-[36px] sm:text-[48px] font-bold text-text-primary tracking-[-0.5px] leading-[1.05] mb-4">
+          <h1 className="font-display text-[36px] sm:text-[48px] font-bold text-text-primary tracking-[-0.5px] leading-[1.05] mb-4">
             Privacy Policy
           </h1>
           <p className="text-[13px] text-text-tertiary">Last updated: June 15, 2026</p>

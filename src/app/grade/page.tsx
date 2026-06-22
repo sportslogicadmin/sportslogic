@@ -145,23 +145,23 @@ function dotColor(grade: string): string {
 
 function gradeGlow(grade: string): string {
   const f = grade[0];
-  if (f === "A" || f === "B") return "0 0 60px rgba(0,232,123,0.08), inset 0 0 40px rgba(0,232,123,0.05)";
-  if (f === "C") return "0 0 60px rgba(245,158,11,0.08), inset 0 0 40px rgba(245,158,11,0.05)";
-  return "0 0 60px rgba(239,68,68,0.08), inset 0 0 40px rgba(239,68,68,0.05)";
+  if (f === "A" || f === "B") return "0 0 60px rgba(16,185,129,0.05), inset 0 0 40px rgba(16,185,129,0.03)";
+  if (f === "C") return "0 0 60px rgba(245,158,11,0.05), inset 0 0 40px rgba(245,158,11,0.03)";
+  return "0 0 60px rgba(239,68,68,0.05), inset 0 0 40px rgba(239,68,68,0.03)";
 }
 
 function gradeRadial(grade: string): string {
   const f = grade[0];
-  if (f === "A" || f === "B") return "radial-gradient(circle at center, rgba(0,232,123,0.15) 0%, transparent 70%)";
-  if (f === "C") return "radial-gradient(circle at center, rgba(234,179,8,0.12) 0%, transparent 70%)";
-  return "radial-gradient(circle at center, rgba(239,68,68,0.15) 0%, transparent 70%)";
+  if (f === "A" || f === "B") return "radial-gradient(circle at center, rgba(16,185,129,0.07) 0%, transparent 70%)";
+  if (f === "C") return "radial-gradient(circle at center, rgba(234,179,8,0.06) 0%, transparent 70%)";
+  return "radial-gradient(circle at center, rgba(239,68,68,0.07) 0%, transparent 70%)";
 }
 
 function gradeGradient(grade: string): string {
   const f = grade[0];
-  if (f === "A" || f === "B") return "linear-gradient(180deg, rgba(0,232,123,0.04) 0%, transparent 100%)";
-  if (f === "C") return "linear-gradient(180deg, rgba(245,158,11,0.04) 0%, transparent 100%)";
-  return "linear-gradient(180deg, rgba(239,68,68,0.04) 0%, transparent 100%)";
+  if (f === "A" || f === "B") return "linear-gradient(180deg, rgba(16,185,129,0.03) 0%, transparent 100%)";
+  if (f === "C") return "linear-gradient(180deg, rgba(245,158,11,0.03) 0%, transparent 100%)";
+  return "linear-gradient(180deg, rgba(239,68,68,0.03) 0%, transparent 100%)";
 }
 
 function gradeContext(grade: string): string {
@@ -190,8 +190,8 @@ function FoundMoneyCallout({ result, stake }: { result: ParlayResult; stake: num
   if (foundMoney !== null && foundMoney > 0) {
     return (
       <div className="rounded-2xl border border-[#00B362]/30 bg-[#00B362]/5 p-5 mb-6">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] mb-3" style={{ color: "#00B362" }}>
-          FOUND MONEY
+        <p className="text-[10px] font-bold mb-3" style={{ color: "#00B362" }}>
+          Found money
         </p>
         <p className="font-heading text-[56px] font-bold leading-none" style={{ color: "#00B362" }}>
           ${foundMoney < 1 ? foundMoney.toFixed(2) : Math.round(foundMoney)}
@@ -207,8 +207,8 @@ function FoundMoneyCallout({ result, stake }: { result: ParlayResult; stake: num
 
   if (foundMoney !== null && foundMoney <= 0) {
     return (
-      <div className="rounded-2xl border border-[#00E87B]/20 bg-[#00E87B]/5 px-5 py-4 mb-6">
-        <p className="text-sm font-bold" style={{ color: "#00E87B" }}>
+      <div className="rounded-2xl border border-[#10B981]/20 bg-[#10B981]/5 px-5 py-4 mb-6">
+        <p className="text-sm font-bold" style={{ color: "#10B981" }}>
           Best price available. Nothing left on the table.
         </p>
       </div>
@@ -219,7 +219,7 @@ function FoundMoneyCallout({ result, stake }: { result: ParlayResult; stake: num
   const pctGap = result.foundMoneyPercent;
   return (
     <div className="rounded-2xl border border-zinc-700/50 bg-zinc-900/40 p-5 mb-6">
-      <p className="text-[10px] font-bold uppercase tracking-[2px] text-zinc-400 mb-2">FOUND MONEY</p>
+      <p className="text-[10px] font-bold text-zinc-400 mb-2">Found money</p>
       {pctGap > 0 ? (
         <p className="text-sm text-zinc-300 mb-3 leading-relaxed">
           You&apos;re paying {fmtOdds(result.userBookPrice)} —{" "}
@@ -433,8 +433,8 @@ export default function GradePage() {
       <div className="w-full max-w-[720px] mx-auto px-5 pb-16">
         {/* Header */}
         <div className="text-center pt-8 pb-8">
-          <h1 className="font-heading text-[28px] sm:text-[36px] font-bold uppercase tracking-[-0.5px] leading-tight">
-            DROP YOUR <span className="text-accent">PARLAY</span>
+          <h1 className="font-display text-[28px] sm:text-[36px] font-bold tracking-[-0.5px] leading-tight">
+            Drop your <span className="text-accent">parlay</span>
           </h1>
           <p className="text-sm text-text-secondary mt-2">Find the money your sportsbook is hiding. We grade every leg.</p>
         </div>
@@ -456,8 +456,8 @@ export default function GradePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                 </svg>
               </div>
-              <p className="font-heading text-base font-bold text-text-primary uppercase tracking-wide mb-2">
-                TAP TO UPLOAD
+              <p className="font-heading text-base font-bold text-text-primary mb-2">
+                Tap to upload
               </p>
               <p className="text-sm text-text-secondary">
                 or drag and drop your bet slip screenshot
@@ -483,7 +483,7 @@ export default function GradePage() {
         {step === "parsing" && (
           <div className="text-center py-16">
             <div className="w-10 h-10 border-3 border-accent/30 border-t-accent rounded-full animate-spin mx-auto mb-5" />
-            <p className="font-heading text-sm font-bold text-text-primary uppercase tracking-wide">READING YOUR SLIP...</p>
+            <p className="font-heading text-sm font-bold text-text-primary">Reading your slip...</p>
             <p className="text-xs text-text-secondary mt-2">AI is extracting every leg from your screenshot</p>
           </div>
         )}
@@ -501,8 +501,8 @@ export default function GradePage() {
               </div>
             )}
             <div className="bg-surface border border-border rounded-2xl p-5 mb-5">
-              <p className="font-heading text-[11px] font-bold text-text-tertiary uppercase tracking-[2px] mb-4">
-                WE FOUND {parsedUnits.length} LEG{parsedUnits.length !== 1 ? "S" : ""}
+              <p className="font-heading text-[11px] font-bold text-text-tertiary mb-4">
+                We found {parsedUnits.length} leg{parsedUnits.length !== 1 ? "s" : ""}
               </p>
               <div className="space-y-3">
                 {parsedUnits.map((unit, i) => {
@@ -577,7 +577,7 @@ export default function GradePage() {
         {step === "grading" && (
           <div className="text-center py-16">
             <div className="w-10 h-10 border-3 border-accent/30 border-t-accent rounded-full animate-spin mx-auto mb-5" />
-            <p className="font-heading text-sm font-bold text-text-primary uppercase tracking-wide">GRADING YOUR PARLAY...</p>
+            <p className="font-heading text-sm font-bold text-text-primary">Grading your parlay...</p>
             <p className="text-xs text-text-secondary mt-3">
               Checking <span className="text-text-primary font-medium transition-all">{gradingBook}</span>
             </p>
@@ -596,16 +596,16 @@ export default function GradePage() {
             >
               <div className="px-5 pt-6 pb-4 text-center"
                 style={{ background: gradeGradient(result.overallGrade) }}>
-                <p className="text-[11px] text-zinc-400 uppercase tracking-[2px] mb-2">
-                  {result.legCount}-LEG PARLAY
+                <p className="text-[11px] text-zinc-400 mb-2">
+                  {result.legCount}-leg parlay
                 </p>
                 <div className="relative inline-block">
                   <div
                     className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
                     style={{ width: 200, height: 160, background: gradeRadial(result.overallGrade), filter: "blur(16px)" }}
                   />
-                  <p className="relative text-[10px] text-zinc-500 uppercase tracking-[3px] mb-1">GRADE</p>
-                  <p className={`relative font-heading text-[72px] font-bold leading-none tracking-[-2px] ${gradeColor(result.overallGrade)}`}>
+                  <p className="relative text-[10px] text-zinc-500 mb-1">Grade</p>
+                  <p className={`relative font-display text-[72px] font-bold leading-none tracking-[-2px] ${gradeColor(result.overallGrade)}`}>
                     {result.overallGrade}
                   </p>
                 </div>
@@ -616,17 +616,17 @@ export default function GradePage() {
               {/* Stats row */}
               <div className="grid grid-cols-3 border-t border-border/30">
                 <div className="px-3 py-3 text-center border-r border-border/30">
-                  <p className="text-[10px] text-zinc-400 uppercase">EV</p>
+                  <p className="text-[10px] text-zinc-400">EV</p>
                   <p className={`text-sm font-bold ${result.overallEv >= 0 ? "text-accent" : "text-red"}`}>
                     {result.overallEv >= 0 ? "+" : ""}{result.overallEv.toFixed(1)}%
                   </p>
                 </div>
                 <div className="px-3 py-3 text-center border-r border-border/30">
-                  <p className="text-[10px] text-zinc-400 uppercase">TO HIT</p>
+                  <p className="text-[10px] text-zinc-400">To hit</p>
                   <p className="text-sm font-bold text-white">{(result.combinedTrueProb * 100).toFixed(1)}%</p>
                 </div>
                 <div className="px-3 py-3 text-center">
-                  <p className="text-[10px] text-zinc-400 uppercase">TAX</p>
+                  <p className="text-[10px] text-zinc-400">Tax</p>
                   <p className="text-sm font-bold text-red">
                     {((result.combinedImpliedProb - result.combinedTrueProb) * 100).toFixed(1)}pp
                   </p>
@@ -641,9 +641,9 @@ export default function GradePage() {
             </div>
 
             {/* Individual legs */}
-            <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl overflow-hidden mb-6">
+            <div className="bg-zinc-900/40 border border-zinc-900 rounded-2xl overflow-hidden mb-6">
               <div className="px-5 pt-4 pb-2">
-                <p className="font-heading text-[11px] font-bold text-zinc-400 uppercase tracking-[2px]">LEG-BY-LEG BREAKDOWN</p>
+                <p className="font-heading text-[11px] font-bold text-zinc-400">Leg-by-leg breakdown</p>
               </div>
               <div className="divide-y divide-border/30">
                 {result.legs.map((leg, i) => {
@@ -672,7 +672,7 @@ export default function GradePage() {
             {/* Warnings */}
             {result.correlationWarnings.length > 0 && (
               <div className="bg-amber/5 border border-amber/20 rounded-xl p-4 mb-4">
-                <p className="text-[11px] font-bold text-amber uppercase tracking-wide mb-2">CORRELATION WARNING</p>
+                <p className="text-[11px] font-bold text-amber mb-2">Correlation warning</p>
                 {result.correlationWarnings.map((w, i) => (
                   <p key={i} className="text-xs text-text-secondary">{w}</p>
                 ))}
@@ -682,7 +682,7 @@ export default function GradePage() {
             {/* Swap suggestion */}
             {result.swapSuggestion && (
               <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 mb-4">
-                <p className="text-[11px] font-bold text-accent uppercase tracking-wide mb-2">AI SUGGESTION</p>
+                <p className="text-[11px] font-bold text-accent mb-2">AI suggestion</p>
                 <p className="text-xs text-text-secondary leading-relaxed">{result.swapSuggestion}</p>
               </div>
             )}
@@ -703,7 +703,7 @@ export default function GradePage() {
                 : (worst.best_odds >= 0 ? `+${worst.best_odds}` : `${worst.best_odds}`);
               return (
                 <div className="bg-red/5 border border-red-500/30 rounded-xl p-4 mb-4">
-                  <p className="text-[11px] font-bold text-red uppercase tracking-wide mb-1">HURTING YOU MOST</p>
+                  <p className="text-[11px] font-bold text-red mb-1">Hurting you most</p>
                   <p className="text-xs text-text-secondary">
                     <span className="text-zinc-100 font-medium">{name}</span> — fair price{" "}
                     <span className="text-zinc-100 font-medium">{fairFmt}</span>, you&apos;re paying{" "}
@@ -759,7 +759,7 @@ export default function GradePage() {
               </button>
             </div>
 
-            <p className="text-[10px] text-text-tertiary text-center uppercase tracking-wide mt-6">POWERED BY SPORTSLOGIC</p>
+            <p className="text-[10px] text-text-tertiary text-center mt-6">Powered by SportsLogic</p>
           </div>
         )}
 

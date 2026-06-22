@@ -1,21 +1,26 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-bg: #0C0E14;
+  --color-bg: #0C0A09;
   --color-surface: #161923;
   --color-border: #252A37;
-  --color-accent: #00E87B;
-  --color-text-primary: #F4F4F5;
-  --color-text-secondary: #A1A1AA;
+  --color-accent: #10B981;
+  --color-text-primary: #FAFAF9;
+  --color-text-secondary: #E7E5E4;
   --color-text-tertiary: #71717A;
   --color-amber: #EAB308;
   --color-red: #EF4444;
   --font-sans: var(--font-inter);
   --font-heading: 'Satoshi', var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
 }
 
 .font-heading {
   font-family: var(--font-heading);
+}
+
+.font-display {
+  font-family: var(--font-display);
 }
 
 html {
@@ -32,7 +37,7 @@ body {
 }
 
 /* Dot glows for grade card legs */
-.dot-glow-green { box-shadow: 0 0 6px rgba(0, 232, 123, 0.4); }
+.dot-glow-green { box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
 .dot-glow-amber { box-shadow: 0 0 6px rgba(234, 179, 8, 0.4); }
 .dot-glow-red { box-shadow: 0 0 6px rgba(239, 68, 68, 0.4); }
 
@@ -65,7 +70,7 @@ body {
   height: 400px;
   top: 10%;
   left: 30%;
-  background: radial-gradient(ellipse, rgba(0, 232, 123, 0.06) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(16, 185, 129, 0.06) 0%, transparent 70%);
 }
 
 .hero-mesh::after {
@@ -73,7 +78,7 @@ body {
   height: 350px;
   top: 30%;
   right: 20%;
-  background: radial-gradient(ellipse, rgba(0, 180, 100, 0.04) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(16, 185, 129, 0.04) 0%, transparent 70%);
   animation-delay: -10s;
   animation-direction: reverse;
 }
@@ -90,5 +95,5 @@ body {
 
 /* Step number glow */
 .step-glow {
-  text-shadow: 0 0 30px rgba(0, 232, 123, 0.2);
+  text-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
 }
