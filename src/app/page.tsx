@@ -2,6 +2,26 @@ import Link from "next/link";
 import Image from "next/image";
 import { EmailForm } from "./email-form";
 import { SiteFooter } from "@/components/site-footer";
+import { ShareCard } from "@/components/share-card";
+
+const MOCK_GRADE = {
+  overallGrade: "B+",
+  ev: 4.2,
+  legCount: 5,
+  impliedProb: 0.042,
+  trueProb: 0.051,
+  foundMoney: 24.18,
+  stake: 50,
+  payout: 413,
+  swapSuggestion: "Swap Nuggets -4.5 (FanDuel -118) for Nuggets -3.5 at BetMGM (-105). Same game, better number.",
+  legs: [
+    { label: "Lakers ML", grade: "B", ev: 3.1 },
+    { label: "Nuggets -4.5", grade: "C+", ev: -0.8 },
+    { label: "Yankees ML", grade: "A-", ev: 7.4 },
+    { label: "Chiefs -3", grade: "B+", ev: 5.2 },
+    { label: "Celtics -6.5", grade: "B", ev: 3.1 },
+  ],
+};
 
 // ── Static data ────────────────────────────────────────────────────────────────
 
@@ -27,53 +47,57 @@ export default function Home() {
         </div>
         <Link
           href="/grade"
-          className="hidden sm:block text-[11px] font-semibold uppercase tracking-[0.5px] text-text-secondary hover:text-text-primary transition-colors"
+          className="hidden sm:block text-[11px] font-semibold text-text-secondary hover:text-text-primary transition-colors"
         >
-          GRADE YOUR PARLAY
+          Grade your parlay
         </Link>
         <a
           href="#waitlist"
-          className="h-9 px-5 rounded-lg bg-accent text-bg text-[11px] font-semibold uppercase tracking-[0.5px] flex items-center hover:brightness-110 transition-all"
+          className="h-9 px-5 rounded-lg bg-accent text-bg text-[11px] font-semibold flex items-center hover:opacity-90 transition-all"
         >
-          GET EARLY ACCESS
+          Get early access
         </a>
       </nav>
 
       {/* ── HERO ── */}
-      <section className="w-full max-w-[1080px] mx-auto px-6 pt-28 sm:pt-40 pb-24 sm:pb-32 text-center relative">
+      <section className="w-full max-w-[1080px] mx-auto px-6 pt-16 sm:pt-24 pb-16 sm:pb-20 text-center relative">
         <div className="hero-mesh" />
 
-        <p className="font-heading relative text-[11px] font-bold text-text-tertiary mb-8">
-          Built for smarter bettors
-        </p>
-        <h1 className="font-display relative text-[38px] sm:text-[52px] md:text-[64px] font-bold tracking-[-1.5px] leading-[1.02] max-w-[760px] mx-auto mb-8">
+        <h1 className="font-display relative text-[38px] sm:text-[52px] md:text-[64px] font-bold tracking-[-1.5px] leading-[1.02] max-w-[760px] mx-auto mb-6">
           Find the money your sportsbook is hiding.
         </h1>
         <p className="relative text-[15px] sm:text-[17px] text-text-secondary max-w-[480px] mx-auto leading-[1.75] mb-10">
-          Drop in a parlay. We compare every leg across the market and show you what your bet should actually pay — and the dollars you&apos;re leaving on the table.
+          Every parlay graded against sharp market lines. See the dollars you&apos;re leaving on the table.
         </p>
 
-        <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+        <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
           <Link
             href="/grade"
-            className="inline-flex items-center justify-center h-13 w-full sm:w-auto px-8 rounded-xl bg-accent text-bg text-[12px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all"
+            className="inline-flex items-center justify-center h-13 w-full sm:w-auto px-8 rounded-xl bg-accent text-bg text-[12px] font-bold hover:opacity-90 transition-all"
           >
-            GRADE YOUR PARLAY
+            Grade your parlay
           </Link>
           <a
             href="#waitlist"
-            className="inline-flex items-center justify-center h-13 w-full sm:w-auto px-8 rounded-xl bg-transparent border border-border text-text-secondary text-[12px] font-bold uppercase tracking-[0.5px] hover:border-text-tertiary transition-all"
+            className="inline-flex items-center justify-center h-13 w-full sm:w-auto px-8 rounded-xl bg-transparent border border-border text-text-secondary text-[12px] font-bold hover:border-text-tertiary transition-all"
           >
-            JOIN WAITLIST
+            Join waitlist
           </a>
         </div>
 
-        <p className="relative text-[12px] text-text-secondary mb-8">
-          Free to use · No signup required · Currently supports NBA · NFL · MLB · NHL · NCAAF · NCAAB
+        <p className="relative text-[11px] text-text-tertiary mb-10">
+          Free · No signup · NBA · NFL · MLB · NHL · NCAAF · NCAAB
         </p>
-        <p className="relative text-[11px] text-text-tertiary tracking-wide">
-          Works with DraftKings &bull; FanDuel &bull; BetMGM &bull; ESPN Bet &bull; Caesars
-        </p>
+
+        {/* Demo mock card */}
+        <div className="relative flex justify-center">
+          <p className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-text-tertiary whitespace-nowrap">
+            Example grade — here&apos;s what you get
+          </p>
+          <div className="scale-[0.82] sm:scale-90 md:scale-100 origin-top pointer-events-none select-none">
+            <ShareCard data={MOCK_GRADE} />
+          </div>
+        </div>
       </section>
 
       {/* ── HOW IT WORKS ── */}
@@ -158,9 +182,9 @@ export default function Home() {
           </p>
           <Link
             href="/grade"
-            className="inline-flex items-center justify-center h-12 px-10 rounded-xl bg-accent text-bg text-[12px] font-bold uppercase tracking-[0.5px] hover:brightness-110 transition-all"
+            className="inline-flex items-center justify-center h-12 px-10 rounded-xl bg-accent text-bg text-[12px] font-bold hover:opacity-90 transition-all"
           >
-            GRADE YOUR PARLAY
+            Grade your parlay
           </Link>
         </div>
       </section>

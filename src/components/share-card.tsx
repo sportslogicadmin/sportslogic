@@ -7,6 +7,7 @@ export type ShareCardData = {
   impliedProb?: number;
   trueProb?: number;
   swapSuggestion?: string | null;
+  foundMoney?: number | null;
   legs: {
     label: string;
     grade: string;
@@ -123,6 +124,25 @@ export const ShareCard = forwardRef<HTMLDivElement, { data: ShareCardData }>(
             EV
           </span>
         </div>
+
+        {/* Found Money pill */}
+        {data.foundMoney != null && data.foundMoney > 0 && (
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+            <span style={{
+              background: "rgba(16,185,129,0.10)",
+              border: "1px solid rgba(16,185,129,0.22)",
+              borderRadius: 8,
+              padding: "3px 11px",
+              fontSize: 12,
+              fontWeight: 700,
+              color: "#10B981",
+              fontFamily: SATOSHI,
+              letterSpacing: "0.01em",
+            }}>
+              +${data.foundMoney.toFixed(2)} found
+            </span>
+          </div>
+        )}
 
         {/* Verdict — the Found Money framing, in neutral body text */}
         {data.impliedProb != null && data.trueProb != null && (

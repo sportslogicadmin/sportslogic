@@ -22,7 +22,7 @@ export default function ResponsibleGamblingPage() {
         <p className="font-heading text-[11px] font-bold tracking-[3px] text-text-tertiary uppercase mb-6">
           PLAYER WELFARE
         </p>
-        <h1 className="font-heading text-[28px] sm:text-[36px] font-bold uppercase text-text-primary mb-6 tracking-tight">
+        <h1 className="font-display text-[28px] sm:text-[36px] font-bold text-text-primary mb-6 tracking-tight">
           Responsible Gambling
         </h1>
 
