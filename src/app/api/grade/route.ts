@@ -43,10 +43,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { team, betType, odds, sport, line, side, player, isProp, parlayLegs } = body as {
+  const { team, betType, odds, sport, line, side, player, isProp, parlayLegs, deviceUUID, stake } = body as {
     team?: string; betType?: string; odds?: string | number; sport?: string;
     line?: number; side?: string; player?: string; isProp?: boolean;
     parlayLegs?: ParlayLeg[];
+    deviceUUID?: string;
+    stake?: number | null;
   };
 
   // Parlay grading
@@ -70,6 +72,12 @@ export async function POST(request: Request) {
         const toImplied = (o: number) =>
           o > 0 ? 100 / (o + 100) : Math.abs(o) / (Math.abs(o) + 100);
 
+        const parsedStake = typeof stake === "number" && stake > 0 ? stake : null;
+        const foundMoneyDollars =
+          parsedStake != null
+            ? parsedStake * (result.bestParlayDecimal - result.userParlayDecimal)
+            : null;
+
         await prisma.grade.create({
           data: {
             overallGrade: result.overallGrade,
@@ -82,6 +90,9 @@ export async function POST(request: Request) {
             bestParlayDecimal: result.bestParlayDecimal,
             bestParlayOdds: result.bestParlayOdds,
             foundMoneyPercent: result.foundMoneyPercent,
+            foundMoney: foundMoneyDollars,
+            stake: parsedStake,
+            deviceUUID: deviceUUID ?? null,
             legs: {
               create: result.legs.map((leg, i) => {
                 const input = parlayLegs[i];

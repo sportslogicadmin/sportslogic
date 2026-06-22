@@ -3,12 +3,14 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { bookName } from "@/lib/book-names";
 import { sportName } from "@/lib/sport-names";
 import { PROP_LABELS } from "@/lib/prop-labels";
 import { ShareButton } from "@/components/share-button";
 import { SiteFooter } from "@/components/site-footer";
 import { gradingErrorCopy } from "@/lib/grading-error-copy";
+import { AuthModal } from "@/components/auth-modal";
 
 type ParsedChild = {
   player: string | null;
@@ -262,6 +264,7 @@ function FoundMoneyCallout({ result, stake }: { result: ParlayResult; stake: num
 }
 
 export default function GradePage() {
+  const { data: session } = useSession();
   const [step, setStep] = useState<Step>("upload");
   const [parsedUnits, setParsedUnits] = useState<ParsedUnit[]>([]);
   const [slipMeta, setSlipMeta] = useState<SlipMeta>(EMPTY_SLIP_META);
@@ -270,7 +273,19 @@ export default function GradePage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [gradingBook, setGradingBook] = useState("DraftKings");
+  const [authOpen, setAuthOpen] = useState(false);
+  const [deviceUUID, setDeviceUUID] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let uuid = localStorage.getItem("sl_device_uuid");
+    if (!uuid) {
+      uuid = crypto.randomUUID();
+      localStorage.setItem("sl_device_uuid", uuid);
+    }
+    document.cookie = `sl_uuid=${uuid}; path=/; max-age=31536000; SameSite=Lax`;
+    setDeviceUUID(uuid);
+  }, []);
 
   const BOOKS = ["DraftKings", "FanDuel", "BetMGM", "Caesars", "ESPN Bet", "Bet365", "Pinnacle", "Hard Rock", "WynnBET", "Fanatics"];
 
@@ -403,7 +418,11 @@ export default function GradePage() {
       const res = await fetch("/api/grade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ parlayLegs }),
+        body: JSON.stringify({
+          parlayLegs,
+          deviceUUID,
+          stake: slipMeta.stake,
+        }),
       });
 
       const data = await res.json();
@@ -442,10 +461,26 @@ export default function GradePage() {
           <Image src="/logo.png" alt="SportsLogic" width={56} height={28} className="h-7 w-auto" />
           <span className="font-heading text-base font-bold text-text-primary tracking-tight">SportsLogic</span>
         </Link>
-        <Link href="/" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors uppercase tracking-wide">
-          HOME
-        </Link>
+        <div className="flex items-center gap-4">
+          {session ? (
+            <Link href="/journal" className="text-[11px] font-semibold text-accent hover:brightness-110 transition-colors uppercase tracking-wide">
+              My Journal
+            </Link>
+          ) : (
+            <button
+              onClick={() => setAuthOpen(true)}
+              className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors uppercase tracking-wide"
+            >
+              Save to account
+            </button>
+          )}
+          <Link href="/" className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors uppercase tracking-wide">
+            Home
+          </Link>
+        </div>
       </nav>
+
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
 
       <div className="w-full max-w-[720px] mx-auto px-5 pb-16">
         {/* Header */}
