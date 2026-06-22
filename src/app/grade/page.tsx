@@ -8,6 +8,7 @@ import { sportName } from "@/lib/sport-names";
 import { PROP_LABELS } from "@/lib/prop-labels";
 import { ShareButton } from "@/components/share-button";
 import { SiteFooter } from "@/components/site-footer";
+import { gradingErrorCopy } from "@/lib/grading-error-copy";
 
 type ParsedChild = {
   player: string | null;
@@ -397,7 +398,7 @@ export default function GradePage() {
         setError("Our grading service is temporarily down. Check back soon.");
         setStep("confirm");
       } else {
-        setError(data.error || "Grading failed. Try again.");
+        setError(gradingErrorCopy(data.failureMode, data.legName));
         setStep("confirm");
       }
     } catch {
