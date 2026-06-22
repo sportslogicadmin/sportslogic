@@ -7,6 +7,25 @@
  */
 
 import { PROP_LABELS } from "./prop-labels";
+import type { FailureMode } from "./grading-error-copy";
+
+export type { FailureMode };
+
+export class GradingError extends Error {
+  readonly failureMode: FailureMode;
+  readonly legIndex: number;
+  readonly legName: string;
+  readonly internalSlug: string;
+
+  constructor(mode: FailureMode, legIndex: number, legName: string, internalSlug: string) {
+    super(internalSlug);
+    this.name = "GradingError";
+    this.failureMode = mode;
+    this.legIndex = legIndex;
+    this.legName = legName;
+    this.internalSlug = internalSlug;
+  }
+}
 
 const ODDS_API_KEY = process.env.ODDS_API_KEY ?? "";
 const ODDS_API_BASE = "https://api.the-odds-api.com/v4";
@@ -127,13 +146,15 @@ type Game = {
 const oddsCache = new Map<string, { data: Game[]; expires: number }>();
 const ODDS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-async function fetchOdds(sport: string, market: string): Promise<Game[]> {
+type OddsResult = { ok: boolean; games: Game[] };
+
+async function fetchOdds(sport: string, market: string): Promise<OddsResult> {
   const sportKey = SPORT_MAP[sport.toLowerCase()] ?? sport.toLowerCase();
   const marketKey = MARKET_MAP[market] ?? market;
   const cacheKey = `${sportKey}:${marketKey}`;
 
   const cached = oddsCache.get(cacheKey);
-  if (cached && Date.now() < cached.expires) return cached.data;
+  if (cached && Date.now() < cached.expires) return { ok: true, games: cached.data };
 
   const url = `${ODDS_API_BASE}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=us,us2,eu&markets=${marketKey}&oddsFormat=american`;
   const t0 = Date.now();
@@ -142,13 +163,13 @@ async function fetchOdds(sport: string, market: string): Promise<Game[]> {
   if (!res.ok) {
     const body = await res.text().catch(() => "(unreadable)");
     console.error(`[odds-api] ${sportKey}/${marketKey} → HTTP ${res.status} (${ms}ms) body=${body.slice(0, 300)}`);
-    return [];
+    return { ok: false, games: [] };
   }
 
   const data: Game[] = await res.json();
   console.log(`[odds-api] ${sportKey}/${marketKey} → ${data.length} games in ${ms}ms: ${data.slice(0, 4).map(g => `${g.away_team} @ ${g.home_team} (${new Date(g.commence_time).toISOString()})`).join(" | ")}`);
   oddsCache.set(cacheKey, { data, expires: Date.now() + ODDS_CACHE_TTL });
-  return data;
+  return { ok: true, games: data };
 }
 
 async function fetchPropOdds(sport: string, eventId: string, propType: string): Promise<Game | null> {
@@ -321,6 +342,7 @@ export type GradeResult = {
   breakdown: Record<string, number>;
   all_lines?: { book: string; line: number; odds: number; side: string }[];
   error?: string;
+  failureMode?: FailureMode;
 };
 
 // ── Grade a standard bet ──
@@ -333,10 +355,12 @@ export async function gradeBet(
   line?: number,
   side?: string,
 ): Promise<GradeResult> {
-  const games = await fetchOdds(sport, betType);
-  const game = findGame(games, team);
+  const { ok, games } = await fetchOdds(sport, betType);
 
-  if (!game) return errorResult("No game found for this team");
+  if (!ok) return errorResult("odds_api_unreachable", "A");
+
+  const game = findGame(games, team);
+  if (!game) return errorResult("lines_not_posted", "B");
 
   const marketKey = MARKET_MAP[betType] ?? betType;
   const teamLower = team.toLowerCase();
@@ -381,7 +405,7 @@ export async function gradeBet(
     }
   }
 
-  if (bookOdds.size === 0) return errorResult("No odds found for this bet");
+  if (bookOdds.size === 0) return errorResult("incomplete_book_coverage", "C");
 
   // True probability via sharp book devig
   let trueProb: number | null = null;
@@ -585,7 +609,7 @@ export async function findAlternatives(
 ): Promise<GradeResult[]> {
   const alternatives: (GradeResult & { label: string })[] = [];
 
-  const games = await fetchOdds(sport, "moneyline");
+  const { games } = await fetchOdds(sport, "moneyline");
   const game = findGame(games, team);
   if (!game) return [];
 
@@ -595,7 +619,7 @@ export async function findAlternatives(
   // Grade all bet types for both teams
   for (const betTeam of [home, away]) {
     // ML
-    const mlGames = await fetchOdds(sport, "moneyline");
+    const { games: mlGames } = await fetchOdds(sport, "moneyline");
     const mlGame = findGame(mlGames, betTeam);
     if (mlGame) {
       for (const bk of mlGame.bookmakers) {
@@ -615,7 +639,7 @@ export async function findAlternatives(
     }
 
     // Spread
-    const spGames = await fetchOdds(sport, "spread");
+    const { games: spGames } = await fetchOdds(sport, "spread");
     const spGame = findGame(spGames, betTeam);
     if (spGame) {
       for (const bk of spGame.bookmakers) {
@@ -637,7 +661,7 @@ export async function findAlternatives(
   }
 
   // Totals
-  const totGames = await fetchOdds(sport, "total");
+  const { games: totGames } = await fetchOdds(sport, "total");
   const totGame = findGame(totGames, team);
   if (totGame) {
     for (const bk of totGame.bookmakers) {
@@ -735,16 +759,16 @@ export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
       const name = leg.player ?? leg.team;
       const startDecision = await hasGameStarted(leg.team, leg.sport);
       // "Already started" requires a confident, single, unambiguous match —
-      // ambiguous/no-match cases fall through to the generic message instead
+      // ambiguous/no-match cases fall through to the specific failure mode instead
       // of a false-confidence abort (see decision log 2026-06-16).
       if (startDecision === "started") {
-        throw new Error(
-          `This game has already started — SportsLogic grades slips before tip-off/first pitch.`
-        );
+        throw new GradingError("D", i, name, "game_in_progress");
       }
-      throw new Error(
-        `We couldn't find live odds for leg ${i + 1} (${name}). Check that the game is active and try again.`
-      );
+      const mode: FailureMode = result.failureMode ?? "B";
+      const slug = mode === "A" ? "odds_api_unreachable"
+        : mode === "C" ? "incomplete_book_coverage"
+        : "lines_not_posted";
+      throw new GradingError(mode, i, name, slug);
     }
 
     gradedLegs.push({ ...result, team: leg.team, betType: leg.betType || "moneyline" });
@@ -871,7 +895,7 @@ export async function gradeParlay(legs: ParlayLeg[]): Promise<ParlayResult> {
   };
 }
 
-function errorResult(msg: string): GradeResult {
+function errorResult(msg: string, failureMode?: FailureMode): GradeResult {
   return {
     grade: "?",
     score: 0,
@@ -883,5 +907,6 @@ function errorResult(msg: string): GradeResult {
     kelly: 0,
     breakdown: {},
     error: msg,
+    failureMode,
   };
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { gradeBet, gradeProp, gradeParlay, findAlternatives, type ParlayLeg } from "@/lib/grading-engine";
+import { gradeBet, gradeProp, gradeParlay, findAlternatives, GradingError, type ParlayLeg } from "@/lib/grading-engine";
 import { prisma } from "@/lib/prisma";
 import { generateSlug } from "@/lib/slug";
 
@@ -112,6 +112,13 @@ export async function POST(request: Request) {
 
       return NextResponse.json({ ...result, shareSlug, remaining: rate.remaining });
     } catch (err) {
+      if (err instanceof GradingError) {
+        console.error(`[grade-parlay] ${err.internalSlug} leg=${err.legIndex + 1} name="${err.legName}"`);
+        return NextResponse.json(
+          { error: err.internalSlug, failureMode: err.failureMode, legIndex: err.legIndex, legName: err.legName },
+          { status: 422 }
+        );
+      }
       console.error("[grade-parlay]", err);
       const message = err instanceof Error ? err.message : null;
       if (message) {
